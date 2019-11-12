@@ -3,10 +3,11 @@
              :open="show"
              :auto-hide="false"
              offset="16">
-    <md-button class="md-icon-button"
+    <md-button class="md-primary"
                title="add attribute"
                @click="open">
-      <md-icon>add</md-icon>
+      <!-- <md-icon>add</md-icon> -->
+      ADD ATTRIBUTE
     </md-button>
 
     <template slot="popover">
@@ -14,8 +15,8 @@
         <div class="_popoverContent">
 
           <md-field class="tooltip-content">
-            <label>Group name</label>
-            <md-input v-model="groupName"></md-input>
+            <label>Category name</label>
+            <md-input v-model="categoryName"></md-input>
           </md-field>
 
           <md-field class="tooltip-content">
@@ -27,11 +28,11 @@
 
         <div class="_popoverBtn">
           <a class="btn"
-             v-close-popover
              @click="open">Close</a>
 
           <a class="btn"
-             v-close-popover>OK</a>
+             v-close-popover
+             @click="Validate">OK</a>
         </div>
       </div>
 
@@ -42,22 +43,43 @@
 </template>
 
 <script>
+import attributeService from "../../../../services";
 export default {
   name: "createAttributeTooltip",
   props: {
     show: {
       default: false
+    },
+    itemFiltered: {
+      required: true
     }
   },
   data() {
     return {
-      groupName: "",
+      categoryName: "",
       attributeName: ""
     };
   },
   methods: {
     open() {
       this.$emit("open");
+    },
+    Validate() {
+      if (this.itemFiltered.length > 0) {
+        let promises = this.itemFiltered.map(el => {
+          return attributeService.createAttribute(
+            el.id,
+            this.categoryName,
+            this.attributeName
+          );
+        });
+
+        return Promise.all(promises).then(() => {
+          this.$emit("validate");
+        });
+      } else {
+        alert("select at least one item !");
+      }
     }
   }
 };

@@ -1,16 +1,17 @@
 <template>
   <md-content class="mdContainer md-scrollbar">
 
-    <type-lst-component v-if="data && visiblePage === pages.types"
+    <type-lst-component v-if="data && appState === STATES.normal && visiblePage === pages.types"
                         :types="data.types"
                         @select="selectType">
     </type-lst-component>
 
-    <table-component v-if="typeSelected && visiblePage === pages.table"
-                     :itemDisplayed="itemDisplayed"
-                     :attributesDisplayed="attributesDisplayed"
-                     @back="goBack">
-    </table-component>
+    <table-page v-if="appState === STATES.normal && typeSelected && visiblePage === pages.table"
+                :itemDisplayed="itemDisplayed"
+                :attributesDisplayed="attributesDisplayed"
+                @back="goBack"
+                @refresh="validateItem">
+    </table-page>
 
     <!--
           /////////////////////////////////
@@ -30,7 +31,7 @@ const {
 } = require("spinal-env-viewer-panel-manager-service");
 
 import TypeLstComponent from "./components/typesList.vue";
-import TableComponent from "./components/table.vue";
+import TablePage from "./components/tablePage.vue";
 
 import SpinalAttributeManager from "../../services";
 
@@ -38,7 +39,7 @@ export default {
   name: "attributeManagerPanel",
   components: {
     "type-lst-component": TypeLstComponent,
-    "table-component": TableComponent
+    "table-page": TablePage
   },
   data() {
     this.STATES = Object.freeze({
@@ -60,7 +61,8 @@ export default {
       contextSelected: null,
       typeSelected: null,
       visiblePage: this.pages.types,
-      itemDisplayed: null,
+      itemDisplayed: null
+      // attributesDisplayed: []
     };
   },
   methods: {
@@ -82,25 +84,55 @@ export default {
     selectType(type) {
       this.typeSelected = type;
       this.itemDisplayed = this.data.data[type];
-      this.attributesDisplayed = this.data.attributes;
+      // this.attributesDisplayed = this.data.attributes;
+      // this.attributesDisplayed = this.getAttributes();
       this.visiblePage = this.pages.table;
     },
+
+    getAttributes() {
+      return this.data.data[this.typeSelected]
+        .map(el => {
+          return el.attributes.map(el2 => {
+            return { category: el2.category, label: el2.label };
+          });
+        })
+        .flat();
+    },
+
     goBack() {
       this.typeSelected = null;
       this.visiblePage = this.pages.types;
-    }
-  },
-  watch: {
-    itemSelected() {
+    },
+
+    validateItem() {
+      // setTimeout(() => {
+      this.refreshData();
+      // }, 500);
+    },
+
+    refreshData() {
       this.appState = this.STATES.loading;
       this.getAllData()
         .then(res => {
           this.data = res;
+
+          console.log("data", this.data);
+
+          if (this.typeSelected) {
+            this.selectType(this.typeSelected);
+          }
+
           this.appState = this.STATES.normal;
         })
-        .catch(() => {
+        .catch(err => {
           this.appState = this.STATES.normal;
+          console.error(err);
         });
+    }
+  },
+  watch: {
+    itemSelected() {
+      this.refreshData();
     }
   }
 };
