@@ -39,6 +39,7 @@
 
     <div class="tableContent">
       <table-component :tableContent="tableContent"
+                       :header="header"
                        @refresh="createAttribute"></table-component>
     </div>
 
@@ -69,12 +70,13 @@ export default {
   data() {
     return {
       // showAttrTooltip: false,
-      tableContent: []
+      tableContent: [],
+      header: []
     };
   },
   mounted() {
     this.tableContent = this.getTableContent();
-    console.log("mounted", this.tableContent);
+    this.header = this.getAttributes();
   },
   methods: {
     back() {
@@ -110,7 +112,8 @@ export default {
         });
       }
 
-      return { header: attributes, data: content };
+      // return { header: attributes, data: content };
+      return content;
     },
 
     getAttributes() {
@@ -140,10 +143,17 @@ export default {
     }
   },
   watch: {
-    // itemDisplayed: function() {
-    //   console.log("itemDisplayed hello");
-    //   lodash.debounce(this.getTableContent, 500, { maxWait: 1000 });
-    // },
+    itemDisplayed: function() {
+      this.tableContent = this.getTableContent();
+      this.header = this.getAttributes();
+
+      console.log(
+        "itemDisplayed hello",
+        this.itemDisplayed,
+        this.tableContent,
+        this.header
+      );
+    }
     // attributesDisplayed: function() {
     //   console.log("attributes hello");
     //   lodash.debounce(this.getTableContent, 500, { maxWait: 1000 });

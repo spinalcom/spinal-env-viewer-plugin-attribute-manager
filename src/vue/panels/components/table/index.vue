@@ -39,7 +39,7 @@
                      name="columns"
                      id="columns"
                      multiple>
-            <md-option v-for="(head,index) in tableContent.header"
+            <md-option v-for="(head,index) in header"
                        :key="index"
                        :value="`${head.category} / ${head.label}`">
               {{`${head.category} / ${head.label}`}}
@@ -93,7 +93,9 @@
 
       <md-table-row slot="md-table-row"
                     slot-scope="{ item }"
-                    md-selectable="multiple">
+                    class="tableRow"
+                    md-selectable="multiple"
+                    @click="selectItemInViewer(item)">
         <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
         <md-table-cell md-label="Type">{{ item.type }}</md-table-cell>
 
@@ -104,6 +106,7 @@
           <table-content-component :editable="editMode"
                                    :item="item"
                                    :attribute="attribute"
+                                   @setValue="setValue"
                                    ref="editableComponent">
           </table-content-component>
         </md-table-cell>
@@ -116,11 +119,13 @@
 <script>
 import TableContentComponent from "./tableContent.vue";
 import CreateAttributeTooltips from "../tooltips/createAttribute.vue";
+import attributeService from "../../../../services";
 
 export default {
   name: "TableComponent",
   props: {
-    tableContent: {}
+    tableContent: {},
+    header: {}
   },
   components: {
     "table-content-component": TableContentComponent,
@@ -131,17 +136,15 @@ export default {
       showAttrTooltip: false,
       editMode: false,
       searched: [],
-      header: [],
       searchByName: "",
       itemsSelected: [],
       headerSelected: [],
       headerDisplayed: []
     };
   },
-  //   mounted() {
-  //     this.searched = this.tableContent;
-  //     console.log("created", this.searched);
-  //   },
+  mounted() {
+    this.searched = this.tableContent;
+  },
   methods: {
     validateOrCancel(valid) {
       let references = this.$refs["editableComponent"];
@@ -179,18 +182,35 @@ export default {
     },
 
     searchOnTable() {
-      this.searched = this.filterByName(
-        this.tableContent.data,
-        this.searchByName
-      );
+      this.searched = this.filterByName(this.tableContent, this.searchByName);
     },
     onSelect(items) {
       this.itemsSelected = items;
+    },
+    selectItemInViewer(item) {
+      attributeService.getBimObjects(item.id);
+    },
+    setValue(argData) {
+      this.$emit("refresh");
+
+      // let item = this.tableContent.find(el => el.id === argData.item.id);
+
+      // let found;
+      // if (item && argData.attribute) {
+      //   found = item.attributes.find(el => {
+      //     return (
+      //       el.label === argData.attribute.label &&
+      //       el.category === argData.attribute.category
+      //     );
+      //   });
+      // }
+      // if (typeof found !== "undefined") {
+      //   found.value = argData.value;
+      // }
     }
   },
   watch: {
     tableContent() {
-      this.header = this.tableContent.header;
       // let data = this.tableContent.data.map(el => {
       //   let info = {};
       //   info["id"] = el.id;
@@ -206,17 +226,15 @@ export default {
 
       // this.searched = data;
 
-      this.headerSelected = this.tableContent.header.map(el => {
+      this.searched = this.filterByName(this.tableContent, this.searchByName);
+    },
+    header() {
+      this.headerSelected = this.header.map(el => {
         return `${el.category} / ${el.label}`;
       });
-
-      this.searched = this.filterByName(
-        this.tableContent.data,
-        this.searchByName
-      );
     },
     headerSelected() {
-      this.headerDisplayed = this.tableContent.header.filter(el => {
+      this.headerDisplayed = this.header.filter(el => {
         let item = `${el.category} / ${el.label}`;
         return this.headerSelected.indexOf(item) !== -1;
       });
@@ -258,6 +276,10 @@ export default {
   width: 100%;
   height: calc(100% - 60px);
   overflow: auto;
+}
+
+._tableContent .md-table .tableRow:hover {
+  cursor: pointer;
 }
 
 .buttonFab {

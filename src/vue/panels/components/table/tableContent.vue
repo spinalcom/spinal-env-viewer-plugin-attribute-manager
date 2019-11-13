@@ -39,18 +39,11 @@ export default {
     },
 
     setValue() {
-      let found;
-      if (this.item && this.attribute) {
-        found = this.item.attributes.find(el => {
-          return (
-            el.label === this.attribute.label &&
-            el.category === this.attribute.category
-          );
-        });
-      }
-      if (found !== "undefined") {
-        found.value = this.displayValue;
-      }
+      this.$emit("setValue", {
+        item: this.item,
+        attribute: this.attribute,
+        value: this.displayValue
+      });
     },
 
     cancelValue() {

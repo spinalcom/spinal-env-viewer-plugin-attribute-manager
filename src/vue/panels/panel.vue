@@ -116,8 +116,6 @@ export default {
         .then(res => {
           this.data = res;
 
-          console.log("data", this.data);
-
           if (this.typeSelected) {
             this.selectType(this.typeSelected);
           }

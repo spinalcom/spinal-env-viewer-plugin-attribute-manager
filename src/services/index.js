@@ -173,5 +173,9 @@ export default {
       }
 
     }
+  },
+  getBimObjects(nodeId) {
+    console.log(SpinalGraphService.getInfo(nodeId));
+    // return SpinalGraphService.findNodes(nodeId,)
   }
 }
