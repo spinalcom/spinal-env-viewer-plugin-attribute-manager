@@ -52,10 +52,22 @@ export default {
     },
 
     changeValue(event) {
-      this.displayValue = event.target.innerText;
+      // this.displayValue = event.target.innerText;
+    },
+
+    setValueToColumn(category, label, value) {
+      if (
+        value.length > 0 &&
+        this.attribute.category === category &&
+        this.attribute.label === label
+      ) {
+        this.displayValue = value;
+        this.$refs.display.innerText = value;
+      }
     },
 
     validateValue() {
+      this.displayValue = this.$refs.display.innerText;
       attributeService
         .updateAttributeValue(
           this.item.id,

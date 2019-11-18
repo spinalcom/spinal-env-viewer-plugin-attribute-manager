@@ -21,6 +21,7 @@
       </md-button>
     </div>
 
+    <!-- First Toolbar -->
     <md-toolbar class="mdToolbar"
                 md-elevation="0">
 
@@ -30,12 +31,12 @@
                   @input="searchOnTable" />
       </md-field>
 
-      <!-- <div class="md-toolbar-section-end"> -->
       <div class="md-toolbar-end">
 
         <md-field class="mdSelect">
-          <label for="columns">Filter by Column</label>
+          <!-- <label for="columns">Filter by Column</label> -->
           <md-select v-model="headerSelected"
+                     placeholder="Filter by Column"
                      name="columns"
                      id="columns"
                      multiple>
@@ -47,40 +48,32 @@
           </md-select>
         </md-field>
 
+      </div>
+    </md-toolbar>
+    <!-- End First Toolbar -->
+
+    <!-- Second Toolbar -->
+    <md-toolbar class="mdToolbar secondToolbar"
+                md-elevation="0">
+
+      <div class="md-toolbar-start"></div>
+
+      <div class="md-toolbar-end">
+
+        <change-col-value v-if="editMode"
+                          :columns="headerDisplayed"
+                          :itemsSelected="itemsSelected"
+                          @setValueToColumn="setValueToColumn">
+        </change-col-value>
+
         <create-attribute :show="showAttrTooltip"
                           @open='openCreateAttrTooltips'
                           :itemFiltered="itemsSelected"
                           @validate="createAttribute"></create-attribute>
-
-        <!-- <div> -->
-        <!-- <md-button class="md-icon-button"
-                     title="filter list" md-menu-trigger>
-            <md-icon>filter_list</md-icon>
-          </md-button> -->
-
-        <!-- <md-menu md-size="small">
-            <md-button class="md-icon-button"
-                       title="filter list"
-                       md-menu-trigger>
-              <md-icon>filter_list</md-icon>
-            </md-button>
-
-            <md-menu-content>
-              <md-select>
-                <md-option value="fight-club">Fight Club</md-option>
-                <md-option value="godfather">Godfather</md-option>
-                <md-option value="godfather-ii">Godfather II</md-option>
-                <md-option value="godfather-iii">Godfather III</md-option>
-                <md-option value="godfellas">Godfellas</md-option>
-                <md-option value="pulp-fiction">Pulp Fiction</md-option>
-                <md-option value="scarface">Scarface</md-option>
-              </md-select>
-            </md-menu-content>
-          </md-menu> -->
-
-        <!-- </div> -->
       </div>
+
     </md-toolbar>
+    <!-- End Second Toolbar -->
 
     <md-table v-model="searched"
               class="md-scrollbar"
@@ -119,6 +112,7 @@
 <script>
 import TableContentComponent from "./tableContent.vue";
 import CreateAttributeTooltips from "../tooltips/createAttribute.vue";
+import ChangeColValue from "../tooltips/changeCol.vue";
 import attributeService from "../../../../services";
 
 export default {
@@ -129,7 +123,8 @@ export default {
   },
   components: {
     "table-content-component": TableContentComponent,
-    "create-attribute": CreateAttributeTooltips
+    "create-attribute": CreateAttributeTooltips,
+    "change-col-value": ChangeColValue
   },
   data() {
     return {
@@ -190,7 +185,7 @@ export default {
     selectItemInViewer(item) {
       attributeService.getBimObjects(item.id);
     },
-    setValue(argData) {
+    setValue() {
       this.$emit("refresh");
 
       // let item = this.tableContent.find(el => el.id === argData.item.id);
@@ -207,6 +202,17 @@ export default {
       // if (typeof found !== "undefined") {
       //   found.value = argData.value;
       // }
+    },
+    setValueToColumn(res) {
+      let references = this.$refs["editableComponent"];
+
+      let value = res.value;
+      let category = res.column.split("/")[0];
+      let label = res.column.split("/")[1];
+
+      references.forEach(el => {
+        el.setValueToColumn(category, label, value);
+      });
     }
   },
   watch: {
@@ -259,6 +265,10 @@ export default {
   justify-content: space-between;
 }
 
+._tableContent .md-content.md-theme-default {
+  background: transparent !important;
+}
+
 ._tableContent .mdToolbar .md-toolbar-start,
 ._tableContent .mdToolbar .md-toolbar-end {
   width: calc(45%) !important;
@@ -268,13 +278,13 @@ export default {
   justify-content: space-between;
 }
 
-._tableContent .mdToolbar .md-toolbar-end .mdSelect {
+/* ._tableContent .mdToolbar .md-toolbar-end .mdSelect {
   width: 50%;
-}
+} */
 
 ._tableContent .md-table {
   width: 100%;
-  height: calc(100% - 60px);
+  height: calc(100% - 128px);
   overflow: auto;
 }
 
@@ -292,5 +302,10 @@ export default {
   min-width: 60px;
   max-width: 80px;
   /* text-align: center; */
+}
+
+.secondToolbar .md-toolbar-end {
+  display: flex;
+  justify-content: flex-end !important;
 }
 </style>

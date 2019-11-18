@@ -1,13 +1,10 @@
 <template>
-  <v-popover trigger="manual"
-             :open="show"
-             :auto-hide="false"
+  <v-popover :auto-hide="false"
              offset="16">
     <md-button class="md-primary"
-               title="add attribute"
-               @click="open">
+               title="add attribute">
       <!-- <md-icon>add</md-icon> -->
-      ADD ATTRIBUTE
+      SET VALUE TO COLUMN
     </md-button>
 
     <template slot="popover">
@@ -15,22 +12,31 @@
         <div class="_popoverContent">
 
           <md-field class="tooltip-content">
-            <label>Category name</label>
-            <md-input v-model="categoryName"></md-input>
+            <md-select v-model="columnSelected"
+                       placeholder="Select Column"
+                       name="columns"
+                       id="columns">
+              <md-option v-for="(head,index) in columns"
+                         :key="index"
+                         :value="`${head.category}/${head.label}`">
+                {{`${head.category} / ${head.label}`}}
+              </md-option>
+            </md-select>
           </md-field>
 
           <md-field class="tooltip-content">
-            <label>Label Name</label>
-            <md-input v-model="attributeName"></md-input>
+            <label>Value</label>
+            <md-input v-model="value"></md-input>
           </md-field>
 
         </div>
 
         <div class="_popoverBtn">
           <a class="btn"
-             @click="open">Close</a>
+             v-close-popover>Close</a>
 
           <a class="btn"
+             v-close-popover
              @click="Validate">OK</a>
         </div>
       </div>
@@ -43,38 +49,25 @@
 
 <script>
 import attributeService from "../../../../services";
+
 export default {
   name: "createAttributeTooltip",
   props: {
-    show: {
-      default: false
-    },
-    itemFiltered: {
-      required: true
-    }
+    columns: {},
+    itemsSelected: {}
   },
   data() {
     return {
-      categoryName: "",
-      attributeName: ""
+      columnSelected: "",
+      value: ""
     };
   },
   methods: {
-    open() {
-      this.$emit("open");
-    },
     Validate() {
-      if (this.itemFiltered.length > 0) {
-        let promises = this.itemFiltered.map(el => {
-          return attributeService.createAttribute(
-            el.id,
-            this.categoryName,
-            this.attributeName
-          );
-        });
-
-        return Promise.all(promises).then(() => {
-          this.$emit("validate");
+      if (this.itemsSelected && this.value.trim().length > 0) {
+        this.$emit("setValueToColumn", {
+          value: this.value.trim(),
+          column: this.columnSelected
         });
       } else {
         alert("select at least one item !");

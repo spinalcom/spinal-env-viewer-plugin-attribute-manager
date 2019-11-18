@@ -16,7 +16,8 @@
           &nbsp;
           Import
         </md-button>
-        <md-button class="md-primary">
+        <md-button class="md-primary"
+                   @click="exportData">
           <md-icon>get_app</md-icon>
           &nbsp;
           Export
@@ -52,6 +53,9 @@
 // import CreateAttributeTooltips from "./tooltips/createAttribute.vue";
 
 import TableComponent from "./table/index.vue";
+import spinalExcelManager from "spinal-env-viewer-plugin-excel-manager-service";
+
+import FileSaver from "file-saver";
 
 export default {
   name: "tablePage",
@@ -140,19 +144,83 @@ export default {
       }
 
       return typeof found !== "undefined" ? found.value : "-";
+    },
+
+    getExportHeadersData() {
+      let headers = [
+        {
+          key: "name",
+          header: "Name",
+          width: 30
+        },
+        {
+          key: "type",
+          header: "Type",
+          width: 30
+        }
+      ];
+
+      this.header.forEach(head => {
+        headers.push({
+          key: `${head.category}_${head.label}`,
+          header: `${head.category} / ${head.label}`,
+          width: 15
+        });
+      });
+
+      return headers;
+    },
+    getValue(item, attribute) {
+      let found = item.attributes.find(el => {
+        return (
+          el.label === attribute.label && el.category === attribute.category
+        );
+      });
+
+      return typeof found !== "undefined" ? found.value : "-";
+    },
+    getExportRowsData() {
+      return this.tableContent.map(content => {
+        let info = {
+          name: content.name,
+          type: content.type
+        };
+
+        this.header.forEach(head => {
+          let value = this.getValue(content, head);
+          info[`${head.category}_${head.label}`] = value;
+        });
+
+        return info;
+      });
+    },
+    formatExportData() {
+      return [
+        {
+          data: [
+            {
+              name: "sheet 1",
+              header: this.getExportHeadersData(),
+              rows: this.getExportRowsData()
+            }
+          ]
+        }
+      ];
+    },
+    exportData() {
+      let result = this.formatExportData();
+
+      console.log("result", result);
+
+      spinalExcelManager.export(result).then(buffer => {
+        FileSaver.saveAs(new Blob(buffer), `spinalcom.xlsx`);
+      });
     }
   },
   watch: {
     itemDisplayed: function() {
       this.tableContent = this.getTableContent();
       this.header = this.getAttributes();
-
-      console.log(
-        "itemDisplayed hello",
-        this.itemDisplayed,
-        this.tableContent,
-        this.header
-      );
     }
     // attributesDisplayed: function() {
     //   console.log("attributes hello");
