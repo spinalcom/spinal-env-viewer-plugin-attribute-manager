@@ -51,7 +51,7 @@ export default {
       this.$refs.display.innerText = this.displayValue;
     },
 
-    changeValue(event) {
+    changeValue() {
       // this.displayValue = event.target.innerText;
     },
 

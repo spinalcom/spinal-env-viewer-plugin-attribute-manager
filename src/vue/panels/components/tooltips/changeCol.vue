@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import attributeService from "../../../../services";
+// import attributeService from "../../../../services";
 
 export default {
   name: "createAttributeTooltip",

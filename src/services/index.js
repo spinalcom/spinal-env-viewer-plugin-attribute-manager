@@ -14,6 +14,18 @@ import {
   bimObjectManagerService
 } from "spinal-env-viewer-bim-manager-service";
 
+
+import {
+  ROOMS_GROUP_CONTEXT,
+  EQUIPMENTS_GROUP_CONTEXT,
+  ROOMS_CATEGORY_RELATION,
+  EQUIPMENTS_CATEGORY_RELATION,
+  ROOMS_CATEGORY,
+  ROOMS_GROUP_RELATION,
+  EQUIPMENTS_GROUP_RELATION,
+  groupService
+} from "spinal-env-viewer-room-manager/js/service.js";
+
 export default {
   getAllAttributes(nodeId, liste) {
     let realNode = SpinalGraphService.getRealNode(nodeId);
@@ -177,5 +189,55 @@ export default {
   getBimObjects(nodeId) {
     console.log(SpinalGraphService.getInfo(nodeId));
     // return SpinalGraphService.findNodes(nodeId,)
+  },
+
+  getAllGroupContext() {
+    return Promise.all([SpinalGraphService.getContextWithType(
+        ROOMS_GROUP_CONTEXT),
+      SpinalGraphService.getContextWithType(EQUIPMENTS_GROUP_CONTEXT)
+    ]).then(values => {
+      let contexts = values.flat();
+
+      let promises = contexts.map(async context => {
+        let res = context.info.get();
+        res["category"] = await this.getCategory(res.id, res.type);
+        return res;
+      })
+
+      return Promise.all(promises);
+
+    })
+  },
+
+  getCategory(contextId, nodeType) {
+    let relationName = nodeType === ROOMS_GROUP_CONTEXT ?
+      ROOMS_CATEGORY_RELATION : EQUIPMENTS_CATEGORY_RELATION;
+
+    return SpinalGraphService.getChildren(contextId, [relationName]).then(
+      children => {
+        let promises = children.map(async child => {
+          let info = child.get();
+          info["groups"] = await this.getGroup(child.id, child.type);
+          return info;
+        })
+
+        return Promise.all(promises);
+
+      })
+  },
+
+  getGroup(categoryId, nodeType) {
+    let relationName = nodeType === ROOMS_CATEGORY ? ROOMS_GROUP_RELATION :
+      EQUIPMENTS_GROUP_RELATION;
+
+    return SpinalGraphService.getChildren(categoryId, [relationName]).then(
+      children => {
+        return children.map(el => el.get());
+      })
+  },
+
+  linkItem(contextId, parentId, itemId) {
+    groupService.linkElementToGroup(parentId, itemId, contextId)
   }
+
 }

@@ -2,9 +2,16 @@
   <div class="_tableContent">
 
     <div class="buttonFab">
+
+      <md-button v-if="!editMode"
+                 @click="LinkItem"
+                 class="md-fab md-mini md-primary">
+        <md-icon>link</md-icon>
+      </md-button>
+
       <md-button v-if="!editMode"
                  @click="ActiveEditMode"
-                 class="md-fab md-mini md-plain">
+                 class="md-fab md-mini md-primary">
         <md-icon>edit</md-icon>
       </md-button>
 
@@ -56,7 +63,13 @@
     <md-toolbar class="mdToolbar secondToolbar"
                 md-elevation="0">
 
-      <div class="md-toolbar-start"></div>
+      <div class="md-toolbar-start">
+        <md-field class="md-toolbar-start">
+          <md-input placeholder="Search by Value..."
+                    v-model="searchByValue"
+                    @input="searchOnTableByValue" />
+        </md-field>
+      </div>
 
       <div class="md-toolbar-end">
 
@@ -115,6 +128,10 @@ import CreateAttributeTooltips from "../tooltips/createAttribute.vue";
 import ChangeColValue from "../tooltips/changeCol.vue";
 import attributeService from "../../../../services";
 
+const {
+  spinalPanelManagerService
+} = require("spinal-env-viewer-panel-manager-service");
+
 export default {
   name: "TableComponent",
   props: {
@@ -132,6 +149,7 @@ export default {
       editMode: false,
       searched: [],
       searchByName: "",
+      searchByValue: "",
       itemsSelected: [],
       headerSelected: [],
       headerDisplayed: []
@@ -175,9 +193,27 @@ export default {
 
       return liste;
     },
+    filterByValue(liste, value) {
+      if (value.trim().length > 0) {
+        return liste.filter(el => {
+          let found = el.attributes.find(attr => {
+            return attr.value
+              .toString()
+              .toLowerCase()
+              .includes(value.trim().toLowerCase());
+          });
 
+          return found ? true : false;
+        });
+      }
+
+      return liste;
+    },
     searchOnTable() {
       this.searched = this.filterByName(this.tableContent, this.searchByName);
+    },
+    searchOnTableByValue() {
+      this.searched = this.filterByValue(this.tableContent, this.searchByValue);
     },
     onSelect(items) {
       this.itemsSelected = items;
@@ -212,6 +248,14 @@ export default {
 
       references.forEach(el => {
         el.setValueToColumn(category, label, value);
+      });
+    },
+    LinkItem() {
+      if (this.itemsSelected.length === 0)
+        return alert("you must select at less one item");
+
+      spinalPanelManagerService.openPanel("linkToGroupDialog", {
+        itemSelected: this.itemsSelected
       });
     }
   },
