@@ -23,7 +23,8 @@
         </div>
 
         <div class="md-layout-item md-size-10 mdIcon">
-          <md-button class="md-icon-button">
+          <md-button class="md-icon-button"
+                     @click="createContext">
             <md-icon>control_point</md-icon>
           </md-button>
         </div>
@@ -52,7 +53,8 @@
         </div>
 
         <div class="md-layout-item md-size-10 mdIcon">
-          <md-button class="md-icon-button">
+          <md-button class="md-icon-button"
+                     @click="createCategory">
             <md-icon>control_point</md-icon>
           </md-button>
         </div>
@@ -80,7 +82,8 @@
         </div>
 
         <div class="md-layout-item md-size-10 mdIcon">
-          <md-button class="md-icon-button">
+          <md-button class="md-icon-button"
+                     @click="createGroup">
             <md-icon>control_point</md-icon>
           </md-button>
         </div>
@@ -102,6 +105,10 @@
 <script>
 import attributeService from "../../services/index";
 
+import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
+import EventBus from "spinal-env-viewer-room-manager/js/event";
+
 export default {
   name: "dialogComponent",
   props: ["onFinised"],
@@ -119,6 +126,9 @@ export default {
   },
   created() {
     this.getAllData();
+    EventBus.$on("itemCreated", res => {
+      console.log("event", this.getAllData());
+    });
   },
   methods: {
     opened(option) {
@@ -179,6 +189,29 @@ export default {
         this.categorySelected &&
         this.groupSelected
       );
+    },
+
+    createContext() {
+      spinalPanelManagerService.openPanel("createGroupContextDialog", {
+        title: "Create a Grouping Context",
+        type: "context"
+      });
+    },
+    createCategory() {
+      spinalPanelManagerService.openPanel("createGroupContextDialog", {
+        title: "add Category",
+        type: "element",
+        contextId: this.contextSelected,
+        selectedNode: SpinalGraphService.getInfo(this.contextSelected)
+      });
+    },
+    createGroup() {
+      spinalPanelManagerService.openPanel("createGroupContextDialog", {
+        title: "add Group",
+        type: "element",
+        contextId: this.contextSelected,
+        selectedNode: SpinalGraphService.getInfo(this.categorySelected)
+      });
     }
   },
   watch: {
