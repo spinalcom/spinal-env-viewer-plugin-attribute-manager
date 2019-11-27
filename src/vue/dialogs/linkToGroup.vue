@@ -126,8 +126,8 @@ export default {
   },
   created() {
     this.getAllData();
-    EventBus.$on("itemCreated", res => {
-      console.log("event", this.getAllData());
+    EventBus.$on("itemCreated", () => {
+      this.getAllData();
     });
   },
   methods: {
@@ -155,8 +155,9 @@ export default {
 
     getAllData() {
       attributeService.getAllGroupContext().then(res => {
-        console.log("res", res);
         this.data = res;
+        this.updateCategory();
+        this.updateGroups();
       });
     },
     // getCategories() {
@@ -212,10 +213,13 @@ export default {
         contextId: this.contextSelected,
         selectedNode: SpinalGraphService.getInfo(this.categorySelected)
       });
-    }
-  },
-  watch: {
-    contextSelected() {
+    },
+
+    //////////////////////////////////////////////////////////////////
+    // Modify
+    //////////////////////////////////////////////////////////////////
+
+    updateCategory() {
       this.categorySelected = undefined;
       this.categories = [];
       if (this.contextSelected) {
@@ -223,7 +227,7 @@ export default {
         if (val) this.categories = val.category;
       }
     },
-    categorySelected() {
+    updateGroups() {
       this.groupSelected = undefined;
       this.groups = [];
       if (this.contextSelected && this.categorySelected) {
@@ -236,6 +240,14 @@ export default {
           if (category) this.groups = category.groups;
         }
       }
+    }
+  },
+  watch: {
+    contextSelected() {
+      this.updateCategory();
+    },
+    categorySelected() {
+      this.updateGroups();
     }
   }
 };

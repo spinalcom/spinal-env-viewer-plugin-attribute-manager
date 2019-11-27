@@ -12,13 +12,13 @@
       </div>
       <div class="exportImport">
         <md-button class="md-primary">
-          <md-icon>publish</md-icon>
+          <md-icon>get_app</md-icon>
           &nbsp;
           Import
         </md-button>
         <md-button class="md-primary"
                    @click="exportData">
-          <md-icon>get_app</md-icon>
+          <md-icon>publish</md-icon>
           &nbsp;
           Export
         </md-button>
@@ -149,6 +149,11 @@ export default {
     getExportHeadersData() {
       let headers = [
         {
+          key: "id",
+          header: "Id",
+          width: 30
+        },
+        {
           key: "name",
           header: "Name",
           width: 30
@@ -182,6 +187,7 @@ export default {
     getExportRowsData() {
       return this.tableContent.map(content => {
         let info = {
+          id: content.id,
           name: content.name,
           type: content.type
         };
