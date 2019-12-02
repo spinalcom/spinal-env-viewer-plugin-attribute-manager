@@ -16,15 +16,8 @@ import {
 
 
 import {
-  ROOMS_GROUP_CONTEXT,
-  EQUIPMENTS_GROUP_CONTEXT,
-  ROOMS_CATEGORY_RELATION,
-  EQUIPMENTS_CATEGORY_RELATION,
-  ROOMS_CATEGORY,
-  ROOMS_GROUP_RELATION,
-  EQUIPMENTS_GROUP_RELATION,
   groupService
-} from "spinal-env-viewer-room-manager/js/service.js";
+} from "spinal-env-viewer-room-manager/services/service.js";
 
 export default {
   getAllAttributes(nodeId, liste) {
@@ -193,8 +186,11 @@ export default {
 
   getAllGroupContext() {
     return Promise.all([SpinalGraphService.getContextWithType(
-        ROOMS_GROUP_CONTEXT),
-      SpinalGraphService.getContextWithType(EQUIPMENTS_GROUP_CONTEXT)
+        groupService.constants.ROOMS_GROUP_CONTEXT),
+      SpinalGraphService.getContextWithType(
+        groupService.constants.EQUIPMENTS_GROUP_CONTEXT),
+      SpinalGraphService.getContextWithType(
+        groupService.constants.ENDPOINTS_GROUP_CONTEXT)
     ]).then(values => {
       let contexts = values.flat();
 
@@ -210,8 +206,10 @@ export default {
   },
 
   getCategory(contextId, nodeType) {
-    let relationName = nodeType === ROOMS_GROUP_CONTEXT ?
-      ROOMS_CATEGORY_RELATION : EQUIPMENTS_CATEGORY_RELATION;
+    // let relationName = nodeType === ROOMS_GROUP_CONTEXT ?
+    //   ROOMS_CATEGORY_RELATION : EQUIPMENTS_CATEGORY_RELATION;
+
+    let relationName = groupService.constants.CONTEXT_TO_CATEGORY_RELATION;
 
     return SpinalGraphService.getChildren(contextId, [relationName]).then(
       children => {
@@ -227,8 +225,11 @@ export default {
   },
 
   getGroup(categoryId, nodeType) {
-    let relationName = nodeType === ROOMS_CATEGORY ? ROOMS_GROUP_RELATION :
-      EQUIPMENTS_GROUP_RELATION;
+    // let relationName = nodeType === ROOMS_CATEGORY ? ROOMS_GROUP_RELATION :
+    //   EQUIPMENTS_GROUP_RELATION;
+
+    let relationName = groupService.constants.CATEGORY_TO_GROUP_RELATION;
+
 
     return SpinalGraphService.getChildren(categoryId, [relationName]).then(
       children => {

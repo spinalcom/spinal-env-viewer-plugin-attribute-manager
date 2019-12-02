@@ -40,8 +40,8 @@
 
       <div class="md-toolbar-end">
 
-        <md-field class="mdSelect">
-          <!-- <label for="columns">Filter by Column</label> -->
+        <!-- <md-field class="mdSelect">
+
           <md-select v-model="headerSelected"
                      placeholder="Filter by Column"
                      name="columns"
@@ -53,7 +53,15 @@
               {{`${head.category} / ${head.label}`}}
             </md-option>
           </md-select>
-        </md-field>
+        </md-field> -->
+        <div class="ParamaterDiv">
+          <md-button class="md-primary"
+                     @click="OpenParamsDialog">
+            <md-icon>settings_applications</md-icon>
+            &nbsp;
+            Params
+          </md-button>
+        </div>
 
       </div>
     </md-toolbar>
@@ -257,6 +265,12 @@ export default {
       spinalPanelManagerService.openPanel("linkToGroupDialog", {
         itemSelected: this.itemsSelected
       });
+    },
+    OpenParamsDialog() {
+      spinalPanelManagerService.openPanel("paramDialogComponent", {
+        tableContent: this.tableContent,
+        header: this.header
+      });
     }
   },
   watch: {
@@ -294,6 +308,14 @@ export default {
 </script>
 
 <style scoped>
+.ParamaterDiv {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  padding-right: 20px;
+}
+
 ._tableContent {
   width: 100%;
   height: 100%;

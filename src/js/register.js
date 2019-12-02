@@ -1,6 +1,8 @@
 import Vue from "vue";
 import attributePanel from "../vue/panels/panel.vue";
 import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
+import ParamDialogComponent from "../vue/dialogs/paramsDialog.vue";
+
 const {
   SpinalForgeExtention
 } = require("spinal-env-viewer-panel-manager-service_spinalforgeextention");
@@ -46,6 +48,10 @@ for (let index = 0; index < panels.length; index++) {
 const dialogs = [{
   name: "linkToGroupDialog",
   vueMountComponent: Vue.extend(LinkToGroup),
+  parentContainer: document.body
+}, {
+  name: "paramDialogComponent",
+  vueMountComponent: Vue.extend(ParamDialogComponent),
   parentContainer: document.body
 }];
 
