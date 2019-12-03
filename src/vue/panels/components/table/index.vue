@@ -168,7 +168,9 @@ export default {
   },
   methods: {
     validateOrCancel(valid) {
-      let references = this.$refs["editableComponent"];
+      let references = this.$refs["editableComponent"]
+        ? this.$refs["editableComponent"]
+        : [];
 
       if (valid) {
         references.forEach(compo => {

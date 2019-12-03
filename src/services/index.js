@@ -162,9 +162,44 @@ export default {
   },
   async updateAttributeValue(nodeId, categoryName, attributeName,
     attributeValue) {
-    let realNode = SpinalGraphService.getRealNode(nodeId);
 
+
+    let attr = await this.getOrCreateAttribute(nodeId, categoryName,
+      attributeName);
+
+    // let attributes = await serviceDocumentation.getAttributesByCategory(
+    //   realNode,
+    //   categoryName);
+
+    // let attr = attributes.find(el => {
+    //   return el.label.get() === attributeName;
+    // })
+
+    if (attr && attr.value) {
+      attr.value.set(attributeValue);
+    }
+
+
+  },
+  getBimObjects(nodeId) {
+    console.log(SpinalGraphService.getInfo(nodeId));
+    // return SpinalGraphService.findNodes(nodeId,)
+  },
+
+  async getOrCreateAttribute(nodeId, categoryName, attributeName) {
+    let realNode = SpinalGraphService.getRealNode(nodeId);
     if (realNode) {
+      let category = await serviceDocumentation.getCategoryByName(realNode,
+        categoryName);
+
+      if (typeof category === "undefined") {
+        category = await serviceDocumentation.addCategoryAttribute(realNode,
+          categoryName);
+      }
+
+      await serviceDocumentation.addAttributeByCategory(realNode, category,
+        attributeName, "-");
+
       let attributes = await serviceDocumentation.getAttributesByCategory(
         realNode,
         categoryName);
@@ -173,15 +208,9 @@ export default {
         return el.label.get() === attributeName;
       })
 
-      if (attr && attr.value) {
-        attr.value.set(attributeValue);
-      }
+      return attr;
 
     }
-  },
-  getBimObjects(nodeId) {
-    console.log(SpinalGraphService.getInfo(nodeId));
-    // return SpinalGraphService.findNodes(nodeId,)
   },
 
   getAllGroupContext() {
@@ -196,7 +225,8 @@ export default {
 
       let promises = contexts.map(async context => {
         let res = context.info.get();
-        res["category"] = await this.getCategory(res.id, res.type);
+        res["category"] = await this.getCategory(res.id, res
+          .type);
         return res;
       })
 
@@ -209,13 +239,15 @@ export default {
     // let relationName = nodeType === ROOMS_GROUP_CONTEXT ?
     //   ROOMS_CATEGORY_RELATION : EQUIPMENTS_CATEGORY_RELATION;
 
-    let relationName = groupService.constants.CONTEXT_TO_CATEGORY_RELATION;
+    let relationName = groupService.constants
+      .CONTEXT_TO_CATEGORY_RELATION;
 
     return SpinalGraphService.getChildren(contextId, [relationName]).then(
       children => {
         let promises = children.map(async child => {
           let info = child.get();
-          info["groups"] = await this.getGroup(child.id, child.type);
+          info["groups"] = await this.getGroup(child.id, child
+            .type);
           return info;
         })
 
@@ -231,10 +263,11 @@ export default {
     let relationName = groupService.constants.CATEGORY_TO_GROUP_RELATION;
 
 
-    return SpinalGraphService.getChildren(categoryId, [relationName]).then(
-      children => {
-        return children.map(el => el.get());
-      })
+    return SpinalGraphService.getChildren(categoryId, [relationName])
+      .then(
+        children => {
+          return children.map(el => el.get());
+        })
   },
 
   linkItem(contextId, parentId, itemId) {
