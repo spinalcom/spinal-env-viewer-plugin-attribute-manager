@@ -11,12 +11,12 @@
         </md-button>
       </div>
       <div class="exportImport">
-        <md-button class="md-primary">
+        <md-button class="md-primary attr_btn">
           <md-icon>get_app</md-icon>
           &nbsp;
           Import
         </md-button>
-        <md-button class="md-primary"
+        <md-button class="md-primary attr_btn"
                    @click="exportData">
           <md-icon>publish</md-icon>
           &nbsp;
@@ -276,5 +276,14 @@ export default {
 
 .categoryInHead {
   color: #448aff;
+}
+</style>
+
+<style>
+.attr_btn {
+  border: 1px solid #448aff;
+  min-width: 100px;
+  max-width: 150px;
+  padding-right: 5px;
 }
 </style>

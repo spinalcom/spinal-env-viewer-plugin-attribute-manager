@@ -1,10 +1,25 @@
 <template>
-  <md-dialog class="mdDialogContainer"
+  <md-dialog class="mdDialogContainer paramsDialogContainer"
              :md-active.sync="showDialog"
              @md-closed="closeDialog(false)">
-    <md-dialog-title>Params</md-dialog-title>
+    <md-dialog-title style="text-align : center">Params</md-dialog-title>
     <md-dialog-content>
-      <h1>Hello World !!!</h1>
+      <h1>Hello World</h1>
+      <!-- <div class="list">
+        <md-list md-expand-single="false">
+          <md-list-item md-expand>
+
+            <span class="md-list-item-text">Category</span>
+
+            <md-list slot="md-expand">
+              <md-list-item class="md-inset">World</md-list-item>
+              <md-list-item class="md-inset">Europe</md-list-item>
+              <md-list-item class="md-inset">South America</md-list-item>
+            </md-list>
+          </md-list-item>
+        </md-list>
+      </div> -->
+
     </md-dialog-content>
     <md-dialog-actions>
       <md-button class="md-primary"
@@ -43,3 +58,10 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.mdDialogContainer.paramsDialogContainer {
+  width: 500px !important;
+  height: 600px;
+}
+</style>

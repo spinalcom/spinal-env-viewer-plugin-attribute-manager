@@ -1,10 +1,10 @@
 <template>
   <v-popover :auto-hide="false"
              offset="16">
-    <md-button class="md-primary"
+    <md-button class="md-primary attr_btn"
                title="add attribute">
-      <!-- <md-icon>add</md-icon> -->
-      SET VALUE TO COLUMN
+      <md-icon>view_column</md-icon>
+      EDIT COLUMN
     </md-button>
 
     <template slot="popover">
@@ -128,5 +128,11 @@ export default {
       border-color: $color;
     }
   }
+}
+</style>
+
+<style>
+.md-select-menu.md-menu-content-bottom-start.md-menu-content-small.md-menu-content.md-theme-default {
+  z-index: 99999 !important;
 }
 </style>

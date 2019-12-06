@@ -55,7 +55,7 @@
           </md-select>
         </md-field> -->
         <div class="ParamaterDiv">
-          <md-button class="md-primary"
+          <md-button class="md-primary attr_btn"
                      @click="OpenParamsDialog">
             <md-icon>settings_applications</md-icon>
             &nbsp;

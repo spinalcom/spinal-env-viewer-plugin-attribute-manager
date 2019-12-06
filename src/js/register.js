@@ -2,6 +2,9 @@ import Vue from "vue";
 import attributePanel from "../vue/panels/panel.vue";
 import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
 import ParamDialogComponent from "../vue/dialogs/paramsDialog.vue";
+import {
+  FileSystem
+} from "spinal-core-connectorjs_type";
 
 const {
   SpinalForgeExtention

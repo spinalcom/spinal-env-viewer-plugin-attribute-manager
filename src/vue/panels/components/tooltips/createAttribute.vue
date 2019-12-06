@@ -3,10 +3,10 @@
              :open="show"
              :auto-hide="false"
              offset="16">
-    <md-button class="md-primary"
+    <md-button class="md-primary attr_btn"
                title="add attribute"
                @click="open">
-      <!-- <md-icon>add</md-icon> -->
+      <md-icon>add</md-icon>
       ADD ATTRIBUTE
     </md-button>
 

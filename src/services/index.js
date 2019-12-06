@@ -61,6 +61,7 @@ export default {
 
     if (context && realNode) {
       await realNode.findInContext(context, async (node) => {
+        SpinalGraphService._addNode(node);
         let type = node.getType().get();
         let info = node.info.get();
 
