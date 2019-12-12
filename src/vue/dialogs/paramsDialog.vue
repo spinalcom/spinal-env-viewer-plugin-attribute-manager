@@ -4,21 +4,40 @@
              @md-closed="closeDialog(false)">
     <md-dialog-title style="text-align : center">Params</md-dialog-title>
     <md-dialog-content>
-      <h1>Hello World</h1>
-      <!-- <div class="list">
+      <div class="list">
         <md-list md-expand-single="false">
           <md-list-item md-expand>
 
             <span class="md-list-item-text">Category</span>
+            <md-button class="md-icon-button"
+                       title="add label"
+                       @click.stop="addLabel">
+              <md-icon>add_circle_outline</md-icon>
+            </md-button>
 
             <md-list slot="md-expand">
-              <md-list-item class="md-inset">World</md-list-item>
-              <md-list-item class="md-inset">Europe</md-list-item>
-              <md-list-item class="md-inset">South America</md-list-item>
+              <md-list-item class="md-inset">
+                <md-checkbox v-model="notification"
+                             value="preview" />
+                <span class="md-list-item-text">Show content preview</span>
+              </md-list-item>
+
+              <md-list-item class="md-inset">
+                <md-checkbox v-model="notification"
+                             value="preview" />
+                <span class="md-list-item-text">Show content preview</span>
+              </md-list-item>
+
+              <md-list-item class="md-inset">
+                <md-checkbox v-model="notification"
+                             value="preview" />
+                <span class="md-list-item-text">Show content preview</span>
+              </md-list-item>
+
             </md-list>
           </md-list-item>
         </md-list>
-      </div> -->
+      </div>
 
     </md-dialog-content>
     <md-dialog-actions>
@@ -54,6 +73,9 @@ export default {
       if (typeof this.onFinised === "function") {
         this.onFinised(closeResult);
       }
+    },
+    addLabel() {
+      console.log("addLabel");
     }
   }
 };

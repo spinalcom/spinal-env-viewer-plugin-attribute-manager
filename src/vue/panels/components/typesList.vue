@@ -5,7 +5,7 @@
          v-for="(type,index) in types"
          :key="index"
          @click="selectType(type)">
-      {{type}}
+      <div class="text">{{type}}</div>
     </div>
   </div>
 </template>
@@ -49,6 +49,14 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 10px;
+}
+
+._container ._containerItem .text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 ._containerItem:hover {

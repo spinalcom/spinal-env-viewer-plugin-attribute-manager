@@ -68,17 +68,20 @@ export default {
 
     validateValue() {
       this.displayValue = this.$refs.display.innerText;
-      attributeService
-        .updateAttributeValue(
-          this.item.id,
-          this.attribute.category,
-          this.attribute.label,
-          this.displayValue
-        )
-        .then(() => {
-          this.value = this.displayValue;
-          this.setValue();
-        });
+
+      if (this.displayValue !== this.value) {
+        attributeService
+          .updateAttributeValue(
+            this.item.id,
+            this.attribute.category,
+            this.attribute.label,
+            this.displayValue
+          )
+          .then(() => {
+            this.value = this.displayValue;
+            this.setValue();
+          });
+      }
     }
   }
 };
