@@ -12,7 +12,8 @@
 
             <span class="md-list-item-text">{{item.category}}</span>
 
-            <menu-component :category="item.category"></menu-component>
+            <menu-component :category="item.category"
+                            @add="addLabel"></menu-component>
 
             <md-list slot="md-expand">
               <md-list-item class="md-inset"
@@ -41,6 +42,7 @@
 
 <script>
 import menuComponent from "../../vue/panels/components/tooltips/addItem.vue";
+import utilities from "../../js/utilities";
 
 export default {
   name: "paramDialogComponent",
@@ -51,18 +53,19 @@ export default {
   data() {
     return {
       showDialog: true,
+      typeSelected: "",
       data: []
     };
   },
   methods: {
-    opened(option) {
-      this.data = this.formatData(option.header);
-
-      console.log("data", this.data);
+    async opened(option) {
+      this.typeSelected = option.typeSelected;
+      this.data = await this.formatData(option.header);
+      console.log("data", this.data, "typeSelected", this.typeSelected);
     },
     removed(option) {
       if (option) {
-        console.log("hello");
+        utilities.addElement("BimObject", this.data);
       }
       this.showDialog = false;
     },
@@ -71,35 +74,61 @@ export default {
         this.onFinised(closeResult);
       }
     },
-    addLabel() {
-      console.log("addLabel");
-    },
-    formatData(headers) {
-      let res = [];
-      headers.forEach(el => {
-        let found = res.find(el2 => el2.category === el.category);
+    addLabel(res) {
+      if (res.category && res.label) {
+        let found = this.data.find(el => {
+          return el.category === res.category;
+        });
 
         if (found) {
-          found.attributes.push({
-            show: false,
-            label: el.label,
-            date: el.date
-          });
-        } else {
-          res.push({
-            category: el.category,
-            attributes: [
-              {
-                show: false,
-                label: el.label,
-                date: el.date
-              }
-            ]
+          let attrFound = found.attributes.find(el => el.label === res.label);
+          if (typeof attrFound === "undefined") {
+            found.attributes.push({
+              show: false,
+              label: res.label
+            });
+          }
+        } else if (res.category) {
+          this.data.push({
+            category: res.category,
+            attributes: []
           });
         }
-      });
+      }
+    },
 
-      return res;
+    formatData(headers) {
+      return utilities.getElements(this.typeSelected).then(el => {
+        if (el && el.get().length > 0) {
+          return el.get();
+        }
+
+        let res = [];
+        headers.forEach(el => {
+          let found = res.find(el2 => el2.category === el.category);
+
+          if (found) {
+            found.attributes.push({
+              show: false,
+              label: el.label,
+              date: el.date
+            });
+          } else {
+            res.push({
+              category: el.category,
+              attributes: [
+                {
+                  show: false,
+                  label: el.label,
+                  date: el.date
+                }
+              ]
+            });
+          }
+        });
+
+        return res;
+      });
     }
   }
 };

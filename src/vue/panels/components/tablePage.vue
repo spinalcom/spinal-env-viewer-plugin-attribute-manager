@@ -41,6 +41,7 @@
     <div class="tableContent">
       <table-component :tableContent="tableContent"
                        :header="header"
+                       :typeSelected="typeSelected"
                        @refresh="createAttribute"></table-component>
     </div>
 
@@ -69,7 +70,8 @@ export default {
     },
     attributesDisplayed: {
       type: Array
-    }
+    },
+    typeSelected: {}
   },
   data() {
     return {

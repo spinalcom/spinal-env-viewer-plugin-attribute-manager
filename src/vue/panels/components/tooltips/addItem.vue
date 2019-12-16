@@ -49,15 +49,17 @@ export default {
   methods: {
     Validate(isValid) {
       this.show = false;
-
       if (isValid && this.name.trim().length > 0) {
         if (this.category) {
           // let varCategory = serviceDocumentation.
-          console.log("bonjour le monde");
+
+          this.$emit("add", { category: this.category, label: this.name });
         } else {
-          console.log("hello world !!!");
+          this.$emit("add", { category: this.name });
         }
       }
+
+      this.name = "";
     },
     OpenAttribute() {
       this.show = !this.show;

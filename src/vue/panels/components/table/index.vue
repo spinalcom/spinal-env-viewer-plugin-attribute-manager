@@ -191,7 +191,8 @@ export default {
   name: "TableComponent",
   props: {
     tableContent: {},
-    header: {}
+    header: {},
+    typeSelected : {}
   },
   components: {
     "table-content-component": TableContentComponent,
@@ -331,7 +332,8 @@ export default {
     OpenParamsDialog() {
       spinalPanelManagerService.openPanel("paramDialogComponent", {
         tableContent: this.tableContent,
-        header: this.header
+        header: this.header,
+        typeSelected : this.typeSelected
       });
     }
   },

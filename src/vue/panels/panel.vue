@@ -9,6 +9,7 @@
     <table-page v-if="appState === STATES.normal && typeSelected && visiblePage === pages.table"
                 :itemDisplayed="itemDisplayed"
                 :attributesDisplayed="attributesDisplayed"
+                :typeSelected="typeSelected"
                 @back="goBack"
                 @refresh="validateItem">
     </table-page>
