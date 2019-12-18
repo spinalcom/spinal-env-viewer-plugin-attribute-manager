@@ -3,7 +3,7 @@
              :md-active.sync="showDialog"
              @md-closed="closeDialog(false)">
     <md-dialog-title style="text-align : center">Params</md-dialog-title>
-    <md-dialog-content>
+    <md-dialog-content class="md-scrollbar">
       <div class="list">
         <md-list :md-expand-single="false">
           <md-list-item v-for="(item,index) in data"
@@ -27,8 +27,15 @@
             </md-list>
           </md-list-item>
         </md-list>
-      </div>
 
+        <div class="emptyList"
+             v-if="data.length === 0">
+          No Data found !!!
+        </div>
+
+        <menu-component class="addCategoryBtn"
+                        @add="addLabel"></menu-component>
+      </div>
     </md-dialog-content>
     <md-dialog-actions>
       <md-button class="md-primary"
@@ -54,19 +61,23 @@ export default {
     return {
       showDialog: true,
       typeSelected: "",
-      data: []
+      data: [],
+      callback: null
     };
   },
   methods: {
     async opened(option) {
       this.typeSelected = option.typeSelected;
-      this.data = await this.formatData(option.header);
-      console.log("data", this.data, "typeSelected", this.typeSelected);
+      this.callback = option.callback;
+
+      this.data = await this.formatData(option.header, option.typeSelected);
     },
     removed(option) {
       if (option) {
-        utilities.addElement("BimObject", this.data);
+        utilities.addElement(this.typeSelected, this.data);
       }
+
+      this.callback();
       this.showDialog = false;
     },
     closeDialog(closeResult) {
@@ -88,7 +99,11 @@ export default {
               label: res.label
             });
           }
-        } else if (res.category) {
+        }
+      } else if (res.category) {
+        let found = this.data.find(el => el.category === res.category);
+
+        if (!found) {
           this.data.push({
             category: res.category,
             attributes: []
@@ -97,8 +112,8 @@ export default {
       }
     },
 
-    formatData(headers) {
-      return utilities.getElements(this.typeSelected).then(el => {
+    formatData(headers, type) {
+      return utilities.getElements(type).then(el => {
         if (el && el.get().length > 0) {
           return el.get();
         }
@@ -138,5 +153,25 @@ export default {
 .mdDialogContainer.paramsDialogContainer {
   width: 500px !important;
   height: 600px;
+}
+
+.mdDialogContainer.paramsDialogContainer .list {
+  width: 100%;
+  height: 100%; /* border: 1px solid red; */
+}
+
+.mdDialogContainer.paramsDialogContainer .list .emptyList {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+}
+
+.mdDialogContainer.paramsDialogContainer .list .addCategoryBtn {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
 }
 </style>

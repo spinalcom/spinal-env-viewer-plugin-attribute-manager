@@ -230,14 +230,11 @@ export default {
       return liste;
     },
     searchOnTable() {
-      console.log("debounce searchOnTable");
-
       this.searched = this.filterByName(this.tableContent, this.searchByName);
 
       // this.searched = this.filterByName(this.tableContent, this.searchByName);
     },
     searchOnTableByValue() {
-      console.log("debounce searchOnTableByValue");
       this.searched = this.filterByValue(this.tableContent, this.searchByValue);
     },
     onSelect(items) {
@@ -321,15 +318,12 @@ export default {
       });
     },
     searchByName() {
-      // console.log("hello world");
       // lodash.debounce(() => {
       //   this.searchOnTable();
       // }, 500);
       this.searchAndFilterByName();
     },
     searchByValue() {
-      // console.log("hello world 2");
-
       // lodash.debounce(() => {
       //   this.searchOnTableByValue();
       // }, 500);

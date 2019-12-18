@@ -31,6 +31,7 @@ export default class Utilities {
 
       if (context) {
         return context.getElement().then(contextElement => {
+
           if (contextElement[type]) {
             return contextElement[type];
           }
@@ -51,7 +52,12 @@ export default class Utilities {
       if (context) {
         return context.getElement().then(contextElement => {
           if (contextElement[type]) {
-            contextElement.mod_attr(type, listes);
+            contextElement[type].clear();
+
+            listes.forEach(element => {
+              contextElement[type].push(element);
+            });
+
           } else {
             contextElement.add_attr([type], listes);
           }

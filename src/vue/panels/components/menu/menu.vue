@@ -68,7 +68,6 @@ export default {
   },
   methods: {
     SeeOrHideMenu() {
-      console.log("hello");
       this.menu = !this.menu;
     }
   }

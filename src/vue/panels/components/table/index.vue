@@ -192,7 +192,7 @@ export default {
   props: {
     tableContent: {},
     header: {},
-    typeSelected : {}
+    typeSelected: {}
   },
   components: {
     "table-content-component": TableContentComponent,
@@ -333,7 +333,10 @@ export default {
       spinalPanelManagerService.openPanel("paramDialogComponent", {
         tableContent: this.tableContent,
         header: this.header,
-        typeSelected : this.typeSelected
+        typeSelected: this.typeSelected,
+        callback: () => {
+          this.$emit("refresh");
+        }
       });
     }
   },
@@ -392,15 +395,12 @@ export default {
     //   this.headerDisplayed = this.headerSelected;
     // },
     searchByName() {
-      // console.log("hello world");
       // lodash.debounce(() => {
       //   this.searchOnTable();
       // }, 500);
       this.searchAndFilterByName();
     },
     searchByValue() {
-      // console.log("hello world 2");
-
       // lodash.debounce(() => {
       //   this.searchOnTableByValue();
       // }, 500);

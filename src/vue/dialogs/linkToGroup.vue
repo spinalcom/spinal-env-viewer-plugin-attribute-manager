@@ -133,7 +133,6 @@ export default {
   methods: {
     opened(option) {
       this.items = option.itemSelected;
-      console.log("this.items", this.items);
     },
     removed(option) {
       if (option) {

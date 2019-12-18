@@ -58,6 +58,8 @@ import spinalExcelManager from "spinal-env-viewer-plugin-excel-manager-service";
 
 import FileSaver from "file-saver";
 
+import utilities from "../../../js/utilities";
+
 export default {
   name: "tablePage",
   components: {
@@ -80,9 +82,9 @@ export default {
       header: []
     };
   },
-  mounted() {
-    this.tableContent = this.getTableContent();
-    this.header = this.getAttributes();
+  async mounted() {
+    this.tableContent = await this.getTableContent();
+    this.header = await this.getAttributes();
   },
   methods: {
     back() {
@@ -96,9 +98,9 @@ export default {
       this.$emit("refresh");
     },
 
-    getTableContent() {
+    async getTableContent() {
       let content = [];
-      let attributes = this.getAttributes();
+      let attributes = await this.getAttributes();
 
       if (this.itemDisplayed) {
         content = this.itemDisplayed.map(item => {
@@ -123,19 +125,41 @@ export default {
     },
 
     getAttributes() {
-      let attrs = [];
-      if (this.itemDisplayed) {
-        this.itemDisplayed.forEach(el => {
-          attrs.push(...el.attributes);
-        });
-      }
+      // if (this.itemDisplayed) {
+      //   this.itemDisplayed.forEach(el => {
+      //     attrs.push(...el.attributes);
+      //   });
+      // }
 
-      return attrs.filter((elem, index, self) => {
-        return (
-          self.findIndex(t => {
-            return t.category === elem.category && t.label === elem.label;
-          }) === index
-        );
+      // return attrs.filter((elem, index, self) => {
+      //   return (
+      //     self.findIndex(t => {
+      //       return t.category === elem.category && t.label === elem.label;
+      //     }) === index
+      //   );
+      // });
+
+      return utilities.getElements(this.typeSelected).then(res => {
+        let values = res.get();
+        let attrs = [];
+
+        values.forEach(value => {
+          let items = value.attributes
+            .map(attr => {
+              if (attr.show) {
+                return {
+                  category: value.category,
+                  label: attr.label
+                };
+              }
+              return;
+            })
+            .filter(el2 => typeof el2 !== "undefined");
+
+          attrs.push(...items);
+        });
+
+        return attrs;
       });
     },
 
@@ -218,20 +242,18 @@ export default {
     exportData() {
       let result = this.formatExportData();
 
-      console.log("result", result);
-
       spinalExcelManager.export(result).then(buffer => {
         FileSaver.saveAs(new Blob(buffer), `spinalcom.xlsx`);
       });
     }
   },
   watch: {
-    itemDisplayed: function() {
-      this.tableContent = this.getTableContent();
-      this.header = this.getAttributes();
+    itemDisplayed: async function() {
+      this.tableContent = await this.getTableContent();
+      this.header = await this.getAttributes();
     }
     // attributesDisplayed: function() {
-    //   console.log("attributes hello");
+
     //   lodash.debounce(this.getTableContent, 500, { maxWait: 1000 });
     // }
   }
