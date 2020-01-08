@@ -36,33 +36,14 @@
         <input class="md-input"
                placeholder="Search by name..."
                v-model="searchByName" />
-        <!-- @input="searchOnTable" /> -->
       </md-field>
 
       <div class="md-toolbar-end">
 
-        <!-- <md-field class="mdSelect">
-
-          <md-select v-model="headerSelected"
-                     placeholder="Filter by Column"
-                     name="columns"
-                     id="columns"
-                     multiple>
-            <md-option v-for="(head,index) in header"
-                       :key="index"
-                       :value="`${head.category} / ${head.label}`">
-              {{`${head.category} / ${head.label}`}}
-            </md-option>
-          </md-select>
-        </md-field> -->
-        <div class="ParamaterDiv">
-          <md-button class="md-primary attr_btn"
-                     @click="OpenParamsDialog">
-            <md-icon>settings_applications</md-icon>
-            &nbsp;
-            Params
-          </md-button>
-        </div>
+        <md-field class="md-toolbar-start">
+          <md-input placeholder="Search by Value..."
+                    v-model="searchByValue" />
+        </md-field>
 
       </div>
     </md-toolbar>
@@ -73,11 +54,14 @@
                 md-elevation="0">
 
       <div class="md-toolbar-start">
-        <md-field class="md-toolbar-start">
-          <md-input placeholder="Search by Value..."
-                    v-model="searchByValue" />
-          <!-- @input="searchOnTableByValue" /> -->
-        </md-field>
+        <div class="ParamaterDiv">
+          <md-button class="md-primary attr_btn"
+                     @click="OpenParamsDialog">
+            <md-icon>settings_applications</md-icon>
+            &nbsp;
+            Params
+          </md-button>
+        </div>
       </div>
 
       <div class="md-toolbar-end">
@@ -97,16 +81,16 @@
     </md-toolbar>
     <!-- End Second Toolbar -->
 
-    <md-table v-model="searched"
+    <!-- <md-table v-model="searched"
               class="md-scrollbar"
               @md-selected="onSelect">
 
       <md-table-empty-state md-label="No data found"
                             :md-description="`No data found `">
 
-      </md-table-empty-state>
+      </md-table-empty-state> -->
 
-      <!-- <md-table-row slot="md-table-row"
+    <!-- <md-table-row slot="md-table-row"
                     slot-scope="{ item }"
                     class="tableRow"
                     md-selectable="multiple"
@@ -114,7 +98,7 @@
         <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
         <md-table-cell md-label="Type">{{ item.type }}</md-table-cell> -->
 
-      <!-- <md-table-cell v-for="(attribute,index) in headerDisplayed"
+    <!-- <md-table-cell v-for="(attribute,index) in headerDisplayed"
                        :key="index"
                        :md-label="`${attribute.category} / ${attribute.label}`">
 
@@ -125,9 +109,53 @@
                                    ref="editableComponent">
           </table-content-component>
         </md-table-cell> -->
-      <!-- </md-table-row> -->
+    <!-- </md-table-row> -->
 
-    </md-table>
+    <div class="_tableContainer">
+
+      <v-data-table v-model="itemsSelected"
+                    :headers="headerDisplayed"
+                    :items="searched"
+                    :pagination.sync="pagination"
+                    dark
+                    select-all
+                    hide-actions
+                    class="elevation-1">
+
+        <template v-slot:items="props">
+          <td>
+            <v-checkbox v-model="props.selected"
+                        primary
+                        hide-details></v-checkbox>
+          </td>
+          <td>{{ props.item.name }}</td>
+          <td>{{ props.item.type }}</td>
+          <td class="text-xs-center"
+              v-for="(attribute,index) in header"
+              :key="index">
+            <table-content-component :editable="editMode"
+                                     :item="props.item"
+                                     :attribute="attribute"
+                                     @setValue="setValue"
+                                     ref="editableComponent">
+            </table-content-component>
+          </td>
+          <!-- <td class="text-xs-right">{{ props.item.fat }}</td>
+          <td class="text-xs-right">{{ props.item.carbs }}</td>
+          <td class="text-xs-right">{{ props.item.protein }}</td>
+          <td class="text-xs-right">{{ props.item.iron }}</td> -->
+        </template>
+
+      </v-data-table>
+
+      <div class="text-xs-center pt-2">
+        <v-pagination v-model="pagination.page"
+                      :length="pages"
+                      :total-visible="5"
+                      color="blue"></v-pagination>
+      </div>
+    </div>
+    <!-- </md-table> -->
   </div>
 </template>
 
@@ -147,7 +175,8 @@ export default {
   name: "TableComponent",
   props: {
     tableContent: {},
-    header: {}
+    header: {},
+    typeSelected: {}
   },
   components: {
     "table-content-component": TableContentComponent,
@@ -162,8 +191,12 @@ export default {
       searchByName: "",
       searchByValue: "",
       itemsSelected: [],
-      headerSelected: [],
-      headerDisplayed: []
+      // headerSelected: [],
+      headerDisplayed: [],
+      pagination: {
+        page: 1,
+        rowsPerPage: 20
+      }
     };
   },
   created() {
@@ -283,8 +316,17 @@ export default {
     OpenParamsDialog() {
       spinalPanelManagerService.openPanel("paramDialogComponent", {
         tableContent: this.tableContent,
-        header: this.header
+        header: this.header,
+        typeSelected: this.typeSelected,
+        callback: () => {
+          this.$emit("refresh");
+        }
       });
+    }
+  },
+  computed: {
+    pages() {
+      return Math.ceil(this.searched.length / this.pagination.rowsPerPage);
     }
   },
   watch: {
@@ -307,16 +349,35 @@ export default {
       this.searched = this.filterByName(this.tableContent, this.searchByName);
     },
     header() {
-      this.headerSelected = this.header.map(el => {
-        return `${el.category} / ${el.label}`;
+      let formated = this.header.map(el => {
+        let val = Object.assign({}, el);
+
+        val["text"] = `${el.category} / ${el.label}`;
+        val["value"] = `${el.category}_${el.label}`;
+
+        return val;
       });
+
+      this.headerDisplayed = [
+        {
+          text: "Name",
+          value: "name"
+        },
+        {
+          text: "Type",
+          value: "type"
+        },
+        ...formated
+      ];
     },
-    headerSelected() {
-      this.headerDisplayed = this.header.filter(el => {
-        let item = `${el.category} / ${el.label}`;
-        return this.headerSelected.indexOf(item) !== -1;
-      });
-    },
+    // headerSelected() {
+    //   // this.headerDisplayed = this.header.filter(el => {
+    //   //   let item = `${el.category} / ${el.label}`;
+    //   //   return this.headerSelected.indexOf(item) !== -1;
+    //   // });
+
+    //   this.headerDisplayed = this.headerSelected;
+    // },
     searchByName() {
       // lodash.debounce(() => {
       //   this.searchOnTable();
@@ -375,7 +436,7 @@ export default {
   width: 50%;
 } */
 
-._tableContent .md-table {
+/* ._tableContent .md-table {
   width: 100%;
   height: calc(100% - 128px);
   overflow: auto;
@@ -383,6 +444,11 @@ export default {
 
 ._tableContent .md-table .tableRow:hover {
   cursor: pointer;
+} */
+
+._tableContent ._tableContainer {
+  width: 100%;
+  height: calc(100% - 128px);
 }
 
 .buttonFab {
@@ -400,5 +466,52 @@ export default {
 .secondToolbar .md-toolbar-end {
   display: flex;
   justify-content: flex-end !important;
+}
+
+.elevation-1 {
+  height: calc(100% - 50px);
+  overflow: auto;
+}
+</style>
+
+<style>
+._tableContent ._tableContainer .elevation-1 .v-table__overflow {
+  height: 100%;
+  overflow-y: auto;
+}
+
+._tableContent
+  ._tableContainer
+  .elevation-1
+  .v-table__overflow::-webkit-scrollbar {
+  background-color: #fff;
+  width: 10px;
+}
+
+/* background of the scrollbar except button or resizer */
+._tableContent
+  ._tableContainer
+  .elevation-1
+  .v-table__overflow::-webkit-scrollbar-track {
+  /* background-color: #fff; */
+  background-color: #424242;
+}
+
+/* scrollbar itself */
+._tableContent
+  ._tableContainer
+  .elevation-1
+  .v-table__overflow::-webkit-scrollbar-thumb {
+  background-color: #babac0;
+  border-radius: 16px;
+  /* border: 5px solid #fff; */
+}
+
+/* set button(top and bottom of the scrollbar) */
+._tableContent
+  ._tableContainer
+  .elevation-1
+  .v-table__overflow::-webkit-scrollbar-button {
+  display: none;
 }
 </style>

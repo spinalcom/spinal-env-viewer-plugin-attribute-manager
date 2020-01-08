@@ -3,129 +3,80 @@
 
     <div class="buttonFab">
 
-      <md-button v-if="!editMode"
-                 @click="LinkItem"
-                 class="md-fab md-mini md-primary">
-        <md-icon>link</md-icon>
-      </md-button>
+      <md-speed-dial v-if="!editMode"
+                     md-direction="top"
+                     md-event="click">
+        <md-speed-dial-target class="md-fab md-mini md-primary">
+          <md-icon class="md-morph-initial">menu</md-icon>
+          <md-icon class="md-morph-final">menu_open</md-icon>
+        </md-speed-dial-target>
 
-      <md-button v-if="!editMode"
-                 @click="ActiveEditMode"
-                 class="md-fab md-mini md-primary">
-        <md-icon>edit</md-icon>
-      </md-button>
+        <md-speed-dial-content class="mdSpeedDialBtn">
 
-      <md-button v-if="editMode"
-                 @click="validateOrCancel(false)"
-                 class="md-fab md-mini md-plain">
-        <md-icon>clear</md-icon>
-      </md-button>
-
-      <md-button v-if="editMode"
-                 @click="validateOrCancel(true)"
-                 class="md-fab md-mini md-primary">
-        <md-icon>done</md-icon>
-      </md-button>
-    </div>
-
-    <!-- First Toolbar -->
-    <md-toolbar class="mdToolbar"
-                md-elevation="0">
-
-      <md-field class="md-toolbar-start">
-        <input class="md-input"
-               placeholder="Search by name..."
-               v-model="searchByName" />
-        <!-- @input="searchOnTable" /> -->
-      </md-field>
-
-      <div class="md-toolbar-end">
-
-        <!-- <md-field class="mdSelect">
-
-          <md-select v-model="headerSelected"
-                     placeholder="Filter by Column"
-                     name="columns"
-                     id="columns"
-                     multiple>
-            <md-option v-for="(head,index) in header"
-                       :key="index"
-                       :value="`${head.category} / ${head.label}`">
-              {{`${head.category} / ${head.label}`}}
-            </md-option>
-          </md-select>
-        </md-field> -->
-        <div class="ParamaterDiv">
-          <md-button class="md-primary attr_btn"
-                     @click="OpenParamsDialog">
-            <md-icon>settings_applications</md-icon>
+          <md-button v-for="(btn,index) in buttons"
+                     :key="index"
+                     class="md-primary md-dense"
+                     @click="btn.action">
+            <md-icon>{{btn.icon}}</md-icon>
             &nbsp;
-            Params
+            {{btn.text}}
           </md-button>
-        </div>
 
-      </div>
-    </md-toolbar>
-    <!-- End First Toolbar -->
+          <create-attribute :show="showAttrTooltip"
+                            @open='openCreateAttrTooltips'
+                            :itemFiltered="itemsSelected"
+                            @validate="createAttribute"></create-attribute>
 
-    <!-- Second Toolbar -->
-    <md-toolbar class="mdToolbar secondToolbar"
-                md-elevation="0">
+        </md-speed-dial-content>
+      </md-speed-dial>
 
-      <div class="md-toolbar-start">
-        <md-field class="md-toolbar-start">
-          <md-input placeholder="Search by Value..."
-                    v-model="searchByValue" />
-          <!-- @input="searchOnTableByValue" /> -->
-        </md-field>
-      </div>
+      <div v-if="editMode"
+           class="editModeBtn">
+        <md-button title="Cancel modification"
+                   @click="validateOrCancel(false)"
+                   class="md-fab md-mini md-plain">
+          <md-icon>clear</md-icon>
+        </md-button>
 
-      <div class="md-toolbar-end">
-
-        <change-col-value v-if="editMode"
-                          :columns="headerDisplayed"
+        <change-col-value :columns="headerDisplayed"
                           :itemsSelected="itemsSelected"
                           @setValueToColumn="setValueToColumn">
         </change-col-value>
 
-        <create-attribute :show="showAttrTooltip"
-                          @open='openCreateAttrTooltips'
-                          :itemFiltered="itemsSelected"
-                          @validate="createAttribute"></create-attribute>
+        <md-button title="Validate modification"
+                   @click="validateOrCancel(true)"
+                   class="md-fab md-mini md-primary">
+          <md-icon>done</md-icon>
+        </md-button>
+      </div>
+
+    </div>
+
+    <!-- First Toolbar -->
+    <md-toolbar class="mdToolbar md-layout"
+                md-elevation="0">
+
+      <div class="toolbar-start md-layout-item md-size-50">
+        <md-radio v-model="searchBy"
+                  class="md-primary"
+                  :value="0">Search by name</md-radio>
+
+        <md-radio v-model="searchBy"
+                  class="md-primary"
+                  :value="1">Search by value</md-radio>
+      </div>
+
+      <div class="toolbar-end md-layout-item md-size-50">
+        <md-field>
+          <input class="md-input"
+                 placeholder="Search by name or value..."
+                 v-model="searchValue" />
+          <md-icon>search</md-icon>
+        </md-field>
       </div>
 
     </md-toolbar>
-    <!-- End Second Toolbar -->
-
-    <!-- <md-table v-model="searched"
-              class="md-scrollbar"
-              @md-selected="onSelect">
-
-      <md-table-empty-state md-label="No data found"
-                            :md-description="`No data found `">
-
-      </md-table-empty-state> -->
-
-    <!-- <md-table-row slot="md-table-row"
-                    slot-scope="{ item }"
-                    class="tableRow"
-                    md-selectable="multiple"
-                    @click="selectItemInViewer(item)">
-        <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
-        <md-table-cell md-label="Type">{{ item.type }}</md-table-cell> -->
-
-    <!-- <md-table-cell v-for="(attribute,index) in headerDisplayed"
-                       :key="index"
-                       :md-label="`${attribute.category} / ${attribute.label}`">
-
-          <table-content-component :editable="editMode"
-                                   :item="item"
-                                   :attribute="attribute"
-                                   @setValue="setValue"
-                                   ref="editableComponent">
-          </table-content-component>
-        </md-table-cell> -->
-    <!-- </md-table-row> -->
+    <!-- End First Toolbar -->
 
     <div class="_tableContainer">
 
@@ -156,10 +107,7 @@
                                      ref="editableComponent">
             </table-content-component>
           </td>
-          <!-- <td class="text-xs-right">{{ props.item.fat }}</td>
-          <td class="text-xs-right">{{ props.item.carbs }}</td>
-          <td class="text-xs-right">{{ props.item.protein }}</td>
-          <td class="text-xs-right">{{ props.item.iron }}</td> -->
+
         </template>
 
       </v-data-table>
@@ -204,23 +152,36 @@ export default {
       showAttrTooltip: false,
       editMode: false,
       searched: [],
-      searchByName: "",
-      searchByValue: "",
+      searchValue: "",
+      searchBy: 0,
+
       itemsSelected: [],
-      // headerSelected: [],
       headerDisplayed: [],
       pagination: {
         page: 1,
         rowsPerPage: 20
-      }
+      },
+      buttons: [
+        {
+          icon: "settings_applications",
+          text: "Configuration",
+          action: this.OpenParamsDialog
+        },
+        {
+          icon: "link",
+          text: "Link to group",
+          action: this.LinkItem
+        },
+        {
+          icon: "edit",
+          text: "Active edit mode",
+          action: this.ActiveEditMode
+        }
+      ]
     };
   },
   created() {
-    this.searchAndFilterByName = lodash.debounce(this.searchOnTable, 500);
-    this.searchAndFilterByValue = lodash.debounce(
-      this.searchOnTableByValue,
-      500
-    );
+    this.searchAndFilterTable = lodash.debounce(this.searchOnTable, 500);
   },
   mounted() {
     this.searched = this.tableContent;
@@ -279,13 +240,26 @@ export default {
       return liste;
     },
     searchOnTable() {
-      this.searched = this.filterByName(this.tableContent, this.searchByName);
+      switch (this.searchBy) {
+        case 0:
+          this.searched = this.filterByName(
+            this.tableContent,
+            this.searchValue
+          );
+          break;
 
-      // this.searched = this.filterByName(this.tableContent, this.searchByName);
+        case 1:
+          this.searched = this.filterByValue(
+            this.tableContent,
+            this.searchValue
+          );
+
+          break;
+      }
+
+      // this.searched = this.filterByName(this.tableContent, this.searchValue);
     },
-    searchOnTableByValue() {
-      this.searched = this.filterByValue(this.tableContent, this.searchByValue);
-    },
+
     onSelect(items) {
       this.itemsSelected = items;
     },
@@ -347,22 +321,7 @@ export default {
   },
   watch: {
     tableContent() {
-      // let data = this.tableContent.data.map(el => {
-      //   let info = {};
-      //   info["id"] = el.id;
-      //   info["name"] = el.name;
-      //   info["type"] = el.type;
-
-      //   this.header.forEach(element => {
-      //     info[`${element.category}/${element.label}`] = element.value;
-      //   });
-
-      //   return info;
-      // });
-
-      // this.searched = data;
-
-      this.searched = this.filterByName(this.tableContent, this.searchByName);
+      this.searched = this.filterByName(this.tableContent, this.searchValue);
     },
     header() {
       let formated = this.header.map(el => {
@@ -386,40 +345,17 @@ export default {
         ...formated
       ];
     },
-    // headerSelected() {
-    //   // this.headerDisplayed = this.header.filter(el => {
-    //   //   let item = `${el.category} / ${el.label}`;
-    //   //   return this.headerSelected.indexOf(item) !== -1;
-    //   // });
-
-    //   this.headerDisplayed = this.headerSelected;
-    // },
-    searchByName() {
-      // lodash.debounce(() => {
-      //   this.searchOnTable();
-      // }, 500);
-      this.searchAndFilterByName();
+    searchValue() {
+      this.searchAndFilterTable();
     },
-    searchByValue() {
-      // lodash.debounce(() => {
-      //   this.searchOnTableByValue();
-      // }, 500);
-
-      this.searchAndFilterByValue();
+    searchBy() {
+      this.searchAndFilterTable();
     }
   }
 };
 </script>
 
 <style scoped>
-.ParamaterDiv {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
-  padding-right: 20px;
-}
-
 ._tableContent {
   width: 100%;
   height: 100%;
@@ -427,57 +363,45 @@ export default {
 
 ._tableContent .mdToolbar {
   width: 100%;
-  height: 60px;
+  height: 50px;
   padding: 0px;
+  margin-bottom: 10px;
   background-color: transparent;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
 
+._tableContent .mdToolbar .toolbar-start {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 ._tableContent .md-content.md-theme-default {
   background: transparent !important;
 }
 
-._tableContent .mdToolbar .md-toolbar-start,
-._tableContent .mdToolbar .md-toolbar-end {
-  width: calc(45%) !important;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* ._tableContent .mdToolbar .md-toolbar-end .mdSelect {
-  width: 50%;
-} */
-
-/* ._tableContent .md-table {
-  width: 100%;
-  height: calc(100% - 128px);
-  overflow: auto;
-}
-
-._tableContent .md-table .tableRow:hover {
-  cursor: pointer;
-} */
-
 ._tableContent ._tableContainer {
   width: 100%;
-  height: calc(100% - 128px);
+  height: calc(100% - 68px);
 }
 
 .buttonFab {
   position: absolute;
-  bottom: 30px;
+  bottom: 20px;
   right: 20px;
 }
 
-/* ._tableContent .md-table.md-theme-default .md-table-row td {
-  min-width: 60px;
-  max-width: 80px;
-  text-align: center;
-} */
+.buttonFab > * {
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.buttonFab .editModeBtn {
+  display: flex;
+  flex-direction: row;
+}
 
 .secondToolbar .md-toolbar-end {
   display: flex;
@@ -494,6 +418,14 @@ export default {
 ._tableContent ._tableContainer .elevation-1 .v-table__overflow {
   height: 100%;
   overflow-y: auto;
+}
+
+._tableContent
+  ._tableContainer
+  .elevation-1
+  .v-table__overflow
+  .theme--dark.v-table {
+  background-color: transparent;
 }
 
 ._tableContent
@@ -529,5 +461,14 @@ export default {
   .elevation-1
   .v-table__overflow::-webkit-scrollbar-button {
   display: none;
+}
+
+.mdSpeedDialBtn .md-button .md-ripple {
+  width: 170px;
+  display: flex;
+  background-color: transparent;
+  justify-content: center;
+  align-items: center;
+  /* color: #448aff; */
 }
 </style>

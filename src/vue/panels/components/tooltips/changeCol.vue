@@ -1,10 +1,16 @@
 <template>
   <v-popover :auto-hide="false"
              offset="16">
-    <md-button class="md-primary attr_btn"
+    <!-- <md-button class="md-primary attr_btn"
                title="add attribute">
       <md-icon>view_column</md-icon>
       EDIT COLUMN
+    </md-button> -->
+
+    <md-button title="edit column value"
+               class="md-fab md-mini md-plain"
+               style="background-color : #f39508">
+      <md-icon>view_column</md-icon>
     </md-button>
 
     <template slot="popover">

@@ -3,40 +3,38 @@
              :md-active.sync="showDialog"
              @md-closed="closeDialog(false)">
     <md-dialog-title style="text-align : center">Params</md-dialog-title>
-    <md-dialog-content class="md-scrollbar">
-      <div class="list">
-        <md-list :md-expand-single="false">
-          <md-list-item v-for="(item,index) in data"
-                        :key="index"
-                        md-expand>
+    <md-dialog-content style="overflow : hidden">
 
-            <span class="md-list-item-text">{{item.category}}</span>
+      <md-tabs class="myTabs"
+               md-alignment="centered"
+               @md-changed="changeTab">
+        <md-tab id="current-param-tab"
+                md-label="Current configuration"
+                md-icon="offline_pin"></md-tab>
 
-            <menu-component :category="item.category"
-                            @add="addLabel"></menu-component>
+        <md-tab id="create-param-tab"
+                md-label="Create configuration"
+                md-icon="add"></md-tab>
 
-            <md-list slot="md-expand">
-              <md-list-item class="md-inset"
-                            v-for="(attr,i) in item.attributes"
-                            :key="i">
-                <md-checkbox class="md-primary"
-                             v-model="attr.show" />
-                <span class="md-list-item-text">{{attr.label}}</span>
-              </md-list-item>
+        <md-tab id="all-params-tab"
+                md-label="All configuration"
+                md-icon="settings_applications"></md-tab>
 
-            </md-list>
-          </md-list-item>
-        </md-list>
+      </md-tabs>
 
-        <div class="emptyList"
-             v-if="data.length === 0">
-          No Data found !!!
-        </div>
+      <div class="md-scrollbar list">
 
-        <menu-component class="addCategoryBtn"
-                        @add="addLabel"></menu-component>
+        <current-param v-if="tabDisplayed === 0"></current-param>
+
+        <edit-param :data="data"
+                    v-if="tabDisplayed === 1"></edit-param>
+
+        <create-param v-if="tabDisplayed === 2"></create-param>
+
       </div>
+
     </md-dialog-content>
+
     <md-dialog-actions>
       <md-button class="md-primary"
                  @click="closeDialog(false)">Close</md-button>
@@ -48,13 +46,19 @@
 </template>
 
 <script>
-import menuComponent from "../../vue/panels/components/tooltips/addItem.vue";
+// import menuComponent from "../../vue/panels/components/tooltips/addItem.vue";
 import utilities from "../../js/utilities";
+
+import editParamsComponent from "./components/editParamsComponent.vue";
+import currentConfiguration from "./components/paramsUploaded.vue";
+import addConfiguration from "./components/createParamsComponent.vue";
 
 export default {
   name: "paramDialogComponent",
   components: {
-    "menu-component": menuComponent
+    "edit-param": editParamsComponent,
+    "current-param": currentConfiguration,
+    "create-param": addConfiguration
   },
   props: ["onFinised"],
   data() {
@@ -62,7 +66,8 @@ export default {
       showDialog: true,
       typeSelected: "",
       data: [],
-      callback: null
+      callback: null,
+      tabDisplayed: 0
     };
   },
   methods: {
@@ -144,6 +149,26 @@ export default {
 
         return res;
       });
+    },
+
+    changeTab(activeTab) {
+      console.log("yes");
+      switch (activeTab) {
+        case "current-param-tab":
+          console.log("0");
+          this.tabDisplayed = 0;
+          break;
+
+        case "all-params-tab":
+          console.log("1");
+          this.tabDisplayed = 1;
+          break;
+
+        case "create-param-tab":
+          console.log("2");
+          this.tabDisplayed = 2;
+          break;
+      }
     }
   }
 };
@@ -151,13 +176,17 @@ export default {
 
 <style scoped>
 .mdDialogContainer.paramsDialogContainer {
-  width: 500px !important;
+  width: 700px !important;
   height: 600px;
+}
+
+.mdDialogContainer.paramsDialogContainer .myTabs {
+  height: 70px;
 }
 
 .mdDialogContainer.paramsDialogContainer .list {
   width: 100%;
-  height: 100%; /* border: 1px solid red; */
+  height: calc(100% - 70px); /* border: 1px solid red; */
 }
 
 .mdDialogContainer.paramsDialogContainer .list .emptyList {

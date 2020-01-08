@@ -3,11 +3,19 @@
              :open="show"
              :auto-hide="false"
              offset="16">
-    <md-button class="md-primary attr_btn"
+    <!-- <md-button class="md-primary attr_btn"
                title="add attribute"
                @click="open">
       <md-icon>add</md-icon>
       ADD ATTRIBUTE
+    </md-button> -->
+
+    <md-button @click="open"
+               class="md-elevation-4 md-dense"
+               style="background-color : #448aff">
+      <md-icon>add</md-icon>
+      &nbsp;
+      Add attribute
     </md-button>
 
     <template slot="popover">
