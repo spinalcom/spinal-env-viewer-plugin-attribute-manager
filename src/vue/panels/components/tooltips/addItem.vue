@@ -3,19 +3,38 @@
              offset="16"
              :open="show">
 
-    <md-button v-if="category"
+    <!-- <md-button v-if="category"
                class="md-icon-button"
                title="add label"
                @click.stop="OpenAttribute">
       <md-icon>add_circle_outline</md-icon>
-    </md-button>
+    </md-button> -->
 
-    <md-button v-if="!category"
+    <!-- <md-button v-if="!category"
                class="md-icon-button md-raised md-primary"
                title="add category"
                @click.stop="OpenAttribute">
       <md-icon>add</md-icon>
+    </md-button> -->
+
+    <md-button v-if="!category"
+               title="add category"
+               @click.stop="OpenAttribute"
+               class="md-dense md-primary">
+      <md-icon>add</md-icon>
+      &nbsp;
+      Add category
     </md-button>
+
+    <v-btn v-if="category"
+           title="add label"
+           @click.stop="OpenAttribute"
+           flat
+           icon
+           small
+           color="blue">
+      <v-icon>add</v-icon>
+    </v-btn>
 
     <template slot="popover">
       <div class="popoverContainer">

@@ -22,7 +22,7 @@
 
       </md-tabs>
 
-      <div class="md-scrollbar list">
+      <div class="tabsContent">
 
         <current-param v-if="tabDisplayed === 0"></current-param>
 
@@ -38,8 +38,8 @@
     <md-dialog-actions>
       <md-button class="md-primary"
                  @click="closeDialog(false)">Close</md-button>
-      <md-button class="md-primary"
-                 @click="closeDialog(true)">Save</md-button>
+      <!-- <md-button class="md-primary"
+                 @click="closeDialog(true)">Save</md-button> -->
     </md-dialog-actions>
   </md-dialog>
 
@@ -75,12 +75,13 @@ export default {
       this.typeSelected = option.typeSelected;
       this.callback = option.callback;
 
-      this.data = await this.formatData(option.header, option.typeSelected);
+      // this.data = await this.formatData(option.header, option.typeSelected);
     },
+
     removed(option) {
-      if (option) {
-        utilities.addElement(this.typeSelected, this.data);
-      }
+      // if (option) {
+      //   utilities.addElement(this.typeSelected, this.data);
+      // }
 
       this.callback();
       this.showDialog = false;
@@ -90,32 +91,32 @@ export default {
         this.onFinised(closeResult);
       }
     },
-    addLabel(res) {
-      if (res.category && res.label) {
-        let found = this.data.find(el => {
-          return el.category === res.category;
-        });
+    // addLabel(res) {
+    //   if (res.category && res.label) {
+    //     let found = this.data.find(el => {
+    //       return el.category === res.category;
+    //     });
 
-        if (found) {
-          let attrFound = found.attributes.find(el => el.label === res.label);
-          if (typeof attrFound === "undefined") {
-            found.attributes.push({
-              show: false,
-              label: res.label
-            });
-          }
-        }
-      } else if (res.category) {
-        let found = this.data.find(el => el.category === res.category);
+    //     if (found) {
+    //       let attrFound = found.attributes.find(el => el.label === res.label);
+    //       if (typeof attrFound === "undefined") {
+    //         found.attributes.push({
+    //           show: false,
+    //           label: res.label
+    //         });
+    //       }
+    //     }
+    //   } else if (res.category) {
+    //     let found = this.data.find(el => el.category === res.category);
 
-        if (!found) {
-          this.data.push({
-            category: res.category,
-            attributes: []
-          });
-        }
-      }
-    },
+    //     if (!found) {
+    //       this.data.push({
+    //         category: res.category,
+    //         attributes: []
+    //       });
+    //     }
+    //   }
+    // },
 
     formatData(headers, type) {
       return utilities.getElements(type).then(el => {
@@ -177,16 +178,18 @@ export default {
 <style scoped>
 .mdDialogContainer.paramsDialogContainer {
   width: 700px !important;
-  height: 600px;
+  height: 700px;
 }
 
 .mdDialogContainer.paramsDialogContainer .myTabs {
   height: 70px;
 }
 
-.mdDialogContainer.paramsDialogContainer .list {
-  width: 100%;
-  height: calc(100% - 70px); /* border: 1px solid red; */
+.mdDialogContainer.paramsDialogContainer .tabsContent {
+  width: calc(100% - 70px);
+  height: calc(100% - 70px);
+  margin: auto;
+  margin-top: 10px;
 }
 
 .mdDialogContainer.paramsDialogContainer .list .emptyList {

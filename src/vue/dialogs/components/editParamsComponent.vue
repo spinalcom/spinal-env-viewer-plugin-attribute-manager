@@ -58,12 +58,12 @@ export default {
   height: 100%; /* border: 1px solid red; */
 }
 
-.mdDialogContainer.paramsDialogContainer .list .emptyList {
+/* .mdDialogContainer.paramsDialogContainer .list .emptyList {
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 18px;
-}
+} */
 </style>
