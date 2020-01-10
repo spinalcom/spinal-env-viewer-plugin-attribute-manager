@@ -1,3 +1,27 @@
+<!--
+Copyright 2020 SpinalCom - www.spinalcom.com
+
+This file is part of SpinalCore.
+
+Please read all of the following terms and conditions
+of the Free Software license Agreement ("Agreement")
+carefully.
+
+This Agreement is a legally binding contract between
+the Licensee (as defined below) and SpinalCom that
+sets forth the terms and conditions that govern your
+use of the Program. By installing and/or using the
+Program, you agree to abide by all the terms and
+conditions stated or referenced herein.
+
+If you do not agree to abide by these terms and
+conditions, do not demonstrate your acceptance and do
+not install or use the Program.
+You should have received a copy of the license along
+with this file. If not, see
+<http://resources.spinalcom.com/licenses.pdf>.
+-->
+
 <template>
   <md-dialog class="mdDialogContainer paramsDialogContainer"
              :md-active.sync="showDialog"
@@ -24,10 +48,14 @@
 
       <div class="tabsContent">
 
-        <current-param v-if="tabDisplayed === 0"></current-param>
+        <current-param v-if="tabDisplayed === 0"
+                       :currentConfiguration="currentConf">
+        </current-param>
 
-        <edit-param :data="data"
-                    v-if="tabDisplayed === 1"></edit-param>
+        <edit-param v-if="tabDisplayed === 1"
+                    :data="allConfigurations"
+                    :currentConfiguration="currentConf"
+                    @change="changeCurrentConf"></edit-param>
 
         <create-param v-if="tabDisplayed === 2"></create-param>
 
@@ -67,15 +95,25 @@ export default {
       typeSelected: "",
       data: [],
       callback: null,
-      tabDisplayed: 0
+      tabDisplayed: 0,
+      allConfigurations: [],
+      currentConf: undefined
     };
   },
   methods: {
     async opened(option) {
       this.typeSelected = option.typeSelected;
       this.callback = option.callback;
+      this.allConfigurations = await utilities.getAllConfiguration();
+      this.currentConf = await utilities.getCurrentConfiguration();
 
+      console.log(this.currentConf);
       // this.data = await this.formatData(option.header, option.typeSelected);
+    },
+
+    async changeCurrentConf() {
+      console.log("changeCurrentConf");
+      this.currentConf = await utilities.getCurrentConfiguration();
     },
 
     removed(option) {

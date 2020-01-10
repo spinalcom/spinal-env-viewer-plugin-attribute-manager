@@ -1,3 +1,27 @@
+<!--
+Copyright 2020 SpinalCom - www.spinalcom.com
+
+This file is part of SpinalCore.
+
+Please read all of the following terms and conditions
+of the Free Software license Agreement ("Agreement")
+carefully.
+
+This Agreement is a legally binding contract between
+the Licensee (as defined below) and SpinalCom that
+sets forth the terms and conditions that govern your
+use of the Program. By installing and/or using the
+Program, you agree to abide by all the terms and
+conditions stated or referenced herein.
+
+If you do not agree to abide by these terms and
+conditions, do not demonstrate your acceptance and do
+not install or use the Program.
+You should have received a copy of the license along
+with this file. If not, see
+<http://resources.spinalcom.com/licenses.pdf>.
+-->
+
 <template>
   <div class="myListContainer">
     <v-list v-if="categories.length > 0"
@@ -9,6 +33,7 @@
                     :key="index"
                     prepend-icon="keyboard_arrow_down"
                     append-icon=""
+                    :one-line="false"
                     no-action>
         <v-list-tile slot="activator">
 
@@ -16,14 +41,14 @@
             <v-list-tile-title>{{item.name}}</v-list-tile-title>
           </v-list-tile-content>
 
-          <v-list-tile-action>
+          <v-list-tile-action v-if="editMode">
 
             <menu-component :category="item.name"
                             @add="addAttributes"></menu-component>
 
           </v-list-tile-action>
 
-          <v-list-tile-action>
+          <v-list-tile-action v-if="editMode">
             <v-btn flat
                    icon
                    small
@@ -45,7 +70,8 @@
                      :key="subIndex">
 
           <v-list-tile-action>
-            <v-checkbox color="blue"
+            <v-checkbox :disabled="!editMode"
+                        color="blue"
                         v-model="subItem.show"></v-checkbox>
           </v-list-tile-action>
 
@@ -53,7 +79,7 @@
             <v-list-tile-title>{{subItem.name}}</v-list-tile-title>
           </v-list-tile-content>
 
-          <v-list-tile-action>
+          <v-list-tile-action v-if="editMode">
             <v-btn icon
                    flat
                    small
@@ -97,6 +123,10 @@ export default {
     message: {
       type: String,
       default: "No data found"
+    },
+    editMode: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
@@ -118,12 +148,12 @@ export default {
 .myListContainer {
   width: 100%;
   height: calc(100% - 50px);
-  overflow: auto;
 }
 
 .myListContainer .listContainer {
   width: 100%;
   height: 100%;
+  overflow: auto;
 }
 
 .myListContainer .emptyList {
