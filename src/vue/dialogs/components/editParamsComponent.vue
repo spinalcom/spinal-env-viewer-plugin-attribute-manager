@@ -92,20 +92,39 @@ with this file. If not, see
          :class="{'contentWithOutHeader' : editMode}">
       <div class="header">
         <div>{{configurationData.name}}</div>
-        <v-btn fab
-               blue
-               outline
-               small
-               color="blue"
-               @click="activeEditMode">
-          <v-icon>{{editMode ? "check" : "edit"}}</v-icon>
-        </v-btn>
+        <div class="buttons">
+          <menu-component v-if="editMode"
+                          @add="addCategory"></menu-component>
+
+          <v-btn fab
+                 blue
+                 outline
+                 small
+                 color="red"
+                 v-if="editMode"
+                 @click="activeEditMode(false)">
+            <v-icon>close</v-icon>
+          </v-btn>
+
+          <v-btn fab
+                 blue
+                 outline
+                 small
+                 color="blue"
+                 @click="activeEditMode(true)">
+            <v-icon>{{editMode ? "check" : "edit"}}</v-icon>
+          </v-btn>
+
+        </div>
+
       </div>
 
       <display-list-component class="content md-scrollbar"
                               :categories="configurationData.categories"
                               :editMode="editMode"
-                              :message="'No category found create. Create one with the button below !'">
+                              :message="'No category found create. Create one with the button below !'"
+                              @add="addSubItem"
+                              @remove="removeItem">
       </display-list-component>
     </div>
 
@@ -116,11 +135,14 @@ with this file. If not, see
 // import menuComponent from "../../../vue/panels/components/tooltips/addItem.vue";
 
 import displayListComponent from "../components/displayList.vue";
+import menuComponent from "../../../vue/panels/components/tooltips/addItem.vue";
+
 import Utilities from "../../../js/utilities";
 
 export default {
   name: "editParamsComponent",
   components: {
+    "menu-component": menuComponent,
     "display-list-component": displayListComponent
   },
   props: {
@@ -130,6 +152,7 @@ export default {
     currentConfiguration: {}
   },
   data() {
+    this.copyItem;
     return {
       editMode: false,
       configurationSelected: undefined,
@@ -143,8 +166,20 @@ export default {
     console.log("this.currentConfiguration", this.currentConfiguration);
   },
   methods: {
-    activeEditMode() {
+    async activeEditMode(edit) {
       this.editMode = !this.editMode;
+
+      if (!this.editMode && edit) {
+        await Utilities.editConfiguration(
+          this.configurationSelected,
+          this.configurationData
+        );
+
+        this.$emit("refresh");
+      } else if (!this.editMode && !edit) {
+        console.log("cancel edit", this.copyItem);
+        this.configurationData = JSON.parse(JSON.stringify(this.copyItem));
+      }
     },
     async setAsCurrentConfiguration() {
       await Utilities.setAsCurrentConfiguration(this.configurationSelected);
@@ -160,12 +195,63 @@ export default {
         return true;
 
       return false;
+    },
+    addSubItem(res) {
+      if (res.category && res.label) {
+        let found = this.configurationData.categories.find(el => {
+          return el.name === res.category;
+        });
+
+        if (found) {
+          let attrFound = found.attributes.find(el => el.name === res.label);
+          if (typeof attrFound === "undefined") {
+            found.attributes.push({
+              show: false,
+              name: res.label,
+              id: Date.now()
+            });
+          }
+        }
+      }
+    },
+    removeItem(res) {
+      if (typeof res.attr === "undefined") {
+        this.configurationData.categories = this.configurationData.categories.filter(
+          el => {
+            return el.id !== res.category.id;
+          }
+        );
+      } else {
+        let found = this.configurationData.categories.find(el => {
+          return el.id === res.category.id;
+        });
+
+        if (found) {
+          found.attributes = found.attributes.filter(
+            el => el.id !== res.attr.id
+          );
+        }
+      }
+    },
+    addCategory(res) {
+      let found = this.configurationData.categories.find(
+        el => el.name === res.category
+      );
+
+      if (!found) {
+        this.configurationData.categories.push({
+          id: Date.now(),
+          name: res.category,
+          attributes: []
+        });
+      }
     }
   },
   watch: {
     configurationSelected() {
       let found = this.data.find(el => el.id === this.configurationSelected);
-      this.configurationData = found;
+      this.configurationData = JSON.parse(JSON.stringify(found));
+      this.copyItem = JSON.parse(JSON.stringify(found));
     }
   }
 };
@@ -206,6 +292,11 @@ export default {
   font-size: 20px;
   text-transform: uppercase;
   justify-content: space-between;
+}
+
+.list .content .header .buttons {
+  display: flex;
+  flex-direction: row;
 }
 
 /* .mdDialogContainer.paramsDialogContainer .list .emptyList {

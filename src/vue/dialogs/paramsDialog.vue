@@ -55,7 +55,8 @@ with this file. If not, see
         <edit-param v-if="tabDisplayed === 1"
                     :data="allConfigurations"
                     :currentConfiguration="currentConf"
-                    @change="changeCurrentConf"></edit-param>
+                    @change="changeCurrentConf"
+                    @refresh="RefreshData"></edit-param>
 
         <create-param v-if="tabDisplayed === 2"></create-param>
 
@@ -106,13 +107,15 @@ export default {
       this.callback = option.callback;
       this.allConfigurations = await utilities.getAllConfiguration();
       this.currentConf = await utilities.getCurrentConfiguration();
-
-      console.log(this.currentConf);
       // this.data = await this.formatData(option.header, option.typeSelected);
     },
 
     async changeCurrentConf() {
-      console.log("changeCurrentConf");
+      this.currentConf = await utilities.getCurrentConfiguration();
+    },
+
+    async RefreshData() {
+      this.allConfigurations = await utilities.getAllConfiguration();
       this.currentConf = await utilities.getCurrentConfiguration();
     },
 
@@ -191,20 +194,16 @@ export default {
     },
 
     changeTab(activeTab) {
-      console.log("yes");
       switch (activeTab) {
         case "current-param-tab":
-          console.log("0");
           this.tabDisplayed = 0;
           break;
 
         case "all-params-tab":
-          console.log("1");
           this.tabDisplayed = 1;
           break;
 
         case "create-param-tab":
-          console.log("2");
           this.tabDisplayed = 2;
           break;
       }

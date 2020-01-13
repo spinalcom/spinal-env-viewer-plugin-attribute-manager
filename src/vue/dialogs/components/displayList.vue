@@ -54,7 +54,7 @@ with this file. If not, see
                    small
                    color="red"
                    title="remove"
-                   @click.stop="remove(true,item)">
+                   @click.stop="remove(item,true)">
               <v-icon>remove_circle_outline</v-icon>
             </v-btn>
           </v-list-tile-action>
@@ -85,7 +85,7 @@ with this file. If not, see
                    small
                    color="red"
                    title="remove"
-                   @click="remove(false,subItem)">
+                   @click="remove(item,false,subItem)">
               <v-icon>remove_circle_outline</v-icon>
             </v-btn>
           </v-list-tile-action>
@@ -133,12 +133,13 @@ export default {
     addAttributes(res) {
       this.$emit("add", res);
     },
-    remove(item, isCategory) {
-      if (isCategory) {
-        this.$emit("remove-category", item);
-      } else {
-        this.$emit("remove-attribute", item);
-      }
+    remove(category, isCategory, attribute) {
+      let item = {
+        category: category,
+        attr: attribute
+      };
+
+      this.$emit("remove", item);
     }
   }
 };

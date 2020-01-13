@@ -26,6 +26,7 @@ import {
   SpinalGraphService,
   SPINAL_RELATION_PTR_LST_TYPE
 } from "spinal-env-viewer-graph-service";
+
 import {
   Model,
   Ptr
@@ -120,16 +121,20 @@ export default class Utilities {
 
       if (realNode) {
         if (context.info.currentConfiguration) {
-          context.info.currentConfiguration.load((res) => {
-            res.set(realNode)
-          });
-        } else {
-          context.info.add_attr({
-            currentConfiguration: new Ptr(realNode)
-          })
-        }
-      }
 
+          // context.info.currentConfiguration.load((res) => {
+          //   res.set(realNode)
+          // });
+
+          context.info.rem_attr("currentConfiguration");
+
+        }
+
+        context.info.add_attr({
+          currentConfiguration: new Ptr(realNode)
+        })
+
+      }
     })
   }
 
@@ -173,6 +178,18 @@ export default class Utilities {
       }
 
     })
+  }
+
+
+  static editConfiguration(configurationId, configurationElement) {
+    let realNode = SpinalGraphService.getRealNode(configurationId);
+
+    if (realNode) {
+      realNode.getElement().then(element => {
+        element.set(configurationElement);
+      })
+    }
+
   }
 
   // static addElement(type, listes) {
