@@ -24,10 +24,21 @@ with this file. If not, see
 
 <template>
   <div class="list"
-       v-if="currentConfiguration">
+       v-if="configurationCopy">
 
     <div class="header">
-      <div>{{currentConfiguration.name}}</div>
+      <div>{{configurationCopy.name}}</div>
+
+      <div>
+        <v-btn outline
+               color="#2196f3"
+               @click="updateConfiguration">
+          <v-icon dark>check</v-icon>
+          &nbsp;
+          Save Modification
+        </v-btn>
+
+      </div>
 
       <!-- <v-alert :value="true"
                color="green"
@@ -39,8 +50,8 @@ with this file. If not, see
     </div>
 
     <display-list-component class="content md-scrollbar"
-                            :categories="currentConfiguration.categories"
-                            :editMode="false"
+                            :categories="configurationCopy.categories"
+                            :editMode="true"
                             :message="'No category found create. Create one with the button below !'">
     </display-list-component>
   </div>
@@ -54,6 +65,7 @@ with this file. If not, see
 
 <script>
 import displayListComponent from "../components/displayList.vue";
+import Utilities from "../../../js/utilities";
 
 export default {
   name: "currentParams",
@@ -64,7 +76,27 @@ export default {
     currentConfiguration: {}
   },
   data() {
-    return {};
+    return {
+      configurationCopy: {}
+    };
+  },
+  mounted() {
+    this.configurationCopy = Object.assign({}, this.currentConfiguration);
+  },
+  methods: {
+    async updateConfiguration() {
+      await Utilities.editConfiguration(
+        this.configurationCopy.id,
+        this.configurationCopy
+      );
+
+      this.$emit("refresh");
+    }
+  },
+  watch: {
+    currentConfiguration() {
+      this.configurationCopy = Object.assign({}, this.currentConfiguration);
+    }
   }
 };
 </script>

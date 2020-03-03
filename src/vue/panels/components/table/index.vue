@@ -24,9 +24,7 @@ with this file. If not, see
 
 <template>
   <div class="_tableContent">
-
     <div class="buttonFab">
-
       <md-speed-dial v-if="!editMode"
                      md-direction="top"
                      md-event="click">
@@ -36,21 +34,19 @@ with this file. If not, see
         </md-speed-dial-target>
 
         <md-speed-dial-content class="mdSpeedDialBtn">
-
-          <md-button v-for="(btn,index) in buttons"
+          <md-button v-for="(btn, index) in buttons"
                      :key="index"
                      class="md-primary md-dense"
                      @click="btn.action">
-            <md-icon>{{btn.icon}}</md-icon>
+            <md-icon>{{ btn.icon }}</md-icon>
             &nbsp;
-            {{btn.text}}
+            {{ btn.text }}
           </md-button>
 
-          <create-attribute :show="showAttrTooltip"
+          <!-- <create-attribute :show="showAttrTooltip"
                             @open='openCreateAttrTooltips'
                             :itemFiltered="itemsSelected"
-                            @validate="createAttribute"></create-attribute>
-
+                            @validate="createAttribute"></create-attribute> -->
         </md-speed-dial-content>
       </md-speed-dial>
 
@@ -73,12 +69,10 @@ with this file. If not, see
           <md-icon>done</md-icon>
         </md-button>
       </div>
-
     </div>
     <!-- First Toolbar -->
     <md-toolbar class="mdToolbar md-layout"
                 md-elevation="0">
-
       <div class="toolbar-start md-layout-item md-size-50">
         <md-radio v-model="searchBy"
                   class="md-primary"
@@ -97,20 +91,51 @@ with this file. If not, see
           <md-icon>search</md-icon>
         </md-field>
       </div>
-
     </md-toolbar>
     <!-- End First Toolbar -->
 
     <div class="_tableContainer">
-
       <v-data-table v-model="itemsSelected"
                     :headers="headerDisplayed"
                     :items="searched"
+                    :custom-sort="sortByName"
                     :pagination.sync="pagination"
+                    :loading="true"
                     dark
-                    select-all
                     hide-actions
                     class="elevation-1">
+
+        <template v-slot:headers="props">
+          <tr>
+            <th style="text-align : left">
+
+              <md-menu class="selectionMenu"
+                       md-size="small">
+
+                <md-button md-menu-trigger>
+                  <md-icon>check_box</md-icon>
+                  &nbsp;
+                  Select
+                </md-button>
+
+                <md-menu-content>
+                  <md-menu-item v-for="(m,index) in checkboxSelects"
+                                :key="index"
+                                @click="selectAll(m.value,items)">
+                    {{m.text}}
+                  </md-menu-item>
+                </md-menu-content>
+              </md-menu>
+
+            </th>
+
+            <th style="text-align : left"
+                v-for="(head,index) in props.headers"
+                :key="index">
+              {{head.text}}
+            </th>
+          </tr>
+        </template>
 
         <template v-slot:items="props">
           <td>
@@ -121,7 +146,7 @@ with this file. If not, see
           <td>{{ props.item.name }}</td>
           <td>{{ props.item.type }}</td>
           <td class="text-xs-center"
-              v-for="(attribute,index) in header"
+              v-for="(attribute, index) in header"
               :key="index">
             <table-content-component :editable="editMode"
                                      :item="props.item"
@@ -130,9 +155,7 @@ with this file. If not, see
                                      ref="editableComponent">
             </table-content-component>
           </td>
-
         </template>
-
       </v-data-table>
 
       <div class="text-xs-center pt-2">
@@ -171,6 +194,11 @@ export default {
     "change-col-value": ChangeColValue
   },
   data() {
+    this.checkboxSelects = [
+      { text: "select All", value: true },
+      { text: "select in this page", value: false }
+    ];
+
     return {
       showAttrTooltip: false,
       editMode: false,
@@ -284,8 +312,55 @@ export default {
     },
 
     onSelect(items) {
-      this.itemsSelected = items;
+      console.log(items);
+      // this.itemsSelected = items;
     },
+
+    allItemsIsSelected(liste) {
+      for (const element of liste) {
+        let found = this.itemsSelected.find(el => el.id === element.id);
+        if (typeof found === "undefined") return false;
+      }
+
+      return true;
+    },
+
+    selectAll(value) {
+      // console.log(value, this.sortByName(this.searched));
+
+      if (value) {
+        if (this.itemsSelected.length === this.searched.length)
+          this.itemsSelected = [];
+        else this.itemsSelected = this.searched;
+      } else {
+        const pageNumber = this.pagination.page;
+        const itemByPage = this.pagination.rowsPerPage;
+
+        console.log("itemByPage", itemByPage);
+
+        const begin = (pageNumber - 1) * itemByPage;
+        const end = begin + itemByPage;
+
+        console.log("begin", begin, "end", end);
+
+        const sortedList = Object.assign([], this.sortByName(this.searched));
+        const pageItems = sortedList.slice(begin, end);
+        const allItemsIsSelected = this.allItemsIsSelected(pageItems);
+
+        console.log("allItemsIsSelected", allItemsIsSelected, pageItems);
+
+        for (const element of pageItems) {
+          if (allItemsIsSelected) {
+            this.itemsSelected = this.itemsSelected.filter(
+              el => el.id !== element.id
+            );
+          } else {
+            this.itemsSelected.push(element);
+          }
+        }
+      }
+    },
+
     selectItemInViewer(item) {
       attributeService.getBimObjects(item.id);
     },
@@ -334,6 +409,21 @@ export default {
         callback: () => {
           this.$emit("refresh");
         }
+      });
+    },
+
+    sortByName(items) {
+      return items.sort((a, b) => {
+        const name1 = a.name.toUpperCase();
+        const name2 = b.name.toUpperCase();
+
+        let comparison = 0;
+        if (name1 > name2) {
+          comparison = 1;
+        } else if (name1 < name2) {
+          comparison = -1;
+        }
+        return comparison;
       });
     }
   },
@@ -449,6 +539,10 @@ export default {
   .v-table__overflow
   .theme--dark.v-table {
   background-color: transparent;
+}
+
+.selectionMenu .md-button .md-ripple {
+  padding: 0px;
 }
 
 ._tableContent

@@ -24,7 +24,7 @@ with this file. If not, see
 
 <template>
   <div class="myListContainer">
-    <v-list v-if="categories.length > 0"
+    <v-list v-if="categories && categories.length > 0"
             class="listContainer"
             expand
             flat
@@ -102,7 +102,7 @@ with this file. If not, see
     </v-list>
 
     <div class="emptyList"
-         v-if="categories.length === 0">
+         v-if="categories && categories.length === 0">
       {{message}}
     </div>
 
