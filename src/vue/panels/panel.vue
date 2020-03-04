@@ -1,3 +1,27 @@
+<!--
+Copyright 2020 SpinalCom - www.spinalcom.com
+
+This file is part of SpinalCore.
+
+Please read all of the following terms and conditions
+of the Free Software license Agreement ("Agreement")
+carefully.
+
+This Agreement is a legally binding contract between
+the Licensee (as defined below) and SpinalCom that
+sets forth the terms and conditions that govern your
+use of the Program. By installing and/or using the
+Program, you agree to abide by all the terms and
+conditions stated or referenced herein.
+
+If you do not agree to abide by these terms and
+conditions, do not demonstrate your acceptance and do
+not install or use the Program.
+You should have received a copy of the license along
+with this file. If not, see
+<http://resources.spinalcom.com/licenses.pdf>.
+-->
+
 <template>
   <md-content class="mdContainer md-scrollbar">
 
@@ -72,7 +96,7 @@ export default {
       this.contextSelected = params.context;
     },
     setTitle(title) {
-      spinalPanelManagerService.panels.networkTreeDetailPanel.panel.setTitle(
+      spinalPanelManagerService.panels.attributeManagerPanel.panel.setTitle(
         title
       );
     },
@@ -113,12 +137,21 @@ export default {
 
     refreshData() {
       this.appState = this.STATES.loading;
+
       this.getAllData()
         .then(res => {
           this.data = res;
 
+          const typeFound = this.data.types.find(
+            el => el === this.typeSelected
+          );
+
+          this.typeSelected = typeFound ? typeFound : null;
+
           if (this.typeSelected) {
             this.selectType(this.typeSelected);
+          } else {
+            this.visiblePage = this.pages.types;
           }
 
           this.appState = this.STATES.normal;
@@ -131,6 +164,7 @@ export default {
   },
   watch: {
     itemSelected() {
+      this.setTitle(`Attribute Manager : ${this.itemSelected.name}`);
       this.refreshData();
     }
   }
