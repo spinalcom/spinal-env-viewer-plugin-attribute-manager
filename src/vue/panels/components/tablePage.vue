@@ -35,11 +35,11 @@ with this file. If not, see
         </md-button>
       </div>
       <div class="exportImport">
-        <md-button class="md-primary attr_btn">
+        <!-- <md-button class="md-primary attr_btn">
           <md-icon>get_app</md-icon>
           &nbsp;
           Import
-        </md-button>
+        </md-button> -->
         <md-button class="md-primary attr_btn"
                    @click="exportData">
           <md-icon>publish</md-icon>

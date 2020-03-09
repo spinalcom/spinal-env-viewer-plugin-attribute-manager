@@ -143,7 +143,7 @@ with this file. If not, see
                         primary
                         hide-details></v-checkbox>
           </td>
-          <td>{{ props.item.name }}</td>
+          <td @click="selectItem(props.item)">{{ props.item.name }}</td>
           <td>{{ props.item.type }}</td>
           <td class="text-xs-center"
               v-for="(attribute, index) in header"
@@ -174,6 +174,8 @@ import TableContentComponent from "./tableContent.vue";
 import CreateAttributeTooltips from "../tooltips/createAttribute.vue";
 import ChangeColValue from "../tooltips/changeCol.vue";
 import attributeService from "../../../../services";
+
+import EventBus from "../../../../js/events/events";
 
 const {
   spinalPanelManagerService
@@ -425,6 +427,9 @@ export default {
         }
         return comparison;
       });
+    },
+    selectItem(item) {
+      EventBus.$emit("selectElement", item);
     }
   },
   computed: {
