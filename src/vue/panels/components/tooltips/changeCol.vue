@@ -1,3 +1,27 @@
+<!--
+Copyright 2020 SpinalCom - www.spinalcom.com
+
+This file is part of SpinalCore.
+
+Please read all of the following terms and conditions
+of the Free Software license Agreement ("Agreement")
+carefully.
+
+This Agreement is a legally binding contract between
+the Licensee (as defined below) and SpinalCom that
+sets forth the terms and conditions that govern your
+use of the Program. By installing and/or using the
+Program, you agree to abide by all the terms and
+conditions stated or referenced herein.
+
+If you do not agree to abide by these terms and
+conditions, do not demonstrate your acceptance and do
+not install or use the Program.
+You should have received a copy of the license along
+with this file. If not, see
+<http://resources.spinalcom.com/licenses.pdf>.
+-->
+
 <template>
   <v-popover :auto-hide="false"
              offset="16">
@@ -22,7 +46,11 @@
                        placeholder="Select Column"
                        name="columns"
                        id="columns">
-              <md-option v-for="(head,index) in columns"
+
+              <md-option v-if="!columnsFiltered || columnsFiltered.length === 0"
+                         disabled>No column</md-option>
+
+              <md-option v-for="(head,index) in columnsFiltered"
                          :key="index"
                          :value="`${head.category}/${head.label}`">
                 {{`${head.category} / ${head.label}`}}
@@ -32,8 +60,20 @@
 
           <md-field class="tooltip-content">
             <label>Value</label>
-            <md-input v-model="value"></md-input>
+            <md-input v-model="value"
+                      :disabled="!columnSelected || columnSelected.trim().length === 0">
+            </md-input>
           </md-field>
+
+          <!-- <div class="tooltip-content pageSelect">
+            <md-radio v-model="pageOnly"
+                      class="md-primary"
+                      :value="true">This page only</md-radio>
+            <md-radio v-model="pageOnly"
+                      class="md-primary"
+                      :value="false">All page</md-radio>
+
+          </div> -->
 
         </div>
 
@@ -65,8 +105,18 @@ export default {
   data() {
     return {
       columnSelected: "",
+      columnsFiltered: [],
+      pageOnly: true,
       value: ""
     };
+  },
+  mounted() {
+    this.columnsFiltered = this.columns.filter(el => {
+      const hasNoCategory = typeof el.category !== "undefined";
+      const hasNoLabel = typeof el.label !== "undefined";
+
+      return hasNoCategory && hasNoLabel;
+    });
   },
   methods: {
     Validate() {
@@ -87,7 +137,7 @@ export default {
 .popoverContainer {
   width: 200px;
   height: 200px;
-  color: black;
+  color: white;
 }
 
 .popoverContainer ._popoverContent {
