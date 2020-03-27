@@ -13,33 +13,110 @@ import {
 export default {
 
   async selectitemInViewer(nodeId) {
-    const nodeInfo = SpinalGraphService.getInfo(nodeId);
 
-    if (nodeInfo && this._isBimobjectOrRoom(nodeInfo.type.get())) {
-      const bimObjects = await this._getBimObjects(nodeInfo);
-      const objecs = this._organizeBimObject(bimObjects);
+    const objects = await this.getBimObjectsAndOrganizeThem(nodeId);
 
-      objecs.forEach(el => {
-        let model = window.spinal.BimObjectService
-          .mappingBimFileIdModelId[el.bimFileId];
+    // if (nodeInfo && this._isBimobjectOrRoom(nodeInfo.type.get())) {
+    //   const bimObjects = await this._getBimObjects(nodeInfo);
+    //   const objecs = this._organizeBimObject(bimObjects);
 
-        for (let j = 0; j < model.modelScene.length; j++) {
-          const scene = model.modelScene[j];
-          // window.spinal.ForgeViewer.viewer.impl.selector
-          //   .setAggregateSelection({
-          //     model: scene.model,
-          //     ids: el.selection
-          //   })
+    objects.forEach(el => {
+      let model = window.spinal.BimObjectService
+        .mappingBimFileIdModelId[el.bimFileId];
 
-          spinal.ForgeViewer.viewer.impl.selector.setSelection(el
-            .selection, scene.model)
+      for (let j = 0; j < model.modelScene.length; j++) {
+        const scene = model.modelScene[j];
 
-        }
+        spinal.ForgeViewer.viewer.impl.selector.setSelection(el
+          .selection, scene.model);
 
-      })
+        spinal.ForgeViewer.viewer.isolate(el.selection, scene.model);
+        spinal.ForgeViewer.viewer.fitToView(el.selection);
 
+      }
+
+    })
+
+  },
+
+  async selectObject(nodeIds) {
+    const objects = await this.getBimObjectsAndOrganizeThem(nodeIds);
+
+    objects.forEach(el => {
+      let model = window.spinal.BimObjectService
+        .mappingBimFileIdModelId[el.bimFileId];
+
+      for (let j = 0; j < model.modelScene.length; j++) {
+        const scene = model.modelScene[j];
+
+        spinal.ForgeViewer.viewer.impl.selector.setSelection(el
+          .selection, scene.model);
+      }
+
+    })
+
+  },
+  async IsolateObject(nodeIds) {
+    const objects = await this.getBimObjectsAndOrganizeThem(nodeIds);
+
+    objects.forEach(el => {
+      let model = window.spinal.BimObjectService
+        .mappingBimFileIdModelId[el.bimFileId];
+
+      for (let j = 0; j < model.modelScene.length; j++) {
+        const scene = model.modelScene[j];
+
+        spinal.ForgeViewer.viewer.isolate(el.selection, scene.model);
+
+      }
+
+    })
+
+  },
+  async zoomObject(nodeIds) {
+    const objects = await this.getBimObjectsAndOrganizeThem(nodeIds);
+
+    objects.forEach(el => {
+      let model = window.spinal.BimObjectService
+        .mappingBimFileIdModelId[el.bimFileId];
+
+      for (let j = 0; j < model.modelScene.length; j++) {
+        const scene = model.modelScene[j];
+
+        spinal.ForgeViewer.viewer.fitToView(el.selection);
+
+      }
+
+    })
+
+  },
+
+
+  async getBimObjectsAndOrganizeThem(nodeIds) {
+    if (!Array.isArray(nodeIds)) nodeIds = [nodeIds];
+    const promises = [];
+
+
+    for (const nodeId of nodeIds) {
+      promises.push(this._getBimsOrganized(nodeId));
     }
 
+    return Promise.all(promises).then(values => {
+      const res = [];
+      values = values.flat(2);
+
+      for (const obj of values) {
+        const found = res.find(el => el.bimFileId === obj.bimFileId);
+        if (typeof found === "undefined") {
+          res.push(obj);
+        } else {
+          found.selection.push(...obj.selection);
+        }
+      }
+
+      return res;
+
+    })
 
   },
 
@@ -102,6 +179,18 @@ export default {
 
     return data;
 
+  },
+
+  async _getBimsOrganized(nodeId) {
+    const nodeInfo = SpinalGraphService.getInfo(nodeId);
+
+    if (nodeInfo && this._isBimobjectOrRoom(nodeInfo.type.get())) {
+      const bimObjects = await this._getBimObjects(nodeInfo);
+      const objects = this._organizeBimObject(bimObjects);
+      return objects;
+    }
+
+    return [];
   }
 
 }

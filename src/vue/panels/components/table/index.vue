@@ -70,6 +70,16 @@ with this file. If not, see
         </md-button>
       </div>
     </div>
+
+    <!-- Second Toolbar -->
+    <md-toolbar class="secondMdToolbar"
+                md-elevation="0">
+
+      <standard-buttons :itemsSelected="itemsSelected"></standard-buttons>
+
+    </md-toolbar>
+    <!-- END Second Toolbar -->
+
     <!-- First Toolbar -->
     <md-toolbar class="mdToolbar md-layout"
                 md-elevation="0">
@@ -151,6 +161,7 @@ with this file. If not, see
             <table-content-component :editable="editMode"
                                      :item="props.item"
                                      :attribute="attribute"
+                                     :itemsMap="itemsMap"
                                      @setValue="setValue"
                                      ref="editableComponent">
             </table-content-component>
@@ -175,7 +186,10 @@ import CreateAttributeTooltips from "../tooltips/createAttribute.vue";
 import ChangeColValue from "../tooltips/changeCol.vue";
 import attributeService from "../../../../services";
 
+import StandardButtons from "./standard-buttons.vue";
+
 import EventBus from "../../../../js/events/events";
+import tableContentVue from "./tableContent.vue";
 
 const {
   spinalPanelManagerService
@@ -193,7 +207,8 @@ export default {
   components: {
     "table-content-component": TableContentComponent,
     "create-attribute": CreateAttributeTooltips,
-    "change-col-value": ChangeColValue
+    "change-col-value": ChangeColValue,
+    "standard-buttons": StandardButtons
   },
   data() {
     this.checkboxSelects = [
@@ -230,7 +245,9 @@ export default {
           text: "Active edit mode",
           action: this.ActiveEditMode
         }
-      ]
+      ],
+
+      itemsMap: new Map()
     };
   },
   created() {
@@ -241,28 +258,91 @@ export default {
   },
   methods: {
     validateOrCancel(valid) {
-      let references = this.$refs["editableComponent"]
-        ? this.$refs["editableComponent"]
-        : [];
+      // let references = this.$refs["editableComponent"]
+      //   ? this.$refs["editableComponent"]
+      //   : [];
+
+      // if (valid) {
+      //   references.forEach(compo => {
+      //     compo.validateValue();
+      //   });
+      // } else {
+      //   references.forEach(compo => {
+      //     compo.cancelValue();
+      //   });
+      // }
 
       if (valid) {
-        references.forEach(compo => {
-          compo.validateValue();
-        });
+        this._changeValue();
       } else {
-        references.forEach(compo => {
-          compo.cancelValue();
-        });
+        this._cancelValue();
       }
 
       this.editMode = false;
     },
+
+    _changeValue() {
+      for (const nodeId of this.itemsMap.keys()) {
+        const found = this.tableContent.find(el => el.id === nodeId);
+
+        if (found && found.attributes) {
+          for (const attr of found.attributes) {
+            let value = this.itemsMap.get(nodeId)[
+              `${attr.category}_${attr.label}`
+            ]["value"];
+
+            let displayValue = this.itemsMap.get(nodeId)[
+              `${attr.category}_${attr.label}`
+            ]["displayValue"];
+
+            if (value !== displayValue) {
+              attributeService
+                .updateAttributeValue(
+                  nodeId,
+                  attr.category,
+                  attr.label,
+                  displayValue
+                )
+                .then(() => {
+                  this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
+                    "value"
+                  ] = this.itemsMap.get(nodeId)[
+                    `${attr.category}_${attr.label}`
+                  ]["displayValue"];
+                });
+            }
+          }
+          this.setValue();
+        }
+
+        // obj[`${category}_${label}`]["displayValue"] = value;
+      }
+    },
+
+    _cancelValue() {
+      for (const nodeId of this.itemsMap.keys()) {
+        const found = this.tableContent.find(el => el.id === nodeId);
+
+        if (found && found.attributes) {
+          for (const attr of found.attributes) {
+            this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
+              "displayValue"
+            ] = this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
+              "value"
+            ];
+          }
+        }
+      }
+    },
+
     ActiveEditMode() {
       this.editMode = true;
     },
+
     openCreateAttrTooltips() {
       this.showAttrTooltip = !this.showAttrTooltip;
     },
+
     createAttribute() {
       this.$emit("refresh");
     },
@@ -276,6 +356,7 @@ export default {
 
       return liste;
     },
+
     filterByValue(liste, value) {
       if (value.trim().length > 0) {
         return liste.filter(el => {
@@ -292,6 +373,7 @@ export default {
 
       return liste;
     },
+
     searchOnTable() {
       switch (this.searchBy) {
         case 0:
@@ -366,6 +448,7 @@ export default {
     selectItemInViewer(item) {
       attributeService.getBimObjects(item.id);
     },
+
     setValue() {
       this.$emit("refresh");
 
@@ -384,17 +467,25 @@ export default {
       //   found.value = argData.value;
       // }
     },
-    setValueToColumn(res) {
-      let references = this.$refs["editableComponent"];
 
+    setValueToColumn(res) {
       let value = res.value;
       let category = res.column.split("/")[0];
       let label = res.column.split("/")[1];
 
-      references.forEach(el => {
-        el.setValueToColumn(category, label, value);
-      });
+      if (res.pageOnly) {
+        let references = this.$refs["editableComponent"];
+
+        references.forEach(el => {
+          el.setValueToColumn(category, label, value);
+        });
+      } else {
+        for (const obj of this.itemsMap.values()) {
+          obj[`${category}_${label}`]["displayValue"] = value;
+        }
+      }
     },
+
     LinkItem() {
       if (this.itemsSelected.length === 0)
         return alert("you must select at less one item");
@@ -403,6 +494,7 @@ export default {
         itemSelected: this.itemsSelected
       });
     },
+
     OpenParamsDialog() {
       spinalPanelManagerService.openPanel("paramDialogComponent", {
         tableContent: this.tableContent,
@@ -428,8 +520,22 @@ export default {
         return comparison;
       });
     },
+
     selectItem(item) {
       EventBus.$emit("selectElement", item);
+    },
+
+    constructMap() {
+      for (const content of this.tableContent) {
+        const element = {};
+        for (const attr of content.attributes) {
+          element[`${attr.category}_${attr.label}`] = {
+            value: attr.value,
+            displayValue: attr.value
+          };
+        }
+        this.itemsMap.set(content.id, element);
+      }
     }
   },
   computed: {
@@ -439,6 +545,7 @@ export default {
   },
   watch: {
     tableContent() {
+      this.constructMap();
       this.searched = this.filterByName(this.tableContent, this.searchValue);
     },
     header() {
@@ -500,9 +607,20 @@ export default {
   background: transparent !important;
 }
 
+._tableContent .secondMdToolbar {
+  width: 100%;
+  height: 50px;
+  padding: 0px !important;
+  background-color: transparent;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
 ._tableContent ._tableContainer {
   width: 100%;
-  height: calc(100% - 68px);
+  height: calc(100% - 128px);
 }
 
 .buttonFab {
@@ -546,7 +664,8 @@ export default {
   background-color: transparent;
 }
 
-.selectionMenu .md-button .md-ripple {
+.selectionMenu .md-button .md-ripple,
+._tableContent .secondMdToolbar .md-ripple {
   padding: 0px;
 }
 

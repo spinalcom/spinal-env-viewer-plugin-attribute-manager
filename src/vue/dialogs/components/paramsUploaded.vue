@@ -29,7 +29,10 @@ with this file. If not, see
     <div class="header">
       <div>{{configurationCopy.name}}</div>
 
-      <div>
+      <div class="buttonsDiv">
+        <menu-component class="addCatBtn"
+                        @add="addCategory"></menu-component>
+
         <v-btn outline
                color="#2196f3"
                @click="updateConfiguration">
@@ -52,7 +55,9 @@ with this file. If not, see
     <display-list-component class="content md-scrollbar"
                             :categories="configurationCopy.categories"
                             :editMode="true"
-                            :message="'No category found create. Create one with the button below !'">
+                            :message="'No category found create. Create one with the button below !'"
+                            @add="addSubItem"
+                            @remove="removeItem">
     </display-list-component>
   </div>
 
@@ -65,11 +70,14 @@ with this file. If not, see
 
 <script>
 import displayListComponent from "../components/displayList.vue";
+import menuComponent from "../../../vue/panels/components/tooltips/addItem.vue";
+
 import Utilities from "../../../js/utilities";
 
 export default {
   name: "currentParams",
   components: {
+    "menu-component": menuComponent,
     "display-list-component": displayListComponent
   },
   props: {
@@ -91,6 +99,56 @@ export default {
       );
 
       this.$emit("refresh");
+    },
+    addCategory(res) {
+      let found = this.configurationCopy.categories.find(
+        el => el.name === res.category
+      );
+
+      if (!found) {
+        this.configurationCopy.categories.push({
+          id: Date.now(),
+          name: res.category,
+          attributes: []
+        });
+      }
+    },
+    addSubItem(res) {
+      if (res.category && res.label) {
+        let found = this.configurationCopy.categories.find(el => {
+          return el.name === res.category;
+        });
+
+        if (found) {
+          let attrFound = found.attributes.find(el => el.name === res.label);
+          if (typeof attrFound === "undefined") {
+            found.attributes.push({
+              show: false,
+              name: res.label,
+              id: Date.now()
+            });
+          }
+        }
+      }
+    },
+    removeItem(res) {
+      if (typeof res.attr === "undefined") {
+        this.configurationCopy.categories = this.configurationCopy.categories.filter(
+          el => {
+            return el.id !== res.category.id;
+          }
+        );
+      } else {
+        let found = this.configurationCopy.categories.find(el => {
+          return el.id === res.category.id;
+        });
+
+        if (found) {
+          found.attributes = found.attributes.filter(
+            el => el.id !== res.attr.id
+          );
+        }
+      }
     }
   },
   watch: {
@@ -123,6 +181,11 @@ export default {
   justify-content: space-between;
 }
 
+.list .header .buttonsDiv {
+  display: flex;
+  flex-direction: row;
+}
+
 .empty {
   width: 100%;
   height: 100%;
@@ -130,5 +193,11 @@ export default {
   justify-content: center;
   align-items: center;
   font-size: 20px;
+}
+</style>
+
+<style>
+.list .header .buttonsDiv .addCatBtn .md-ripple {
+  border: 1px solid #448aff;
 }
 </style>

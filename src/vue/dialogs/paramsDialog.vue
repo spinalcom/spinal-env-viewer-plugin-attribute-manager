@@ -26,7 +26,9 @@ with this file. If not, see
   <md-dialog class="mdDialogContainer paramsDialogContainer"
              :md-active.sync="showDialog"
              @md-closed="closeDialog(false)">
-    <md-dialog-title style="text-align : center">Params</md-dialog-title>
+    <md-dialog-title style="text-align : center">
+      Set your configurations
+    </md-dialog-title>
     <md-dialog-content style="overflow : hidden">
 
       <md-tabs class="myTabs"
@@ -49,7 +51,8 @@ with this file. If not, see
       <div class="tabsContent">
 
         <current-param v-if="tabDisplayed === 0"
-                       :currentConfiguration="currentConf">
+                       :currentConfiguration="currentConf"
+                       @refresh="RefreshData">
         </current-param>
 
         <edit-param v-if="tabDisplayed === 1"
@@ -58,7 +61,8 @@ with this file. If not, see
                     @change="changeCurrentConf"
                     @refresh="RefreshData"></edit-param>
 
-        <create-param v-if="tabDisplayed === 2"></create-param>
+        <create-param v-if="tabDisplayed === 2"
+                      @refresh="RefreshData"></create-param>
 
       </div>
 

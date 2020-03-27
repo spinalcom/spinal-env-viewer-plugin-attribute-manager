@@ -200,7 +200,7 @@ export default {
       let headers = [
         {
           key: "id",
-          header: "Id",
+          header: "SpinalGraph ID",
           width: 30
         },
         {

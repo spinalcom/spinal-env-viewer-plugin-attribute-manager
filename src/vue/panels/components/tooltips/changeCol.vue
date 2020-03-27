@@ -58,6 +58,11 @@ with this file. If not, see
             </md-select>
           </md-field>
 
+          <!-- <div class="tooltip-content">
+            <md-checkbox v-model="getValueOnBIM"
+                         class="md-primary">get BIM Value</md-checkbox>
+          </div> -->
+
           <md-field class="tooltip-content">
             <label>Value</label>
             <md-input v-model="value"
@@ -65,15 +70,17 @@ with this file. If not, see
             </md-input>
           </md-field>
 
-          <!-- <div class="tooltip-content pageSelect">
+          <div class="tooltip-content pageSelect">
+
             <md-radio v-model="pageOnly"
                       class="md-primary"
                       :value="true">This page only</md-radio>
+
             <md-radio v-model="pageOnly"
                       class="md-primary"
                       :value="false">All page</md-radio>
 
-          </div> -->
+          </div>
 
         </div>
 
@@ -123,7 +130,8 @@ export default {
       if (this.itemsSelected && this.value.trim().length > 0) {
         this.$emit("setValueToColumn", {
           value: this.value.trim(),
-          column: this.columnSelected
+          column: this.columnSelected,
+          pageOnly: this.pageOnly
         });
       } else {
         alert("select at least one item !");
@@ -136,7 +144,7 @@ export default {
 <style scoped>
 .popoverContainer {
   width: 200px;
-  height: 200px;
+  height: 300px;
   color: white;
 }
 

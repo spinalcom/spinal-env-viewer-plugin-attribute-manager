@@ -38,7 +38,7 @@ import attributeService from "../../../../services";
 
 export default {
   name: "tableContentComponent",
-  props: ["editable", "item", "attribute", "itemsMap"],
+  props: ["editable", "item", "attribute"],
   data() {
     return {
       // value: "",
@@ -54,25 +54,23 @@ export default {
   },
   methods: {
     getValue() {
-      let value = this.itemsMap.get(this.item.id);
-      return value[`${this.attribute.category}_${this.attribute.label}`];
-      // let found;
-      // if (this.item && this.attribute) {
-      //   found = this.item.attributes.find(el => {
-      //     return (
-      //       el.label === this.attribute.label &&
-      //       el.category === this.attribute.category
-      //     );
-      //   });
-      // }
-      // if (found) {
-      //   found["displayValue"] = found.value;
-      //   return found;
-      // }
-      // return {
-      //   value: "-",
-      //   displayValue: "-"
-      // };
+      let found;
+      if (this.item && this.attribute) {
+        found = this.item.attributes.find(el => {
+          return (
+            el.label === this.attribute.label &&
+            el.category === this.attribute.category
+          );
+        });
+      }
+      if (found) {
+        found["displayValue"] = found.value;
+        return found;
+      }
+      return {
+        value: "-",
+        displayValue: "-"
+      };
     },
 
     setValue() {
@@ -86,18 +84,9 @@ export default {
     cancelValue() {
       this.data.displayValue = this.data.value;
       this.$refs.display.innerText = this.data.displayValue;
-      this.itemsMap.get(this.item.id)[
-        `${this.attribute.category}_${this.attribute.label}`
-      ]["displayValue"] = this.itemsMap.get(this.item.id)[
-        `${this.attribute.category}_${this.attribute.label}`
-      ]["value"];
     },
 
-    changeValue(event) {
-      this.itemsMap.get(this.item.id)[
-        `${this.attribute.category}_${this.attribute.label}`
-      ]["displayValue"] = this.$refs.display.innerText;
-
+    changeValue() {
       // this.displayValue = event.target.innerText;
     },
 
@@ -129,6 +118,9 @@ export default {
           });
       }
     }
+  },
+  destroyed() {
+    console.log("destroyed");
   }
 };
 </script>
