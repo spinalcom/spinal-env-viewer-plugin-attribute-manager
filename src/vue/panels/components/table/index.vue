@@ -25,7 +25,17 @@ with this file. If not, see
 <template>
   <div class="_tableContent">
     <div class="buttonFab">
-      <md-speed-dial v-if="!editMode"
+
+      <fabs-component :editMode="editMode"
+                      :itemsSelected="itemsSelected"
+                      :headerDisplayed="headerDisplayed"
+                      @configure="OpenParamsDialog"
+                      @link="LinkItem"
+                      @edit="ActiveEditMode"
+                      @valid="validateOrCancel"
+                      @setToColumn="setValueToColumn"></fabs-component>
+
+      <!-- <md-speed-dial v-if="!editMode"
                      md-direction="top"
                      md-event="click">
         <md-speed-dial-target class="md-fab md-mini md-primary">
@@ -43,14 +53,10 @@ with this file. If not, see
             {{ btn.text }}
           </md-button>
 
-          <!-- <create-attribute :show="showAttrTooltip"
-                            @open='openCreateAttrTooltips'
-                            :itemFiltered="itemsSelected"
-                            @validate="createAttribute"></create-attribute> -->
         </md-speed-dial-content>
-      </md-speed-dial>
+      </md-speed-dial> -->
 
-      <div v-if="editMode"
+      <!-- <div v-if="editMode"
            class="editModeBtn">
         <md-button title="Cancel modification"
                    @click="validateOrCancel(false)"
@@ -68,32 +74,35 @@ with this file. If not, see
                    class="md-fab md-mini md-primary">
           <md-icon>done</md-icon>
         </md-button>
-      </div>
+      </div> -->
     </div>
 
     <!-- Second Toolbar -->
-    <md-toolbar class="secondMdToolbar"
+    <!-- <md-toolbar class="secondMdToolbar"
                 md-elevation="0">
 
-      <standard-buttons :itemsSelected="itemsSelected"></standard-buttons>
-
-    </md-toolbar>
+    </md-toolbar> -->
     <!-- END Second Toolbar -->
 
     <!-- First Toolbar -->
-    <md-toolbar class="mdToolbar md-layout"
+    <md-toolbar class="mdToolbar"
                 md-elevation="0">
-      <div class="toolbar-start md-layout-item md-size-50">
-        <md-radio v-model="searchBy"
-                  class="md-primary"
-                  :value="0">Search by name</md-radio>
+      <div class="toolbar-start">
+        <standard-buttons :itemsSelected="itemsSelected"></standard-buttons>
 
-        <md-radio v-model="searchBy"
-                  class="md-primary"
-                  :value="1">Search by value</md-radio>
       </div>
 
-      <div class="toolbar-end md-layout-item md-size-50">
+      <div class="toolbar-end">
+        <div class="searchDiv">
+          <md-radio v-model="searchBy"
+                    class="md-primary"
+                    :value="0">Search by name</md-radio>
+
+          <md-radio v-model="searchBy"
+                    class="md-primary"
+                    :value="1">Search by value</md-radio>
+        </div>
+
         <md-field>
           <input class="md-input"
                  placeholder="Search by name or value..."
@@ -162,7 +171,8 @@ with this file. If not, see
                                      :item="props.item"
                                      :attribute="attribute"
                                      :itemsMap="itemsMap"
-                                     @setValue="setValue"
+                                     @setValue="refresh"
+                                     @findValueInMaquette="findValueInMaquette"
                                      ref="editableComponent">
             </table-content-component>
           </td>
@@ -183,13 +193,15 @@ with this file. If not, see
 <script>
 import TableContentComponent from "./tableContent.vue";
 import CreateAttributeTooltips from "../tooltips/createAttribute.vue";
-import ChangeColValue from "../tooltips/changeCol.vue";
+// import ChangeColValue from "../tooltips/changeCol.vue";
 import attributeService from "../../../../services";
 
 import StandardButtons from "./standard-buttons.vue";
+import FabsComponent from "./fabs.vue";
 
 import EventBus from "../../../../js/events/events";
 import tableContentVue from "./tableContent.vue";
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 
 const {
   spinalPanelManagerService
@@ -205,9 +217,10 @@ export default {
     typeSelected: {}
   },
   components: {
+    "fabs-component": FabsComponent,
     "table-content-component": TableContentComponent,
     "create-attribute": CreateAttributeTooltips,
-    "change-col-value": ChangeColValue,
+    // "change-col-value": ChangeColValue,
     "standard-buttons": StandardButtons
   },
   data() {
@@ -229,23 +242,23 @@ export default {
         page: 1,
         rowsPerPage: 20
       },
-      buttons: [
-        {
-          icon: "settings_applications",
-          text: "Configuration",
-          action: this.OpenParamsDialog
-        },
-        {
-          icon: "link",
-          text: "Link to group",
-          action: this.LinkItem
-        },
-        {
-          icon: "edit",
-          text: "Active edit mode",
-          action: this.ActiveEditMode
-        }
-      ],
+      // buttons: [
+      //   {
+      //     icon: "settings_applications",
+      //     text: "Configuration",
+      //     action: this.OpenParamsDialog
+      //   },
+      //   {
+      //     icon: "link",
+      //     text: "Link to group",
+      //     action: this.LinkItem
+      //   },
+      //   {
+      //     icon: "edit",
+      //     text: "Active edit mode",
+      //     action: this.ActiveEditMode
+      //   }
+      // ],
 
       itemsMap: new Map()
     };
@@ -257,7 +270,7 @@ export default {
     this.searched = this.tableContent;
   },
   methods: {
-    validateOrCancel(valid) {
+    async validateOrCancel(valid) {
       // let references = this.$refs["editableComponent"]
       //   ? this.$refs["editableComponent"]
       //   : [];
@@ -273,15 +286,19 @@ export default {
       // }
 
       if (valid) {
-        this._changeValue();
-      } else {
-        this._cancelValue();
+        await this._changeValue();
       }
+      // else {
+      //   await this._cancelValue();
+      // }
 
+      this.refresh();
       this.editMode = false;
     },
 
-    _changeValue() {
+    async _changeValue() {
+      const promises = [];
+
       for (const nodeId of this.itemsMap.keys()) {
         const found = this.tableContent.find(el => el.id === nodeId);
 
@@ -290,36 +307,37 @@ export default {
             let value = this.itemsMap.get(nodeId)[
               `${attr.category}_${attr.label}`
             ]["value"];
-
             let displayValue = this.itemsMap.get(nodeId)[
               `${attr.category}_${attr.label}`
             ]["displayValue"];
 
             if (value !== displayValue) {
-              attributeService
-                .updateAttributeValue(
+              promises.push(
+                attributeService.updateAttributeValue(
                   nodeId,
                   attr.category,
                   attr.label,
                   displayValue
                 )
-                .then(() => {
-                  this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
-                    "value"
-                  ] = this.itemsMap.get(nodeId)[
-                    `${attr.category}_${attr.label}`
-                  ]["displayValue"];
-                });
+              );
+              // .then(() => {
+              //   this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
+              //     "value"
+              //   ] = this.itemsMap.get(nodeId)[
+              //     `${attr.category}_${attr.label}`
+              //   ]["displayValue"];
+              // });
             }
           }
-          this.setValue();
         }
 
         // obj[`${category}_${label}`]["displayValue"] = value;
       }
+
+      return Promise.all(promises);
     },
 
-    _cancelValue() {
+    async _cancelValue() {
       for (const nodeId of this.itemsMap.keys()) {
         const found = this.tableContent.find(el => el.id === nodeId);
 
@@ -333,6 +351,8 @@ export default {
           }
         }
       }
+
+      return;
     },
 
     ActiveEditMode() {
@@ -449,7 +469,7 @@ export default {
       attributeService.getBimObjects(item.id);
     },
 
-    setValue() {
+    refresh() {
       this.$emit("refresh");
 
       // let item = this.tableContent.find(el => el.id === argData.item.id);
@@ -477,11 +497,27 @@ export default {
         let references = this.$refs["editableComponent"];
 
         references.forEach(el => {
-          el.setValueToColumn(category, label, value);
+          if (res.useMaquetteValue) {
+            this.findValueInMaquette({
+              id: el.item.id,
+              category: category,
+              attribute: label
+            });
+          } else {
+            el.setValueToColumn(category, label, value);
+          }
         });
       } else {
-        for (const obj of this.itemsMap.values()) {
-          obj[`${category}_${label}`]["displayValue"] = value;
+        for (const id of this.itemsMap.keys()) {
+          if (res.useMaquetteValue) {
+            this.findValueInMaquette({
+              id: id,
+              category: category,
+              attribute: label
+            });
+          } else {
+            this.setValue(id, category, attribute, value);
+          }
         }
       }
     },
@@ -536,6 +572,23 @@ export default {
         }
         this.itemsMap.set(content.id, element);
       }
+    },
+
+    async findValueInMaquette(res) {
+      const node = SpinalGraphService.getInfo(res.id);
+
+      const value = await attributeService.getBimObjectAttribute(
+        node.get(),
+        res.attribute
+      );
+
+      if (value === "-") return;
+      else this.setValue(res.id, res.category, res.attribute, value);
+    },
+
+    setValue(id, category, attribute, value = "-") {
+      const obj = this.itemsMap.get(id);
+      obj[`${category}_${attribute}`]["displayValue"] = value;
     }
   },
   computed: {
@@ -598,16 +651,30 @@ export default {
 }
 
 ._tableContent .mdToolbar .toolbar-start {
+  width: 19%;
   display: flex;
   justify-content: center;
   align-items: center;
+  border-right: 1px dashed grey;
+}
+
+._tableContent .mdToolbar .toolbar-end {
+  width: 80%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+._tableContent .mdToolbar .toolbar-end .searchDiv {
+  display: flex;
 }
 
 ._tableContent .md-content.md-theme-default {
   background: transparent !important;
 }
 
-._tableContent .secondMdToolbar {
+/* ._tableContent .secondMdToolbar {
   width: 100%;
   height: 50px;
   padding: 0px !important;
@@ -616,11 +683,11 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-}
+} */
 
 ._tableContent ._tableContainer {
   width: 100%;
-  height: calc(100% - 128px);
+  height: calc(100% - 68px);
 }
 
 .buttonFab {
@@ -629,25 +696,25 @@ export default {
   right: 20px;
 }
 
-.buttonFab > * {
+/* .buttonFab > * {
   justify-content: center;
   align-items: flex-end;
-}
+} */
 
-.buttonFab .editModeBtn {
+/* .buttonFab .editModeBtn {
   display: flex;
   flex-direction: row;
-}
+} */
 
-.secondToolbar .md-toolbar-end {
+/* .secondToolbar .md-toolbar-end {
   display: flex;
   justify-content: flex-end !important;
-}
+} */
 
-.elevation-1 {
+/* .elevation-1 {
   height: calc(100% - 50px);
   overflow: auto;
-}
+} */
 </style>
 
 <style>
@@ -665,7 +732,7 @@ export default {
 }
 
 .selectionMenu .md-button .md-ripple,
-._tableContent .secondMdToolbar .md-ripple {
+._tableContent .mdToolbar .md-ripple {
   padding: 0px;
 }
 

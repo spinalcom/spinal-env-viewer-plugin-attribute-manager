@@ -23,18 +23,36 @@ with this file. If not, see
 -->
 
 <template>
-  <div v-if="data"
-       class="content"
-       :class="{'contentEditable' : editable}"
-       :contenteditable="editable"
-       ref="display"
-       @input="changeValue">
-    {{data.displayValue}}
+  <div class="content"
+       v-if="data"
+       @mouseover="mouseIsOver"
+       @mouseleave="mouseOutOver">
+
+    <div class="valueDiv"
+         :class="{'contentEditable' : editable}"
+         :contenteditable="editable"
+         ref="display"
+         @input="changeValue">
+      {{data.displayValue}}
+    </div>
+
+    <md-button class="contentIcon md-icon-button md-dense"
+               v-if="displayBtn()"
+               @click="findValueInMaquette">
+      <md-tooltip>find value in maquette</md-tooltip>
+      <md-icon>my_location</md-icon>
+    </md-button>
+
+    <!-- <md-icon class="contentIcon"
+             v-if="displayBtn()"
+             @click="findValueInMaquette">my_location</md-icon> -->
+
   </div>
 </template>
 
 <script>
 import attributeService from "../../../../services";
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 
 export default {
   name: "tableContentComponent",
@@ -43,7 +61,8 @@ export default {
     return {
       // value: "",
       // displayValue: ""
-      data: undefined
+      data: undefined,
+      mouseOver: false
     };
   },
   mounted() {
@@ -128,6 +147,30 @@ export default {
             this.setValue();
           });
       }
+    },
+
+    mouseIsOver() {
+      this.mouseOver = true;
+    },
+
+    displayBtn() {
+      let nodeInfo = SpinalGraphService.getInfo(this.item.id);
+
+      const isBimObject = nodeInfo && nodeInfo.type.get() === "BIMObject";
+
+      return this.editable && this.mouseOver && isBimObject;
+    },
+
+    mouseOutOver() {
+      this.mouseOver = false;
+    },
+
+    findValueInMaquette() {
+      this.$emit("findValueInMaquette", {
+        id: this.item.id,
+        category: this.attribute.category,
+        attribute: this.attribute.label
+      });
     }
   }
 };
@@ -137,9 +180,41 @@ export default {
 .content {
   width: 100%;
   word-break: break-word;
+  display: flex;
 }
 
-.contentEditable {
+.content .valueDiv {
+  width: 80%;
+}
+
+.content .contentEditable {
+  /* width: 80%; */
+  padding-bottom: 6px;
   border-bottom: 1px solid gray;
+}
+
+.content .contentIcon {
+  /* width: 20%;
+  min-width: 10px;
+  width: 10px;
+  height: 10px; */
+  /* z-index: 999999; */
+
+  width: 24px;
+  min-width: 24px;
+  padding: 0px;
+  margin: 0px;
+  height: 24px;
+}
+
+.content .contentIcon:hover {
+  cursor: pointer;
+  color: #448aff;
+}
+</style>
+
+<style>
+.content .contentIcon .md-ripple {
+  padding: 0px;
 }
 </style>

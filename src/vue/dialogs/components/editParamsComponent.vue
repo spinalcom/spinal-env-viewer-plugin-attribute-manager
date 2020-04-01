@@ -92,10 +92,8 @@ with this file. If not, see
          :class="{'contentWithOutHeader' : editMode}">
       <div class="header">
         <div>{{configurationData.name}}</div>
-        <div class="buttons">
-          <menu-component v-if="editMode"
-                          @add="addCategory"></menu-component>
 
+        <div class="buttons">
           <v-btn fab
                  blue
                  outline
@@ -114,9 +112,7 @@ with this file. If not, see
                  @click="activeEditMode(true)">
             <v-icon>{{editMode ? "check" : "edit"}}</v-icon>
           </v-btn>
-
         </div>
-
       </div>
 
       <display-list-component class="content md-scrollbar"
@@ -126,6 +122,13 @@ with this file. If not, see
                               @add="addSubItem"
                               @remove="removeItem">
       </display-list-component>
+
+      <div class="header">
+        <menu-component class="addCat"
+                        v-if="editMode"
+                        @add="addCategory"></menu-component>
+
+      </div>
     </div>
 
   </div>
@@ -181,10 +184,12 @@ export default {
         this.configurationData = JSON.parse(JSON.stringify(this.copyItem));
       }
     },
+
     async setAsCurrentConfiguration() {
       await Utilities.setAsCurrentConfiguration(this.configurationSelected);
       this.$emit("change");
     },
+
     isCurrentConfiguration() {
       if (typeof this.configurationSelected === "undefined") return false;
 
@@ -196,6 +201,7 @@ export default {
 
       return false;
     },
+
     addSubItem(res) {
       if (res.category && res.label) {
         let found = this.configurationData.categories.find(el => {
@@ -214,6 +220,7 @@ export default {
         }
       }
     },
+
     removeItem(res) {
       if (typeof res.attr === "undefined") {
         this.configurationData.categories = this.configurationData.categories.filter(
@@ -233,6 +240,7 @@ export default {
         }
       }
     },
+
     addCategory(res) {
       let found = this.configurationData.categories.find(
         el => el.name === res.category
@@ -281,7 +289,7 @@ export default {
 
 .list .content .content {
   width: 100%;
-  height: calc(100% - 60px);
+  height: calc(100% - 120px);
 }
 
 .list .content .header {
@@ -292,6 +300,10 @@ export default {
   font-size: 20px;
   text-transform: uppercase;
   justify-content: space-between;
+}
+
+.list .content .header .addCat {
+  border: 1px solid #448aff;
 }
 
 .list .content .header .buttons {

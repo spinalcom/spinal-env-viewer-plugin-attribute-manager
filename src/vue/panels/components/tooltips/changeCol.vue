@@ -63,10 +63,13 @@ with this file. If not, see
                          class="md-primary">get BIM Value</md-checkbox>
           </div> -->
 
+          <md-checkbox v-model="useMaquetteValue"
+                       class="md-primary">Use maquette value</md-checkbox>
+
           <md-field class="tooltip-content">
             <label>Value</label>
             <md-input v-model="value"
-                      :disabled="!columnSelected || columnSelected.trim().length === 0">
+                      :disabled="useMaquetteValue || (!columnSelected || columnSelected.trim().length === 0)">
             </md-input>
           </md-field>
 
@@ -113,6 +116,7 @@ export default {
     return {
       columnSelected: "",
       columnsFiltered: [],
+      useMaquetteValue: false,
       pageOnly: true,
       value: ""
     };
@@ -127,15 +131,24 @@ export default {
   },
   methods: {
     Validate() {
-      if (this.itemsSelected && this.value.trim().length > 0) {
-        this.$emit("setValueToColumn", {
+      if (
+        this.itemsSelected &&
+        (this.value.trim().length > 0 || this.useMaquetteValue)
+      ) {
+        const value = this.$emit("setValueToColumn", {
           value: this.value.trim(),
           column: this.columnSelected,
-          pageOnly: this.pageOnly
+          pageOnly: this.pageOnly,
+          useMaquetteValue: this.useMaquetteValue
         });
       } else {
-        alert("select at least one item !");
+        alert("select at least one item, select value !");
       }
+    }
+  },
+  watch: {
+    useMaquetteValue() {
+      if (this.useMaquetteValue) this.value = "";
     }
   }
 };
@@ -143,8 +156,8 @@ export default {
 
 <style scoped>
 .popoverContainer {
-  width: 200px;
-  height: 300px;
+  width: 250px;
+  height: 350px;
   color: white;
 }
 

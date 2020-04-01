@@ -29,20 +29,6 @@ with this file. If not, see
     <div class="header">
       <div>{{configurationCopy.name}}</div>
 
-      <div class="buttonsDiv">
-        <menu-component class="addCatBtn"
-                        @add="addCategory"></menu-component>
-
-        <v-btn outline
-               color="#2196f3"
-               @click="updateConfiguration">
-          <v-icon dark>check</v-icon>
-          &nbsp;
-          Save Modification
-        </v-btn>
-
-      </div>
-
       <!-- <v-alert :value="true"
                color="green"
                outline
@@ -59,6 +45,21 @@ with this file. If not, see
                             @add="addSubItem"
                             @remove="removeItem">
     </display-list-component>
+
+    <div class="header">
+      <menu-component class="addCatBtn"
+                      @add="addCategory"></menu-component>
+
+      <v-btn outline
+             color="#2196f3"
+             @click="updateConfiguration">
+        <v-icon dark>check</v-icon>
+        &nbsp;
+        Save Modification
+      </v-btn>
+
+    </div>
+
   </div>
 
   <div class="empty"
@@ -167,7 +168,9 @@ export default {
 
 .list .content {
   width: 100%;
-  height: calc(100% - 60px);
+  height: calc(100% - 120px);
+  overflow: hidden;
+  overflow-y: auto;
 }
 
 .list .header {
@@ -197,7 +200,7 @@ export default {
 </style>
 
 <style>
-.list .header .buttonsDiv .addCatBtn .md-ripple {
-  border: 1px solid #448aff;
+.list .header .addCatBtn .md-ripple {
+  border: 1px solid #2196f3;
 }
 </style>
