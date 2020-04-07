@@ -201,18 +201,23 @@ export default {
         {
           key: "id",
           header: "SpinalGraph ID",
-          width: 30
+          width: 65
         },
         {
           key: "name",
           header: "Name",
-          width: 30
+          width: 50
         },
         {
-          key: "type",
-          header: "Type",
-          width: 30
+          key: "revit_id",
+          header: "Revit ID",
+          width: 15
         }
+        // {
+        //   key: "type",
+        //   header: "Type",
+        //   width: 30
+        // }
       ];
 
       this.header.forEach(head => {
@@ -239,7 +244,7 @@ export default {
         let info = {
           id: content.id,
           name: content.name,
-          type: content.type
+          revit_id: this._getRevitID(content.name)
         };
 
         this.header.forEach(head => {
@@ -269,6 +274,16 @@ export default {
       spinalExcelManager.export(result).then(buffer => {
         FileSaver.saveAs(new Blob(buffer), `spinalcom.xlsx`);
       });
+    },
+    _getRevitID(name) {
+      let reg = /\[(.*)\]/gim;
+      let macthed = name.match(reg);
+      if (macthed && macthed.length > 0) {
+        let value = JSON.parse(macthed[macthed.length - 1]);
+        return value[0];
+      }
+
+      return "-";
     }
   },
   watch: {

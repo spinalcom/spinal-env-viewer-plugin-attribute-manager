@@ -85,8 +85,8 @@ with this file. If not, see
     <!-- END Second Toolbar -->
 
     <!-- First Toolbar -->
-    <md-toolbar class="mdToolbar"
-                md-elevation="0">
+    <div class="mdToolbar"
+         md-elevation="0">
       <div class="toolbar-start">
         <standard-buttons :itemsSelected="itemsSelected"></standard-buttons>
 
@@ -110,7 +110,7 @@ with this file. If not, see
           <md-icon>search</md-icon>
         </md-field>
       </div>
-    </md-toolbar>
+    </div>
     <!-- End First Toolbar -->
 
     <div class="_tableContainer">
@@ -153,6 +153,7 @@ with this file. If not, see
                 :key="index">
               {{head.text}}
             </th>
+            <th></th>
           </tr>
         </template>
 
@@ -162,7 +163,11 @@ with this file. If not, see
                         primary
                         hide-details></v-checkbox>
           </td>
-          <td @click="selectItem(props.item)">{{ props.item.name }}</td>
+          <td class="nameCell"
+              @click="selectItem(props.item)">
+            <md-tooltip md-direction="top">{{ props.item.name }}</md-tooltip>
+            {{ props.item.name }}
+          </td>
           <td>{{ props.item.type }}</td>
           <td class="text-xs-center"
               v-for="(attribute, index) in header"
@@ -176,14 +181,34 @@ with this file. If not, see
                                      ref="editableComponent">
             </table-content-component>
           </td>
+          <td>
+            <md-button class="md-icon-button"
+                       @click="openAttributesPanel(props.item)">
+              <md-tooltip>Open attributes Panel</md-tooltip>
+              <md-icon>view_headline</md-icon>
+            </md-button>
+          </td>
+        </template>
+
+        <template v-slot:pageText="props">
+          Lignes {{ props.pageStart }} - {{ props.pageStop }} de
+          {{ props.itemsLength }}
         </template>
       </v-data-table>
 
-      <div class="text-xs-center pt-2">
+      <!-- <div class="text-xs-center pt-2"> -->
+      <div class="paginationDiv">
+        <!-- <div></div> -->
+
         <v-pagination v-model="pagination.page"
                       :length="pages"
                       :total-visible="5"
                       color="blue"></v-pagination>
+
+        <div class="detail">
+          Total items : {{searched.length}}
+        </div>
+
       </div>
     </div>
     <!-- </md-table> -->
@@ -240,7 +265,8 @@ export default {
       headerDisplayed: [],
       pagination: {
         page: 1,
-        rowsPerPage: 20
+        rowsPerPage: 20,
+        totalItems: 0
       },
       // buttons: [
       //   {
@@ -416,7 +442,6 @@ export default {
     },
 
     onSelect(items) {
-      console.log(items);
       // this.itemsSelected = items;
     },
 
@@ -430,8 +455,6 @@ export default {
     },
 
     selectAll(value) {
-      // console.log(value, this.sortByName(this.searched));
-
       if (value) {
         if (this.itemsSelected.length === this.searched.length)
           this.itemsSelected = [];
@@ -440,18 +463,12 @@ export default {
         const pageNumber = this.pagination.page;
         const itemByPage = this.pagination.rowsPerPage;
 
-        console.log("itemByPage", itemByPage);
-
         const begin = (pageNumber - 1) * itemByPage;
         const end = begin + itemByPage;
-
-        console.log("begin", begin, "end", end);
 
         const sortedList = Object.assign([], this.sortByName(this.searched));
         const pageItems = sortedList.slice(begin, end);
         const allItemsIsSelected = this.allItemsIsSelected(pageItems);
-
-        console.log("allItemsIsSelected", allItemsIsSelected, pageItems);
 
         for (const element of pageItems) {
           if (allItemsIsSelected) {
@@ -498,11 +515,14 @@ export default {
 
         references.forEach(el => {
           if (res.useMaquetteValue) {
-            this.findValueInMaquette({
-              id: el.item.id,
-              category: category,
-              attribute: label
-            });
+            this.findValueInMaquette(
+              {
+                id: el.item.id,
+                category: category,
+                attribute: label
+              },
+              false
+            );
           } else {
             el.setValueToColumn(category, label, value);
           }
@@ -510,11 +530,14 @@ export default {
       } else {
         for (const id of this.itemsMap.keys()) {
           if (res.useMaquetteValue) {
-            this.findValueInMaquette({
-              id: id,
-              category: category,
-              attribute: label
-            });
+            this.findValueInMaquette(
+              {
+                id: id,
+                category: category,
+                attribute: label
+              },
+              false
+            );
           } else {
             this.setValue(id, category, attribute, value);
           }
@@ -574,7 +597,7 @@ export default {
       }
     },
 
-    async findValueInMaquette(res) {
+    async findValueInMaquette(res, alert = true) {
       const node = SpinalGraphService.getInfo(res.id);
 
       const value = await attributeService.getBimObjectAttribute(
@@ -582,13 +605,40 @@ export default {
         res.attribute
       );
 
-      if (value === "-") return;
-      else this.setValue(res.id, res.category, res.attribute, value);
+      if (value === "-") {
+        if (alert) alert("no value found !");
+        return;
+      } else {
+        this.setValue(res.id, res.category, res.attribute, value);
+      }
     },
 
     setValue(id, category, attribute, value = "-") {
       const obj = this.itemsMap.get(id);
       obj[`${category}_${attribute}`]["displayValue"] = value;
+    },
+
+    openAttributesPanel(item) {
+      let info = SpinalGraphService.getInfo(item.id);
+
+      const viewer = window.spinal.ForgeViewer.viewer;
+      let propertyPanel = viewer.getPropertyPanel();
+
+      if (typeof propertyPanel === "undefined") {
+        propertyPanel = new Autodesk.Viewing.Extensions.ViewerPropertyPanel.prototype.constructor(
+          viewer
+        );
+        viewer.setPropertyPanel(propertyPanel);
+      }
+
+      const model = window.spinal.BimObjectService.getModelByBimfile(
+        info.bimFileId.get()
+      );
+
+      propertyPanel.currentModel = model;
+
+      propertyPanel.setVisible(true);
+      propertyPanel.setNodeProperties(info.dbid.get());
     }
   },
   computed: {
@@ -597,9 +647,13 @@ export default {
     }
   },
   watch: {
-    tableContent() {
+    async tableContent() {
       this.constructMap();
-      this.searched = this.filterByName(this.tableContent, this.searchValue);
+      this.searched = await this.filterByName(
+        this.tableContent,
+        this.searchValue
+      );
+      this.pagination.totalItems = this.searched.length;
     },
     header() {
       let formated = this.header.map(el => {
@@ -641,7 +695,7 @@ export default {
 
 ._tableContent .mdToolbar {
   width: 100%;
-  height: 50px;
+  height: 100px;
   padding: 0px;
   margin-bottom: 10px;
   background-color: transparent;
@@ -651,19 +705,19 @@ export default {
 }
 
 ._tableContent .mdToolbar .toolbar-start {
-  width: 19%;
+  width: 40%;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-right: 1px dashed grey;
+  /* border-right: 1px dashed grey; */
 }
 
 ._tableContent .mdToolbar .toolbar-end {
-  width: 80%;
+  width: 50%;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
+  flex-direction: column;
+  /* align-items: center; */
+  /* justify-content: flex-end; */
 }
 
 ._tableContent .mdToolbar .toolbar-end .searchDiv {
@@ -687,7 +741,32 @@ export default {
 
 ._tableContent ._tableContainer {
   width: 100%;
-  height: calc(100% - 68px);
+  height: calc(100% - 118px);
+}
+
+._tableContent ._tableContainer .nameCell {
+  padding: 0px;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 200px;
+  text-overflow: ellipsis;
+}
+
+._tableContent ._tableContainer .paginationDiv {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ._tableContent ._tableContainer .paginationDiv > * { */
+/* width: 30%; */
+/* } */
+
+._tableContent ._tableContainer .paginationDiv .detail {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
 }
 
 .buttonFab {
@@ -732,7 +811,8 @@ export default {
 }
 
 .selectionMenu .md-button .md-ripple,
-._tableContent .mdToolbar .md-ripple {
+._tableContent .mdToolbar .md-ripple,
+._tableContent ._tableContainer .md-ripple {
   padding: 0px;
 }
 
@@ -778,5 +858,16 @@ export default {
   justify-content: center;
   align-items: center;
   /* color: #448aff; */
+}
+
+._tableContent .mdToolbar .toolbar-end .md-field {
+  min-height: unset;
+  padding: 0px;
+  margin: 0px;
+}
+
+._tableContent .mdToolbar .toolbar-end .searchDiv .md-radio:not(.md-disabled),
+.md-radio:not(.md-disabled) .md-radio-label {
+  white-space: nowrap;
 }
 </style>

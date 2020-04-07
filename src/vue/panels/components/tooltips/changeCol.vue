@@ -64,7 +64,7 @@ with this file. If not, see
           </div> -->
 
           <md-checkbox v-model="useMaquetteValue"
-                       class="md-primary">Use maquette value</md-checkbox>
+                       class="md-primary">Import from BIM value</md-checkbox>
 
           <md-field class="tooltip-content">
             <label>Value</label>
