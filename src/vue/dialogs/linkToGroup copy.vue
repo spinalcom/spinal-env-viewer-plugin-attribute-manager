@@ -26,33 +26,94 @@ with this file. If not, see
   <md-dialog class="mdDialogContainer"
              :md-active.sync="showDialog"
              @md-closed="closeDialog(false)">
-    <md-dialog-title class="dialogTitle">Link To Group</md-dialog-title>
-    <md-dialog-content class="content">
+    <md-dialog-title>Link To Group</md-dialog-title>
+    <md-dialog-content>
 
-      <div class="section">
-        <link-template :title="'Contexts'"
-                       :data="data"
-                       :itemSelected="contextSelected"
-                       @create="createContext"
-                       @select="selectContext"></link-template>
+      <div class="md-layout md-gutter">
+        <div class="md-layout-item md-size-85">
+          <md-field>
+            <label for="context">Select Context</label>
+            <md-select v-model="contextSelected"
+                       name="context"
+                       id="context"
+                       md-dense>
+              <md-option v-for="(context,index) in data"
+                         :key="index"
+                         :value="context.id">{{context.name}}
+              </md-option>
+
+            </md-select>
+          </md-field>
+        </div>
+
+        <div class="md-layout-item md-size-10 mdIcon">
+          <md-button class="md-icon-button"
+                     @click="createContext">
+            <md-icon>control_point</md-icon>
+          </md-button>
+        </div>
+
       </div>
 
-      <div class="section">
-        <link-template :title="'Categories'"
-                       :data="categories"
-                       :itemSelected="categorySelected"
-                       @create="createCategory"
-                       @select="selectCategory"></link-template>
+      <div class="md-layout md-gutter"
+           v-if="contextSelected">
+        <div class="md-layout-item md-size-85">
+          <md-field>
+            <label for="category">Select Category</label>
+            <md-select v-model="categorySelected"
+                       name="category"
+                       id="category"
+                       md-dense>
+              <md-option :value="undefined"
+                         disabled>None</md-option>
+
+              <md-option v-for="(category,index) in categories"
+                         :key="index"
+                         :value="category.id">{{category.name}}
+              </md-option>
+
+            </md-select>
+          </md-field>
+        </div>
+
+        <div class="md-layout-item md-size-10 mdIcon">
+          <md-button class="md-icon-button"
+                     @click="createCategory">
+            <md-icon>control_point</md-icon>
+          </md-button>
+        </div>
 
       </div>
 
-      <div class="section">
-        <link-template :title="'Groups'"
-                       :data="groups"
-                       :itemSelected="groupSelected"
-                       @create="createGroup"
-                       @select="selectGroup"></link-template>
+      <div class="md-layout md-gutter"
+           v-if="contextSelected && categorySelected">
+        <div class="md-layout-item md-size-85">
+          <md-field>
+            <label for="group">Select Group</label>
+            <md-select v-model="groupSelected"
+                       name="group"
+                       id="group"
+                       md-dense>
+              <md-option :value="undefined"
+                         disabled>None</md-option>
+
+              <md-option v-for="(group,index) in groups"
+                         :key="index"
+                         :value="group.id">{{group.name}}
+              </md-option>
+            </md-select>
+          </md-field>
+        </div>
+
+        <div class="md-layout-item md-size-10 mdIcon">
+          <md-button class="md-icon-button"
+                     @click="createGroup">
+            <md-icon>control_point</md-icon>
+          </md-button>
+        </div>
+
       </div>
+
     </md-dialog-content>
     <md-dialog-actions>
       <md-button class="md-primary"
@@ -72,13 +133,8 @@ import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-servi
 import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 import EventBus from "spinal-env-viewer-room-manager/js/event";
 
-import LinkToGroupTemplate from "./components/linkToGroupTemplate.vue";
-
 export default {
   name: "dialogComponent",
-  components: {
-    "link-template": LinkToGroupTemplate
-  },
   props: ["onFinised"],
   data() {
     return {
@@ -92,19 +148,16 @@ export default {
       items: []
     };
   },
-
   created() {
     this.getAllData();
-    EventBus.$on("itemCreated", id => {
+    EventBus.$on("itemCreated", () => {
       this.getAllData();
     });
   },
-
   methods: {
     opened(option) {
       this.items = option.itemSelected;
     },
-
     removed(option) {
       if (option) {
         this.items.forEach(el => {
@@ -117,7 +170,6 @@ export default {
       }
       this.showDialog = false;
     },
-
     closeDialog(closeResult) {
       if (typeof this.onFinised === "function") {
         this.onFinised(closeResult);
@@ -155,7 +207,6 @@ export default {
       }
       return [];
     },
-
     disabled() {
       return !(
         this.contextSelected &&
@@ -167,28 +218,23 @@ export default {
     createContext() {
       spinalPanelManagerService.openPanel("createGroupContextDialog", {
         title: "Create a Grouping Context",
-        type: "context",
-        callback: id => (this.contextSelected = id)
+        type: "context"
       });
     },
-
     createCategory() {
       spinalPanelManagerService.openPanel("createGroupContextDialog", {
         title: "add Category",
         type: "element",
         contextId: this.contextSelected,
-        selectedNode: SpinalGraphService.getInfo(this.contextSelected),
-        callback: id => (this.categorySelected = id)
+        selectedNode: SpinalGraphService.getInfo(this.contextSelected)
       });
     },
-
     createGroup() {
       spinalPanelManagerService.openPanel("createGroupContextDialog", {
         title: "add Group",
         type: "element",
         contextId: this.contextSelected,
-        selectedNode: SpinalGraphService.getInfo(this.categorySelected),
-        callback: id => (this.groupSelected = id)
+        selectedNode: SpinalGraphService.getInfo(this.categorySelected)
       });
     },
 
@@ -197,16 +243,15 @@ export default {
     //////////////////////////////////////////////////////////////////
 
     updateCategory() {
-      // this.categorySelected = undefined;
+      this.categorySelected = undefined;
       this.categories = [];
       if (this.contextSelected) {
         let val = this.data.find(el => el.id === this.contextSelected);
         if (val) this.categories = val.category;
       }
     },
-
     updateGroups() {
-      // this.groupSelected = undefined;
+      this.groupSelected = undefined;
       this.groups = [];
       if (this.contextSelected && this.categorySelected) {
         let context = this.data.find(el => el.id === this.contextSelected);
@@ -218,32 +263,13 @@ export default {
           if (category) this.groups = category.groups;
         }
       }
-    },
-
-    selectContext(id) {
-      this.contextSelected = id;
-    },
-
-    selectCategory(id) {
-      this.categorySelected = id;
-    },
-
-    selectGroup(id) {
-      this.groupSelected = id;
     }
   },
   watch: {
     contextSelected() {
-      this.categorySelected = undefined;
-      this.groupSelected = undefined;
-
       this.updateCategory();
-      this.updateGroups();
     },
-
     categorySelected() {
-      this.groupSelected = undefined;
-
       this.updateGroups();
     }
   }
@@ -252,29 +278,12 @@ export default {
 
 <style scoped>
 .mdDialogContainer {
-  width: 100%;
-  height: 600px;
+  width: 400px;
+  height: 400px;
 }
 
-.mdDialogContainer .dialogTitle {
-  text-align: center;
-}
-
-.mdDialogContainer .content {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-}
-
-.mdDialogContainer .content .section {
-  width: 30%;
-  border: 1px solid grey;
-  border-radius: 4% 4% 0 0;
-  padding: 15px;
-}
-
-/* .mdIcon {
+.mdIcon {
   display: flex;
   align-items: center;
-} */
+}
 </style>

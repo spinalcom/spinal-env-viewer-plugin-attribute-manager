@@ -23,7 +23,8 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="_tableContent">
+  <div class="_tableContent"
+       data-app>
     <div class="buttonFab">
 
       <fabs-component :editMode="editMode"
@@ -34,78 +35,41 @@ with this file. If not, see
                       @edit="ActiveEditMode"
                       @valid="validateOrCancel"
                       @setToColumn="setValueToColumn"></fabs-component>
-
-      <!-- <md-speed-dial v-if="!editMode"
-                     md-direction="top"
-                     md-event="click">
-        <md-speed-dial-target class="md-fab md-mini md-primary">
-          <md-icon class="md-morph-initial">menu</md-icon>
-          <md-icon class="md-morph-final">menu_open</md-icon>
-        </md-speed-dial-target>
-
-        <md-speed-dial-content class="mdSpeedDialBtn">
-          <md-button v-for="(btn, index) in buttons"
-                     :key="index"
-                     class="md-primary md-dense"
-                     @click="btn.action">
-            <md-icon>{{ btn.icon }}</md-icon>
-            &nbsp;
-            {{ btn.text }}
-          </md-button>
-
-        </md-speed-dial-content>
-      </md-speed-dial> -->
-
-      <!-- <div v-if="editMode"
-           class="editModeBtn">
-        <md-button title="Cancel modification"
-                   @click="validateOrCancel(false)"
-                   class="md-fab md-mini md-plain">
-          <md-icon>clear</md-icon>
-        </md-button>
-
-        <change-col-value :columns="headerDisplayed"
-                          :itemsSelected="itemsSelected"
-                          @setValueToColumn="setValueToColumn">
-        </change-col-value>
-
-        <md-button title="Validate modification"
-                   @click="validateOrCancel(true)"
-                   class="md-fab md-mini md-primary">
-          <md-icon>done</md-icon>
-        </md-button>
-      </div> -->
     </div>
 
-    <!-- Second Toolbar -->
-    <!-- <md-toolbar class="secondMdToolbar"
-                md-elevation="0">
-
-    </md-toolbar> -->
-    <!-- END Second Toolbar -->
-
-    <!-- First Toolbar -->
     <div class="mdToolbar"
          md-elevation="0">
       <div class="toolbar-start">
-        <standard-buttons :itemsSelected="itemsSelected"></standard-buttons>
+        <standard-buttons :itemsSelected="itemsSelected"
+                          @refresh="refresh"></standard-buttons>
 
       </div>
 
       <div class="toolbar-end">
         <div class="searchDiv">
-          <md-radio v-model="searchBy"
+          <!-- <md-radio v-model="searchBy"
                     class="md-primary"
                     :value="0">Search by name</md-radio>
 
           <md-radio v-model="searchBy"
                     class="md-primary"
-                    :value="1">Search by value</md-radio>
+                    :value="1">Search by value</md-radio> -->
+
+          <md-field>
+            <!-- <label for="searchBy">Search By</label> -->
+            <md-select v-model="searchBy"
+                       name="searchBy"
+                       id="searchBy">
+              <md-option :value="0">Search by name</md-option>
+              <md-option :value="1">Search by value</md-option>
+
+            </md-select>
+          </md-field>
         </div>
 
         <md-field>
           <input class="md-input"
-                 placeholder="Search by name or value..."
+                 placeholder="Search..."
                  v-model="searchValue" />
           <md-icon>search</md-icon>
         </md-field>
@@ -118,10 +82,10 @@ with this file. If not, see
                     :headers="headerDisplayed"
                     :items="searched"
                     :custom-sort="sortByName"
+                    :rows-per-page-items="rowsPerPageText"
                     :pagination.sync="pagination"
-                    :loading="true"
                     dark
-                    hide-actions
+                    :loading="true"
                     class="elevation-1">
 
         <template v-slot:headers="props">
@@ -184,22 +148,16 @@ with this file. If not, see
           <td>
             <md-button class="md-icon-button"
                        @click="openAttributesPanel(props.item)">
-              <md-tooltip>Open attributes Panel</md-tooltip>
+              <md-tooltip>Open Properties Panel</md-tooltip>
               <md-icon>view_headline</md-icon>
             </md-button>
           </td>
         </template>
 
-        <template v-slot:pageText="props">
-          Lignes {{ props.pageStart }} - {{ props.pageStop }} de
-          {{ props.itemsLength }}
-        </template>
       </v-data-table>
 
       <!-- <div class="text-xs-center pt-2"> -->
-      <div class="paginationDiv">
-        <!-- <div></div> -->
-
+      <!-- <div class="paginationDiv">
         <v-pagination v-model="pagination.page"
                       :length="pages"
                       :total-visible="5"
@@ -209,7 +167,7 @@ with this file. If not, see
           Total items : {{searched.length}}
         </div>
 
-      </div>
+      </div> -->
     </div>
     <!-- </md-table> -->
   </div>
@@ -268,6 +226,7 @@ export default {
         rowsPerPage: 20,
         totalItems: 0
       },
+      rowsPerPageText: [20, 30, 40],
       // buttons: [
       //   {
       //     icon: "settings_applications",
@@ -691,6 +650,7 @@ export default {
 ._tableContent {
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 ._tableContent .mdToolbar {
@@ -716,6 +676,7 @@ export default {
   width: 50%;
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
   /* align-items: center; */
   /* justify-content: flex-end; */
 }
@@ -869,5 +830,14 @@ export default {
 ._tableContent .mdToolbar .toolbar-end .searchDiv .md-radio:not(.md-disabled),
 .md-radio:not(.md-disabled) .md-radio-label {
   white-space: nowrap;
+}
+
+._tableContent .theme--dark.v-table,
+._tableContent .theme--dark.v-datatable .v-datatable__actions {
+  background-color: transparent;
+}
+
+._tableContent .theme--dark.v-datatable .v-datatable__actions {
+  justify-content: center;
 }
 </style>

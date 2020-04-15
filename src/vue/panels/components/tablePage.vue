@@ -23,53 +23,50 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="_mdContainer"
+  <div class="tablePage"
        v-if="itemDisplayed">
+    <div class="_mdContainer"
+         v-if="appState === STATES.normal">
+      <div class="header">
+        <div class="backBtn">
+          <md-button @click="back">
+            <md-icon>arrow_back</md-icon>
+            &nbsp;
+            BACK
+          </md-button>
+        </div>
+        <div class="exportImport">
+          <md-button class="md-primary attr_btn"
+                     @click="importExcel">
+            <md-icon>get_app</md-icon>
+            &nbsp;
+            Import
+          </md-button>
+          <md-button class="md-primary attr_btn"
+                     @click="exportData">
+            <md-icon>publish</md-icon>
+            &nbsp;
+            Export
+          </md-button>
 
-    <div class="header">
-      <div class="backBtn">
-        <md-button @click="back">
-          <md-icon>arrow_back</md-icon>
-          &nbsp;
-          BACK
-        </md-button>
+        </div>
       </div>
-      <div class="exportImport">
-        <!-- <md-button class="md-primary attr_btn">
-          <md-icon>get_app</md-icon>
-          &nbsp;
-          Import
-        </md-button> -->
-        <md-button class="md-primary attr_btn"
-                   @click="exportData">
-          <md-icon>publish</md-icon>
-          &nbsp;
-          Export
-        </md-button>
 
+      <div class="tableContent">
+        <table-component :tableContent="tableContent"
+                         :header="header"
+                         :typeSelected="typeSelected"
+                         @refresh="createAttribute"></table-component>
       </div>
     </div>
 
-    <!-- <div class="mdTableToolbar">
-      <create-attribute :show="showAttrTooltip"
-                        @open='openCreateAttrTooltips'
-                        :itemFiltered="itemDisplayed"
-                        @validate="createAttribute"></create-attribute>
+    <div class="loading"
+         v-if="appState === STATES.loading">
+      <md-progress-spinner md-mode="indeterminate"></md-progress-spinner>
 
-      <md-button class="md-icon-button"
-                 title="filter list">
-        <md-icon>filter_list</md-icon>
-      </md-button>
-    </div> -->
-
-    <div class="tableContent">
-      <table-component :tableContent="tableContent"
-                       :header="header"
-                       :typeSelected="typeSelected"
-                       @refresh="createAttribute"></table-component>
     </div>
-
   </div>
+
 </template>
 
 <script>
@@ -79,6 +76,8 @@ with this file. If not, see
 
 import TableComponent from "./table/index.vue";
 import spinalExcelManager from "spinal-env-viewer-plugin-excel-manager-service";
+
+import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
 
 import FileSaver from "file-saver";
 
@@ -100,8 +99,15 @@ export default {
     typeSelected: {}
   },
   data() {
+    this.STATES = Object.freeze({
+      normal: 0,
+      loading: 1,
+      error: 2
+    });
+
     return {
       // showAttrTooltip: false,
+      appState: this.STATES.normal,
       tableContent: [],
       header: []
     };
@@ -204,14 +210,14 @@ export default {
           width: 65
         },
         {
-          key: "name",
-          header: "Name",
-          width: 50
-        },
-        {
           key: "revit_id",
           header: "Revit ID",
           width: 15
+        },
+        {
+          key: "name",
+          header: "Name",
+          width: 50
         }
         // {
         //   key: "type",
@@ -230,6 +236,7 @@ export default {
 
       return headers;
     },
+
     getValue(item, attribute) {
       let found = item.attributes.find(el => {
         return (
@@ -239,6 +246,7 @@ export default {
 
       return typeof found !== "undefined" ? found.value : "-";
     },
+
     getExportRowsData() {
       return this.tableContent.map(content => {
         let info = {
@@ -255,6 +263,7 @@ export default {
         return info;
       });
     },
+
     formatExportData() {
       return [
         {
@@ -268,6 +277,7 @@ export default {
         }
       ];
     },
+
     exportData() {
       let result = this.formatExportData();
 
@@ -275,6 +285,7 @@ export default {
         FileSaver.saveAs(new Blob(buffer), `spinalcom.xlsx`);
       });
     },
+
     _getRevitID(name) {
       let reg = /\[(.*)\]/gim;
       let macthed = name.match(reg);
@@ -284,6 +295,34 @@ export default {
       }
 
       return "-";
+    },
+
+    importExcel() {
+      let input = document.createElement("input");
+      input.type = "file";
+      input.accept =
+        ".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
+      input.click();
+
+      input.addEventListener(
+        "change",
+        async event => {
+          const file = event.target.files[0];
+
+          this.appState = this.STATES.loading;
+
+          const dataJson = await spinalExcelManager.convertExcelToJson(file);
+
+          this.$emit("openExportDialog", {
+            data: dataJson,
+            table: this.tableContent
+          });
+
+          this.$destroy();
+          // this.appState = this.STATES.normal;
+        },
+        false
+      );
     }
   },
   watch: {
@@ -295,19 +334,27 @@ export default {
 
     //   lodash.debounce(this.getTableContent, 500, { maxWait: 1000 });
     // }
+  },
+  beforeDestroy() {
+    this.appState = this.STATES.normal;
   }
 };
 </script>
 
 <style scoped>
-._mdContainer {
+.tablePage {
   width: calc(100% - 10px);
   height: calc(100% - 10px);
+}
+
+.tablePage ._mdContainer {
+  width: 100%;
+  height: 100%;
   padding: 5px;
   overflow: hidden !important;
 }
 
-._mdContainer .header {
+.tablePage ._mdContainer .header {
   width: 100%;
   height: 60px;
   display: flex;
@@ -316,29 +363,21 @@ export default {
   align-items: center;
 }
 
-._mdContainer .tableContent {
+.tablePage ._mdContainer .tableContent {
   width: 100%;
   height: calc(100% - 60px);
 }
 
-/* ._container .tableContent .md-toolbar {
-  height: 60px;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  border: 1px solid red;
-} */
-
-/* .mdTableToolbar {
-  height: 60px;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-} */
-
 .categoryInHead {
   color: #448aff;
+}
+
+.tablePage .loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
 

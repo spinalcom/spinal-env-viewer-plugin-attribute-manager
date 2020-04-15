@@ -35,7 +35,8 @@ with this file. If not, see
                 :attributesDisplayed="attributesDisplayed"
                 :typeSelected="typeSelected"
                 @back="goBack"
-                @refresh="validateItem">
+                @refresh="validateItem"
+                @openExportDialog="openExportDialog">
     </table-page>
 
     <!--
@@ -160,6 +161,18 @@ export default {
           this.appState = this.STATES.normal;
           console.error(err);
         });
+    },
+
+    openExportDialog(res) {
+      this.appState = this.STATES.loading;
+
+      spinalPanelManagerService.openPanel("importAttributeExcelDialog", {
+        tableData: res.table,
+        excelData: res.data,
+        callback: () => {
+          this.refreshData();
+        }
+      });
     }
   },
   watch: {

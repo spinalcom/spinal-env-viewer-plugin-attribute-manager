@@ -46,7 +46,8 @@ export default {
     this.buttons = [
       { name: "isolate", icon: "settings_overscan", action: this.isolate },
       { name: "select BIM Objects", icon: "devices", action: this.select },
-      { name: "zoom", icon: "zoom_in", action: this.zoom }
+      { name: "zoom", icon: "zoom_in", action: this.zoom },
+      { name: "refresh", icon: "refresh", action: this.refresh }
     ];
     return {};
   },
@@ -76,6 +77,9 @@ export default {
       } else {
         alert("no item selected");
       }
+    },
+    refresh() {
+      this.$emit("refresh");
     }
   }
 };

@@ -1,10 +1,10 @@
 import Vue from "vue";
+
+
 import attributePanel from "../vue/panels/panel.vue";
 import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
 import ParamDialogComponent from "../vue/dialogs/paramsDialog.vue";
-import {
-  FileSystem
-} from "spinal-core-connectorjs_type";
+import ImportAttributeExcelDialog from '../vue/dialogs/importAttributeExcelDialog.vue';
 
 const {
   SpinalForgeExtention
@@ -49,14 +49,20 @@ for (let index = 0; index < panels.length; index++) {
 
 
 const dialogs = [{
-  name: "linkToGroupDialog",
-  vueMountComponent: Vue.extend(LinkToGroup),
-  parentContainer: document.body
-}, {
-  name: "paramDialogComponent",
-  vueMountComponent: Vue.extend(ParamDialogComponent),
-  parentContainer: document.body
-}];
+    name: "linkToGroupDialog",
+    vueMountComponent: Vue.extend(LinkToGroup),
+    parentContainer: document.body
+  }, {
+    name: "paramDialogComponent",
+    vueMountComponent: Vue.extend(ParamDialogComponent),
+    parentContainer: document.body
+  },
+  {
+    name: "importAttributeExcelDialog",
+    vueMountComponent: Vue.extend(ImportAttributeExcelDialog),
+    parentContainer: document.body
+  }
+];
 
 
 for (let index = 0; index < dialogs.length; index++) {
