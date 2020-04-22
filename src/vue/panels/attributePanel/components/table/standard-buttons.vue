@@ -37,7 +37,7 @@ with this file. If not, see
 </template>
 
 <script>
-import EventBus from "../../../../js/events/events.js";
+import EventBus from "../../../../../js/events/events.js";
 
 export default {
   name: "standardButton",

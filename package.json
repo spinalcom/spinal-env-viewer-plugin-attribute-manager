@@ -14,7 +14,8 @@
     "spinal-env-viewer-graph-service": "git+https://github.com/spinalcom/Spinal-Graph-Service.git",
     "spinal-env-viewer-plugin-documentation-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
     "spinal-env-viewer-plugin-excel-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-excel-manager-service.git",
-    "spinal-env-viewer-room-manager": "https://github.com/spinalcom/spinal-env-viewer-room-manager.git",
+    "spinal-env-viewer-room-manager": "git+https://github.com/spinalcom/spinal-env-viewer-room-manager.git",
+    "spinal-env-viewer-plugin-group-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-group-manager-service.git",
     "lodash": "^4.17.15",
     "v-tooltip": "^2.0.2",
     "file-saver": "^2.0.2"

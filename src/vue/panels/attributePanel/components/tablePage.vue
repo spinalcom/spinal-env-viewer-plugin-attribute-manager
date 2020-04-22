@@ -81,7 +81,9 @@ import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-servi
 
 import FileSaver from "file-saver";
 
-import utilities from "../../../js/utilities";
+// import utilities from "../../../../js/utilities";
+
+import { spinalConfigurationService } from "../../../../services";
 
 export default {
   name: "tablePage",
@@ -169,7 +171,9 @@ export default {
       //   );
       // });
 
-      return utilities.getElements().then(values => {
+      return spinalConfigurationService.getCurrentConfiguration().then(conf => {
+        let values = conf.categories;
+
         // let values = res.get();
         let attrs = [];
 

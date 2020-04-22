@@ -59,13 +59,20 @@ const {
 import TypeLstComponent from "./components/typesList.vue";
 import TablePage from "./components/tablePage.vue";
 
-import SpinalAttributeManager from "../../services";
+import SpinalAttributeManager from "../../../services";
+
+import EventBus from "../../../js/events/events";
 
 export default {
   name: "attributeManagerPanel",
   components: {
     "type-lst-component": TypeLstComponent,
     "table-page": TablePage
+  },
+  mounted() {
+    EventBus.$on("refreshTable", () => {
+      this.refreshData();
+    });
   },
   data() {
     this.STATES = Object.freeze({

@@ -1,7 +1,15 @@
 import Vue from "vue";
 
 
-import attributePanel from "../vue/panels/panel.vue";
+////////////////////////////////////
+//            Panels
+////////////////////////////////////
+import attributePanel from "../vue/panels/attributePanel/panel.vue";
+import configurationPanel from "../vue/panels/configurationPanel/configurationPanel.vue";
+
+////////////////////////////////////
+//            Dialogs
+////////////////////////////////////
 import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
 import ParamDialogComponent from "../vue/dialogs/paramsDialog.vue";
 import ImportAttributeExcelDialog from '../vue/dialogs/importAttributeExcelDialog.vue';
@@ -28,6 +36,18 @@ let panels = [{
     closeBehaviour: "hide"
   },
   style: {
+    height: "475px",
+    left: "400px"
+  }
+}, {
+  name: "configurationPanel",
+  vueMountComponent: Vue.extend(configurationPanel),
+  panel: {
+    title: "Configuration Panel",
+    closeBehaviour: "hide"
+  },
+  style: {
+    minWidth: "620px",
     height: "475px",
     left: "400px"
   }

@@ -23,12 +23,12 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="myListContainer">
+  <md-content class="myListContainer  md-scrollbar">
     <v-list v-if="categories && categories.length > 0"
             class="listContainer"
             expand
-            flat
-            dark>
+            dark
+            flat>
       <v-list-group v-for="(item,index) in categories"
                     :key="index"
                     prepend-icon="keyboard_arrow_down"
@@ -106,12 +106,12 @@ with this file. If not, see
       {{message}}
     </div>
 
-  </div>
+  </md-content>
 
 </template>
 
 <script>
-import menuComponent from "../../../vue/panels/attributePanel/components/tooltips/addItem.vue";
+import menuComponent from "../../attributePanel/components/tooltips/addItem.vue";
 
 export default {
   name: "displayListComponent",
@@ -129,10 +129,12 @@ export default {
       default: true
     }
   },
+
   methods: {
     addAttributes(res) {
       this.$emit("add", res);
     },
+
     remove(category, isCategory, attribute) {
       let item = {
         category: category,
@@ -149,12 +151,13 @@ export default {
 .myListContainer {
   width: 100%;
   height: calc(100% - 50px);
+  /* overflow: auto; */
 }
 
 .myListContainer .listContainer {
   width: 100%;
   height: 100%;
-  overflow: auto;
+  /* overflow: auto; */
 }
 
 .myListContainer .emptyList {

@@ -42,7 +42,8 @@ with this file. If not, see
                        :data="categories"
                        :itemSelected="categorySelected"
                        @create="createCategory"
-                       @select="selectCategory"></link-template>
+                       @select="selectCategory"
+                       :disableBtn="!contextSelected"></link-template>
 
       </div>
 
@@ -51,7 +52,8 @@ with this file. If not, see
                        :data="groups"
                        :itemSelected="groupSelected"
                        @create="createGroup"
-                       @select="selectGroup"></link-template>
+                       @select="selectGroup"
+                       :disableBtn="!categorySelected"></link-template>
       </div>
     </md-dialog-content>
     <md-dialog-actions>

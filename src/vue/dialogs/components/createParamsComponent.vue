@@ -84,7 +84,7 @@ with this file. If not, see
 </template>
 
 <script>
-import menuComponent from "../../../vue/panels/components/tooltips/addItem.vue";
+import menuComponent from "../../../vue/panels/attributePanel/components/tooltips/addItem.vue";
 import displayListComponent from "../components/displayList.vue";
 
 import utilities from "../../../js/utilities";

@@ -51,7 +51,7 @@ with this file. If not, see
 </template>
 
 <script>
-import attributeService from "../../../../services";
+import attributeService from "../../../../../services";
 import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 
 export default {

@@ -36,8 +36,8 @@ import {
 export default class Utilities {
 
   static createOrGetContext() {
-    this.contextName = "configurationContext";
-    this.CONTEXT_TYPE = "configurationContext";
+    this.contextName = "Nomenclature_Configuration";
+    this.CONTEXT_TYPE = "Nomenclature_Configuration";
     this.CATEGORY_TYPE = "configurationCategory";
     this.ATTRIBUTE_TYPE = "configurationAttribute";
 

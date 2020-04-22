@@ -29,7 +29,8 @@ with this file. If not, see
       <div>{{title}}</div>
       <div class="md-layout-item md-size-10 mdIcon">
         <md-button class="md-icon-button"
-                   @click="createEvent">
+                   @click="createEvent"
+                   :disabled="disableBtn">
           <md-icon>control_point</md-icon>
         </md-button>
       </div>
@@ -55,7 +56,7 @@ with this file. If not, see
 <script>
 export default {
   name: "linkToGroupTemplate",
-  props: ["data", "title", "itemSelected"],
+  props: ["data", "title", "itemSelected", "disableBtn"],
   methods: {
     createEvent() {
       this.$emit("create");

@@ -71,7 +71,7 @@ with this file. If not, see
 
 <script>
 import displayListComponent from "../components/displayList.vue";
-import menuComponent from "../../../vue/panels/components/tooltips/addItem.vue";
+import menuComponent from "../../../vue/panels/attributePanel/components/tooltips/addItem.vue";
 
 import Utilities from "../../../js/utilities";
 

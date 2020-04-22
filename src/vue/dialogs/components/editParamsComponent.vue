@@ -138,7 +138,7 @@ with this file. If not, see
 // import menuComponent from "../../../vue/panels/components/tooltips/addItem.vue";
 
 import displayListComponent from "../components/displayList.vue";
-import menuComponent from "../../../vue/panels/components/tooltips/addItem.vue";
+import menuComponent from "../../../vue/panels/attributePanel/components/tooltips/addItem.vue";
 
 import Utilities from "../../../js/utilities";
 
@@ -166,7 +166,7 @@ export default {
     };
   },
   mounted() {
-    console.log("this.currentConfiguration", this.currentConfiguration);
+    // console.log("this.currentConfiguration", this.currentConfiguration);
   },
   methods: {
     async activeEditMode(edit) {
@@ -180,7 +180,7 @@ export default {
 
         this.$emit("refresh");
       } else if (!this.editMode && !edit) {
-        console.log("cancel edit", this.copyItem);
+        // console.log("cancel edit", this.copyItem);
         this.configurationData = JSON.parse(JSON.stringify(this.copyItem));
       }
     },

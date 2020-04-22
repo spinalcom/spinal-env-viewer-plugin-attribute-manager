@@ -149,7 +149,7 @@ with this file. If not, see
             <md-button class="md-icon-button"
                        @click="openAttributesPanel(props.item)">
               <md-tooltip>Open Properties Panel</md-tooltip>
-              <md-icon>view_headline</md-icon>
+              <md-icon>tune</md-icon>
             </md-button>
           </td>
         </template>
@@ -177,12 +177,12 @@ with this file. If not, see
 import TableContentComponent from "./tableContent.vue";
 import CreateAttributeTooltips from "../tooltips/createAttribute.vue";
 // import ChangeColValue from "../tooltips/changeCol.vue";
-import attributeService from "../../../../services";
+import attributeService from "../../../../../services";
 
 import StandardButtons from "./standard-buttons.vue";
 import FabsComponent from "./fabs.vue";
 
-import EventBus from "../../../../js/events/events";
+import EventBus from "../../../../../js/events/events";
 import tableContentVue from "./tableContent.vue";
 import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 
@@ -253,6 +253,9 @@ export default {
   },
   mounted() {
     this.searched = this.tableContent;
+    setTimeout(() => {
+      this.itemsSelected = this.searched;
+    }, 200);
   },
   methods: {
     async validateOrCancel(valid) {
@@ -514,10 +517,16 @@ export default {
     },
 
     OpenParamsDialog() {
-      spinalPanelManagerService.openPanel("paramDialogComponent", {
-        tableContent: this.tableContent,
-        header: this.header,
-        typeSelected: this.typeSelected,
+      // spinalPanelManagerService.openPanel("paramDialogComponent", {
+      //   tableContent: this.tableContent,
+      //   header: this.header,
+      //   typeSelected: this.typeSelected,
+      //   callback: () => {
+      //     this.$emit("refresh");
+      //   }
+      // });
+
+      spinalPanelManagerService.openPanel("configurationPanel", {
         callback: () => {
           this.$emit("refresh");
         }
@@ -565,7 +574,7 @@ export default {
       );
 
       if (value === "-") {
-        if (alert) alert("no value found !");
+        if (alert) window.alert("no value found !");
         return;
       } else {
         this.setValue(res.id, res.category, res.attribute, value);
