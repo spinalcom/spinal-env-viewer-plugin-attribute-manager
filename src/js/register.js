@@ -36,6 +36,7 @@ let panels = [{
     closeBehaviour: "hide"
   },
   style: {
+    minWidth: "620px",
     height: "475px",
     left: "400px"
   }

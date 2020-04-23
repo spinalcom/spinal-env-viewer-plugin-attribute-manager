@@ -169,6 +169,8 @@ with this file. If not, see
 
       </div> -->
     </div>
+
+    <!-- <div class="pageNumber"></div> -->
     <!-- </md-table> -->
   </div>
 </template>
@@ -191,6 +193,8 @@ const {
 } = require("spinal-env-viewer-panel-manager-service");
 
 const lodash = require("lodash");
+
+import $ from "jquery";
 
 export default {
   name: "TableComponent",
@@ -255,6 +259,7 @@ export default {
     this.searched = this.tableContent;
     setTimeout(() => {
       this.itemsSelected = this.searched;
+      this._addPageNumber();
     }, 200);
   },
   methods: {
@@ -607,6 +612,18 @@ export default {
 
       propertyPanel.setVisible(true);
       propertyPanel.setNodeProperties(info.dbid.get());
+    },
+
+    _addPageNumber() {
+      const actionDiv = $(
+        "._tableContent .theme--dark.v-datatable .v-datatable__actions .v-datatable__actions__range-controls"
+      )[0];
+
+      const div = $(
+        `<div class="v-datatable__actions__page-number">${this.pagination.page}</div>`
+      );
+
+      actionDiv.before(div[0]);
     }
   },
   computed: {
@@ -650,6 +667,11 @@ export default {
     },
     searchBy() {
       this.searchAndFilterTable();
+    },
+    pagination() {
+      const div = $(".v-datatable__actions__page-number")[0];
+
+      if (div) div.innerHTML = this.pagination.page;
     }
   }
 };
@@ -764,6 +786,12 @@ export default {
   height: calc(100% - 50px);
   overflow: auto;
 } */
+
+/* ._tableContent .pageNumber {
+  width: 100%;
+  height: 50px;
+  background-color: blue;
+} */
 </style>
 
 <style>
@@ -847,6 +875,33 @@ export default {
 }
 
 ._tableContent .theme--dark.v-datatable .v-datatable__actions {
+  width: 90%;
+  justify-content: space-between;
+  /* background-color: crimson; */
+}
+
+._tableContent
+  .theme--dark.v-datatable
+  .v-datatable__actions
+  .v-datatable__actions__select {
+  width: 30%;
   justify-content: center;
+}
+
+._tableContent
+  .theme--dark.v-datatable
+  .v-datatable__actions
+  .v-datatable__actions__page-number {
+  width: 40px;
+  height: 100%;
+  text-align: center;
+  background-color: #448aff;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+._tableContent
+  .v-menu__content.theme--dark.v-menu__content--auto.menuable__content__active {
+  position: fixed;
 }
 </style>
