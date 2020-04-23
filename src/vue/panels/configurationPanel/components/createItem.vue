@@ -27,7 +27,9 @@ with this file. If not, see
              offset="16"
              :open="show">
 
-    <md-button @click.stop="OpenAttribute">
+    <md-button class="md-primary md-dense"
+               :disabled="disabled"
+               @click.stop="OpenAttribute">
       <md-tooltip>{{title}}</md-tooltip>
       {{title}}
     </md-button>
@@ -66,6 +68,10 @@ export default {
     },
     fieldText: {
       type: String
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

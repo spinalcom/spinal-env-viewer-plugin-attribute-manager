@@ -24,7 +24,17 @@ with this file. If not, see
 
 <template>
   <md-content class="container md-scrollbar">
-    <configuration-component v-if="currentConfiguration"
+
+    <div class="header">
+      <v-btn outline
+             color="#448aff">Import</v-btn>
+
+      <v-btn outline
+             color="#448aff">Export</v-btn>
+    </div>
+
+    <configuration-component class="configuration"
+                             v-if="currentConfiguration"
                              :configurationSelected="currentConfiguration"
                              :currentConfiguration="currentConfiguration">
     </configuration-component>
@@ -62,6 +72,19 @@ export default {
   padding: 0;
   overflow: hidden;
   overflow-x: auto;
+}
+
+.container .header {
+  width: 100%;
+  height: 50px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.container .configuration {
+  width: 100%;
+  height: calc(100% - 60px);
 }
 
 .container .empty {

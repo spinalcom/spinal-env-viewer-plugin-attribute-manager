@@ -25,11 +25,7 @@ with this file. If not, see
 <template>
   <md-content class="_container md-scrollbar">
 
-    <div class="buttons">
-      <!-- <md-button>Create Category</md-button>
-      <md-button>Create Group</md-button>
-      <md-button>Create Configuration</md-button> -->
-
+    <!-- <div class="buttons">
       <create-item :title="'Create Category'"
                    :fieldText="'Category Name'"
                    @create="createCategory"></create-item>
@@ -41,6 +37,44 @@ with this file. If not, see
       <create-item :title="'Create Configuration Profil'"
                    :fieldText="'Configuration Profil Name'"
                    @create="createConfiguration"></create-item>
+
+    </div> -->
+
+    <div class="fabs">
+      <md-speed-dial md-direction="top"
+                     md-event="click">
+        <md-speed-dial-target class="md-fab md-bottom-right md-mini md-primary">
+          <md-icon class="md-morph-initial">menu</md-icon>
+          <md-icon class="md-morph-final">menu_open</md-icon>
+        </md-speed-dial-target>
+
+        <md-speed-dial-content class="mdSpeedDialBtn">
+
+          <create-item :title="'Create Category'"
+                       :fieldText="'Category Name'"
+                       @create="createCategory"></create-item>
+
+          <create-item :title="'Create Group'"
+                       :fieldText="'Group Name'"
+                       @create="createGroup"
+                       :disabled="!item.categorySelected"></create-item>
+
+          <create-item :title="'Create Configuration Profil'"
+                       :fieldText="'Configuration Profil Name'"
+                       @create="createConfiguration"
+                       :disabled="!item.groupSelected"></create-item>
+
+        </md-speed-dial-content>
+      </md-speed-dial>
+    </div>
+
+    <div class="exportHead">
+
+      <v-btn outline
+             color="#448aff">Import</v-btn>
+
+      <v-btn outline
+             color="#448aff">Export</v-btn>
 
     </div>
 
@@ -204,21 +238,23 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 10px;
 }
 
 ._container .header .select {
   width: 25%;
 }
 
-._container .buttons {
+._container .exportHead {
   height: 40px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 ._container .body {
   width: 100%;
-  height: calc(100% - 80px);
+  height: calc(100% - 100px);
 }
 
 ._container .body .no-conf {
@@ -229,5 +265,42 @@ export default {
   align-items: center;
   font-size: 1.6em;
 }
+
+._container .fabs {
+  position: absolute;
+  bottom: 24px;
+  right: 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  /* width: 300px;
+  height: 300px; */
+}
+
+._container .fabs > * {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* ._container .fabs > * {
+  justify-content: center;
+  align-items: flex-end;
+} */
 </style>
 
+
+<style>
+._container .fabs .mdSpeedDialBtn .md-button .md-ripple {
+  width: 250px;
+}
+
+._container
+  .fabs
+  .md-speed-dial.md-direction-top.md-effect-fling
+  .md-speed-dial-content
+  .md-button {
+  background-color: #448aff;
+  color: white;
+}
+</style>
