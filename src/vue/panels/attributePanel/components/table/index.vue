@@ -892,12 +892,22 @@ export default {
   .theme--dark.v-datatable
   .v-datatable__actions
   .v-datatable__actions__page-number {
-  width: 40px;
+  /* width: 40px;
   height: 100%;
   text-align: center;
   background-color: #448aff;
   font-size: 1.5em;
+  font-weight: bold; */
+
+  width: 50px;
+  height: 50px;
+  font-size: 1.5em;
   font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid;
+  border-radius: 50%;
 }
 
 ._tableContent

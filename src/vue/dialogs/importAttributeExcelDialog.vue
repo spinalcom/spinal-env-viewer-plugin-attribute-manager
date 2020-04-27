@@ -42,8 +42,8 @@ with this file. If not, see
       <div class="error"
            v-else-if="appState === STATES.error">
         <md-icon class="md-size-4x">close</md-icon>
-        <div>Something went wrong ! check if the file is the same as the
-          exported one</div>
+        <div>Something went wrong !</div>
+        <div>Check if the file is the same as the exported one</div>
       </div>
 
     </md-dialog-content>
@@ -87,7 +87,9 @@ export default {
       this.constructMap(option.tableData);
 
       const excelData = this.concatSheets(option.excelData);
+
       const data = this.formatExcelData(excelData);
+
       this.data = await this.getDifferenceBetweenData(data, option.tableData);
 
       if (this.data) {
@@ -125,15 +127,19 @@ export default {
 
         obj.id = data["SpinalGraph ID"];
 
+        const lists = ["name", "spinalgraph id", "revit id"];
+
         for (const key of Object.keys(data)) {
-          if (!key.includes(" / ")) continue;
+          // if (!key.includes(" / ")) continue;
+
+          if (lists.indexOf(key.toLowerCase()) !== -1) continue;
 
           const list = key.split(" / ");
 
           obj.attributes.push({
-            category: list[0],
-            label: list[1],
-            value: data[key]
+            category: list[0] ? list[0] : "",
+            label: list[1] ? list[1] : "",
+            value: data[key] ? data[key] : "-"
           });
         }
 
@@ -230,7 +236,7 @@ export default {
           return attr.category === el.category && attr.label === el.label;
         });
 
-        if (attrFound && attrFound.value !== attr.value) {
+        if (attrFound && attrFound.value != attr.value) {
           obj.attributes.push(attr);
         } else if (typeof attrFound === "undefined") {
           return;
