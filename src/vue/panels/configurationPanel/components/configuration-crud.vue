@@ -273,7 +273,9 @@ export default {
         "change",
         async event => {
           const file = event.target.files[0];
-          const dataJson = await spinalExcelManager.convertExcelToJson(file);
+          const dataJson = await spinalExcelManager.convertConfigurationFile(
+            file
+          );
 
           spinalPanelManagerService.openPanel(
             "importConfigurationDialog",
@@ -306,32 +308,27 @@ export default {
       );
 
       if (categoryFound && groupFound && configFound && config) {
+        // data.name = `${categoryFound.name}|${groupFound.name}|${config.name}`;
+
         data.name = configFound.name;
 
-        // let obj = {
-        //   name: "",
-        //   categoryName: "",
-        //   groupName: ""
-        // };
+        data.rows.push(["Category", "Group", "Configuration Profil"]);
+        data.rows.push([categoryFound.name, groupFound.name, configFound.name]);
+        data.rows.push([, ,]);
+        data.rows.push([, ,]);
+        data.rows.push(["Attribute Category", "Attribute Name"]);
 
-        // obj.name = configFound.name;
-        // obj.categoryName = categoryFound.name;
-        // obj.groupName = groupFound.name;
-
-        // data.rows.push(obj);
-
-        // config.attributes.forEach(el => {
-        //   console.log("el", el);
-        // });
         config.categories.forEach(category => {
           const res = category.attributes.map(attribute => {
-            return {
-              name: attribute.name,
-              attrCategory: category.name,
-              ConfigProfil: configFound.name,
-              spinalCategory: categoryFound.name,
-              spinalGroup: groupFound.name
-            };
+            // return {
+            //   name: attribute.name,
+            //   attrCategory: category.name,
+            //   ConfigProfil: configFound.name,
+            //   spinalCategory: categoryFound.name,
+            //   spinalGroup: groupFound.name
+            // };
+
+            return [category.name, attribute.name];
           });
 
           data.rows.push(...res);
@@ -342,31 +339,31 @@ export default {
 
     _getExcelHeaders(attributes) {
       const header = [
-        {
-          key: "name",
-          header: "Name",
-          width: 30
-        },
-        {
-          key: "attrCategory",
-          header: "Attribute Category",
-          width: 30
-        },
-        {
-          key: "ConfigProfil",
-          header: "Configuration Profil",
-          width: 30
-        },
-        {
-          key: "spinalCategory",
-          header: "Category",
-          width: 30
-        },
-        {
-          key: "spinalGroup",
-          header: "Group",
-          width: 30
-        }
+        // {
+        //   key: "attrCategory",
+        //   header: "Attribute Category",
+        //   width: 30
+        // },
+        // {
+        //   key: "name",
+        //   header: "Attribute Name",
+        //   width: 30
+        // }
+        // // {
+        // //   key: "ConfigProfil",
+        // //   header: "Configuration Profil",
+        // //   width: 30
+        // // },
+        // // {
+        // //   key: "spinalCategory",
+        // //   header: "Category",
+        // //   width: 30
+        // // },
+        // // {
+        // //   key: "spinalGroup",
+        // //   header: "Group",
+        // //   width: 30
+        // // }
       ];
 
       return header;

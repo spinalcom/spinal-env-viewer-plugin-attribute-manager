@@ -30,6 +30,13 @@ with this file. If not, see
       <div v-if="appState === STATES.valid"
            class="valid">
         <md-icon class="md-size-4x">check</md-icon>
+        <div>File imported.</div>
+
+      </div>
+
+      <div v-if="appState === STATES.normal"
+           class="valid">
+
         <div>This file can be imported.</div>
       </div>
 
@@ -52,7 +59,7 @@ with this file. If not, see
                  @click="closeDialog(false)">Cancel</md-button>
       <md-button class="md-primary"
                  @click="closeDialog(true)"
-                 :disabled="appState !== STATES.valid">Import</md-button>
+                 :disabled="appState !== STATES.normal">Import</md-button>
     </md-dialog-actions>
   </md-dialog>
 </template>
@@ -67,11 +74,12 @@ export default {
     this.STATES = Object.freeze({
       valid: 0,
       loading: 1,
-      error: 2
+      error: 2,
+      normal: 3
     });
 
     return {
-      appState: this.STATES.loading,
+      appState: this.STATES.normal,
       showDialog: true,
       data: [],
       itemsMap: new Map(),
@@ -93,7 +101,7 @@ export default {
       this.data = await this.getDifferenceBetweenData(data, option.tableData);
 
       if (this.data) {
-        this.appState = this.STATES.valid;
+        this.appState = this.STATES.normal;
       } else {
         this.appState = this.STATES.error;
       }
@@ -107,12 +115,19 @@ export default {
       this.appState = this.STATES.loading;
 
       if (option && this.data) {
-        await this._changeValue();
-        this.appState = this.STATES.valid;
+        this._changeValue()
+          .then(() => {
+            this.appState = this.STATES.valid;
+            this.callback();
+          })
+          .catch(el => {
+            this.appState = this.STATES.error;
+          });
+      } else {
+        this.showDialog = false;
       }
 
-      this.callback();
-      this.showDialog = false;
+      // this.showDialog = false;
     },
 
     closeDialog(closeResult) {

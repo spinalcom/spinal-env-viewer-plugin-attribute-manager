@@ -29,15 +29,40 @@ with this file. If not, see
 
     <md-dialog-content class="mdDialogContainer">
 
-      <h1>Hello world !!</h1>
+      <div v-if="appState === STATES.valid"
+           class="valid">
+        <md-icon class="md-size-4x">check</md-icon>
+        <div>File imported.</div>
+
+      </div>
+
+      <div v-if="appState === STATES.normal"
+           class="valid">
+
+        <div>This file can be imported.</div>
+      </div>
+
+      <div v-else-if="appState === STATES.loading"
+           class="loading">
+        <md-progress-spinner md-mode="indeterminate"></md-progress-spinner>
+
+      </div>
+
+      <div class="error"
+           v-else-if="appState === STATES.error">
+        <md-icon class="md-size-4x">close</md-icon>
+        <div>Something went wrong !</div>
+        <div>Check if the file is the same as the exported one</div>
+      </div>
 
     </md-dialog-content>
 
     <md-dialog-actions>
       <md-button class="md-primary"
-                 @click="closeDialog(false)">Cancel</md-button>
+                 @click="closeDialog(false)">Close</md-button>
       <md-button class="md-primary"
-                 @click="closeDialog(true)">Import</md-button>
+                 @click="closeDialog(true)"
+                 :disabled="appState !== STATES.normal">Import</md-button>
     </md-dialog-actions>
   </md-dialog>
 </template>
@@ -49,23 +74,43 @@ export default {
   name: "importConfigurationDialog",
   props: ["onFinised"],
   data() {
+    this.STATES = Object.freeze({
+      valid: 0,
+      loading: 1,
+      error: 2,
+      normal: 3
+    });
+
     return {
+      appState: this.STATES.normal,
       showDialog: true,
       data: []
     };
   },
   methods: {
     opened(option) {
+      this.appState = this.STATES.loading;
       const data = this.concatSheets(option);
       this.data = this.formatData(data);
+      this.appState = this.STATES.normal;
     },
 
     async removed(option) {
-      if (option) {
-        this.createElements(this.data);
-      }
+      console.log("option", option);
 
-      this.showDialog = false;
+      this.appState = this.STATES.loading;
+      if (option) {
+        this.createElements(this.data)
+          .then(() => {
+            this.appState = this.STATES.valid;
+            // this.showDialog = false;
+          })
+          .catch(el => {
+            this.appState = this.STATES.error;
+          });
+      } else {
+        this.showDialog = false;
+      }
     },
 
     closeDialog(closeResult) {
@@ -164,12 +209,16 @@ export default {
         ///////////////////////////////////////////////
 
         let attributeFound = attributeCategoryFound.attributes.find(el => {
-          return el.name.toLowerCase() === element.Name.toLowerCase();
+          return (
+            el.name.toLowerCase() === element["Attribute Name"].toLowerCase()
+          );
         });
 
         if (typeof attributeFound === "undefined") {
           attributeCategoryFound.attributes.push({
-            name: element.Name
+            show: false,
+            name: element["Attribute Name"],
+            id: Date.now()
           });
         }
       }
@@ -197,7 +246,7 @@ export default {
           //          Create Configurations
           //////////////////////////////////////
           for (const configuration of groupIterator.configurations) {
-            const configId = this._createConfiguration(
+            const configId = await this._createConfiguration(
               groupId,
               configuration.name
             );
@@ -256,3 +305,31 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.mdDialogContainer {
+  width: 400px;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialogTitle {
+  text-align: center;
+}
+
+.mdDialogContainer .valid,
+.mdDialogContainer .error {
+  text-align: center;
+  font-size: 20px;
+}
+
+.mdDialogContainer .valid .md-icon {
+  color: green;
+}
+
+.mdDialogContainer .error .md-icon {
+  color: red;
+}
+</style>
