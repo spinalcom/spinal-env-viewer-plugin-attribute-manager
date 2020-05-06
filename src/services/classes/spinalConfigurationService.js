@@ -134,8 +134,6 @@ export default class SpinalConfigurationService {
 
   }
 
-
-
   async getCategories() {
     const context = await this.createOrGetContext();
     return groupManagerService.getCategories(context.info.id.get());
@@ -151,5 +149,56 @@ export default class SpinalConfigurationService {
   }
 
 
+  isGroup(type) {
+    return groupManagerService.isGroup(type);
+  }
+
+  isCategory(type) {
+    return groupManagerService.isCategory(type);
+  }
+
+  async getElementGroup(id) {
+    const parents = await SpinalGraphService.getParents(id, []);
+
+    return parents[0];
+  }
+
+  async getTree(info) {
+    const obj = {
+      categoryId: undefined,
+      groupId: undefined,
+      configId: undefined
+    }
+
+    if (this.isCategory(info.type)) {
+
+      obj.categoryId = info.id;
+
+    } else if (this.isGroup(info.type)) {
+
+      const category = await groupManagerService.getGroupCategory(info.id);
+      if (category) obj.categoryId = category.id.get();
+
+      obj.groupId = info.id;
+
+    } else if (info.type === this.CONFIGURATION_PROFIL_TYPE) {
+
+      obj.configId = info.id;
+      const group = await this.getElementGroup(info.id);
+
+      if (group) {
+        obj.groupId = group.id.get();
+        const category = await groupManagerService.getGroupCategory(group.id
+          .get());
+
+        if (category) obj.categoryId = category.id.get();
+
+      }
+
+    }
+
+    return obj;
+
+  }
 
 }

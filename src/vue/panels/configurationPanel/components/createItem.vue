@@ -25,12 +25,13 @@ with this file. If not, see
 <template>
   <v-popover :auto-hide="false"
              offset="16"
-             :open="show">
+             :open="show && !disabled">
 
-    <md-button class="md-primary md-dense"
+    <md-button class="md-dense md-raised md-primary"
                :disabled="disabled"
                @click.stop="OpenAttribute">
       <md-tooltip>{{title}}</md-tooltip>
+      <md-icon>{{icon}}</md-icon>
       {{title}}
     </md-button>
 

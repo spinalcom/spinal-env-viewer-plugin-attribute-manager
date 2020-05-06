@@ -14,6 +14,10 @@ import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
 import ParamDialogComponent from "../vue/dialogs/paramsDialog.vue";
 import ImportAttributeExcelDialog from '../vue/dialogs/importAttributeExcelDialog.vue';
 
+
+import ExportConfigurationDialog from "../vue/panels/configurationPanel/dialogs/export.vue"
+import ImportConfigurationDialog from "../vue/panels/configurationPanel/dialogs/import.vue"
+
 const {
   SpinalForgeExtention
 } = require("spinal-env-viewer-panel-manager-service_spinalforgeextention");
@@ -81,6 +85,15 @@ const dialogs = [{
   {
     name: "importAttributeExcelDialog",
     vueMountComponent: Vue.extend(ImportAttributeExcelDialog),
+    parentContainer: document.body
+  },
+  {
+    name: "exportConfigurationDialog",
+    vueMountComponent: Vue.extend(ExportConfigurationDialog),
+    parentContainer: document.body
+  }, {
+    name: "importConfigurationDialog",
+    vueMountComponent: Vue.extend(ImportConfigurationDialog),
     parentContainer: document.body
   }
 ];

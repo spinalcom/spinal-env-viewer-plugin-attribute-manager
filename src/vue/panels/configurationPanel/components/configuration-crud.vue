@@ -25,21 +25,6 @@ with this file. If not, see
 <template>
   <md-content class="_container md-scrollbar">
 
-    <!-- <div class="buttons">
-      <create-item :title="'Create Category'"
-                   :fieldText="'Category Name'"
-                   @create="createCategory"></create-item>
-
-      <create-item :title="'Create Group'"
-                   :fieldText="'Group Name'"
-                   @create="createGroup"></create-item>
-
-      <create-item :title="'Create Configuration Profil'"
-                   :fieldText="'Configuration Profil Name'"
-                   @create="createConfiguration"></create-item>
-
-    </div> -->
-
     <div class="fabs">
       <md-speed-dial md-direction="top"
                      md-event="click">
@@ -50,19 +35,34 @@ with this file. If not, see
 
         <md-speed-dial-content class="mdSpeedDialBtn">
 
-          <create-item :title="'Create Category'"
-                       :fieldText="'Category Name'"
-                       @create="createCategory"></create-item>
+          <create-item :title="'Create Configuration Profil'"
+                       :fieldText="'Configuration Profil Name'"
+                       @create="createConfiguration"
+                       :disabled="!item.groupSelected"
+                       :icon="'add'"></create-item>
 
           <create-item :title="'Create Group'"
                        :fieldText="'Group Name'"
                        @create="createGroup"
-                       :disabled="!item.categorySelected"></create-item>
+                       :disabled="!item.categorySelected"
+                       :icon="'add'"></create-item>
 
-          <create-item :title="'Create Configuration Profil'"
-                       :fieldText="'Configuration Profil Name'"
-                       @create="createConfiguration"
-                       :disabled="!item.groupSelected"></create-item>
+          <create-item :title="'Create Category'"
+                       :fieldText="'Category Name'"
+                       @create="createCategory"
+                       :icon="'add'"></create-item>
+
+          <!-- <md-button class="md-primary md-dense"
+                     @click.stop="importFile">
+            <md-tooltip>Import</md-tooltip>
+            Import
+          </md-button>
+
+          <md-button class="md-primary md-dense"
+                     @click.stop="exportFile">
+            <md-tooltip>Export</md-tooltip>
+            Export
+          </md-button> -->
 
         </md-speed-dial-content>
       </md-speed-dial>
@@ -71,10 +71,12 @@ with this file. If not, see
     <div class="exportHead">
 
       <v-btn outline
-             color="#448aff">Import</v-btn>
+             color="#448aff"
+             @click.stop="importFile">Import</v-btn>
 
       <v-btn outline
-             color="#448aff">Export</v-btn>
+             color="#448aff"
+             @click.stop="exportFile">Export</v-btn>
 
     </div>
 
@@ -102,6 +104,7 @@ with this file. If not, see
       </div>
 
     </div>
+
     <div class="body">
 
       <div class="no-conf"
@@ -121,7 +124,13 @@ with this file. If not, see
 
 
 <script>
+import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
+
 import { spinalConfigurationService } from "../../../../services";
+
+import spinalExcelManager from "spinal-env-viewer-plugin-excel-manager-service";
+
+import FileSaver from "file-saver";
 
 import SelectItem from "./mdSelect.vue";
 import CreateItem from "./createItem.vue";
@@ -130,7 +139,9 @@ import ConfigurationsComponent from "./configurations.vue";
 export default {
   name: "configuration-template",
   props: {
-    currentConfiguration: {}
+    currentConfiguration: {},
+    item: {},
+    tempData: {}
   },
   components: {
     "create-item": CreateItem,
@@ -138,16 +149,7 @@ export default {
     "configuration-component": ConfigurationsComponent
   },
   data() {
-    return {
-      item: {
-        categorySelected: "",
-        categories: [],
-        groupSelected: "",
-        groups: [],
-        configurationSelected: "",
-        configurations: []
-      }
-    };
+    return {};
   },
   async mounted() {
     const categories = await spinalConfigurationService.getCategories();
@@ -190,26 +192,30 @@ export default {
     },
 
     async selectCategory(id) {
-      this.item.categorySelected = id;
-      const groups = await spinalConfigurationService.getGroups(id);
-      this.item.groups = groups.map(el => el.get());
+      if (typeof id !== "undefined") {
+        this.item.categorySelected = id;
+        const groups = await spinalConfigurationService.getGroups(id);
+        this.item.groups = groups.map(el => el.get());
 
-      // init group && configuration
-      this.item.groupSelected = undefined;
-      this.item.configurationSelected = undefined;
-      // end
+        // init group && configuration
+        this.item.groupSelected = undefined;
+        this.item.configurationSelected = undefined;
+        // end
+      }
     },
 
     async selectGroup(id) {
-      this.item.groupSelected = id;
-      const configurations = await spinalConfigurationService.getConfigurations(
-        id
-      );
-      this.item.configurations = configurations.map(el => el.get());
+      if (typeof id !== "undefined") {
+        this.item.groupSelected = id;
+        const configurations = await spinalConfigurationService.getConfigurations(
+          id
+        );
+        this.item.configurations = configurations.map(el => el.get());
 
-      // init configuration
-      this.item.configurationSelected = undefined;
-      //end
+        // init configuration
+        this.item.configurationSelected = undefined;
+        //end
+      }
     },
 
     async selectConfiguration(id) {
@@ -218,6 +224,189 @@ export default {
 
     currentConf() {
       this.$emit("currentConf");
+    },
+
+    async exportFile() {
+      //
+      // spinalPanelManagerService.openPanel("exportConfigurationDialog", {});
+
+      const result = {
+        data: []
+      };
+
+      if (this.item.configurationSelected) {
+        const item = await this._formatConfiguration(
+          this.item.configurationSelected,
+          this.item.groupSelected,
+          this.item.categorySelected
+        );
+
+        result.data.push(item);
+      } else if (this.item.groupSelected) {
+        const items = await this._getGroupsItems(this.item.groupSelected);
+        result.data.push(...items);
+      } else if (this.item.categorySelected) {
+        let groupsItems = this.item.groups.map(group => {
+          return this._getGroupsItems(group.id);
+        });
+
+        let items = await Promise.all(groupsItems);
+
+        items.forEach(el => {
+          result.data.push(...el);
+        });
+      }
+
+      spinalExcelManager.export(result).then(buffer => {
+        FileSaver.saveAs(new Blob(buffer), `configurations_spinalcom.xlsx`);
+      });
+    },
+
+    importFile() {
+      let input = document.createElement("input");
+      input.type = "file";
+      input.accept =
+        ".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
+      input.click();
+
+      input.addEventListener(
+        "change",
+        async event => {
+          const file = event.target.files[0];
+          const dataJson = await spinalExcelManager.convertExcelToJson(file);
+
+          spinalPanelManagerService.openPanel(
+            "importConfigurationDialog",
+            dataJson
+          );
+        },
+        false
+      );
+    },
+
+    async _formatConfiguration(configurationId, groupId, categoryId) {
+      const data = {
+        name: "",
+        header: this._getExcelHeaders(),
+        rows: []
+      };
+
+      const categoryFound = this.item.categories.find(
+        el => el.id === categoryId
+      );
+
+      const groupFound = this.item.groups.find(el => el.id === groupId);
+
+      const configFound = this.item.configurations.find(
+        el => el.id === configurationId
+      );
+
+      const config = await spinalConfigurationService.getConfigurationById(
+        configurationId
+      );
+
+      if (categoryFound && groupFound && configFound && config) {
+        data.name = configFound.name;
+
+        // let obj = {
+        //   name: "",
+        //   categoryName: "",
+        //   groupName: ""
+        // };
+
+        // obj.name = configFound.name;
+        // obj.categoryName = categoryFound.name;
+        // obj.groupName = groupFound.name;
+
+        // data.rows.push(obj);
+
+        // config.attributes.forEach(el => {
+        //   console.log("el", el);
+        // });
+        config.categories.forEach(category => {
+          const res = category.attributes.map(attribute => {
+            return {
+              name: attribute.name,
+              attrCategory: category.name,
+              ConfigProfil: configFound.name,
+              spinalCategory: categoryFound.name,
+              spinalGroup: groupFound.name
+            };
+          });
+
+          data.rows.push(...res);
+        });
+        return data;
+      }
+    },
+
+    _getExcelHeaders(attributes) {
+      const header = [
+        {
+          key: "name",
+          header: "Name",
+          width: 30
+        },
+        {
+          key: "attrCategory",
+          header: "Attribute Category",
+          width: 30
+        },
+        {
+          key: "ConfigProfil",
+          header: "Configuration Profil",
+          width: 30
+        },
+        {
+          key: "spinalCategory",
+          header: "Category",
+          width: 30
+        },
+        {
+          key: "spinalGroup",
+          header: "Group",
+          width: 30
+        }
+      ];
+
+      return header;
+    },
+
+    async _getGroupsItems(groupId) {
+      let configurations = [];
+
+      if (this.item.groupSelected === groupId) {
+        configurations = this.item.configurations;
+      } else {
+        configurations = await spinalConfigurationService.getConfigurations(
+          groupId
+        );
+      }
+
+      const promises = configurations.map(configuration => {
+        return this._formatConfiguration(
+          configuration.id,
+          groupId,
+          this.item.categorySelected
+        );
+      });
+
+      return Promise.all(promises);
+    }
+  },
+  watch: {
+    async tempData() {
+      if (this.tempData.hasOwnProperty("categoryId")) {
+        await this.selectCategory(this.tempData.categoryId);
+      }
+
+      if (this.tempData.hasOwnProperty("groupId")) {
+        await this.selectGroup(this.tempData.groupId);
+      }
+
+      if (this.tempData.hasOwnProperty("configId")) {
+        await this.selectConfiguration(this.tempData.configId);
+      }
     }
   }
 };
@@ -295,12 +484,12 @@ export default {
   width: 250px;
 }
 
-._container
+/* ._container
   .fabs
   .md-speed-dial.md-direction-top.md-effect-fling
   .md-speed-dial-content
   .md-button {
   background-color: #448aff;
   color: white;
-}
+} */
 </style>

@@ -27,7 +27,8 @@ with this file. If not, see
        style="overflow : hidden">
     <md-tabs class="myTabs"
              md-alignment="centered"
-             @md-changed="changeTab">
+             @md-changed="changeTab"
+             :md-active-tab="tabDisplayed ? 'all-params-tab' : 'current-param-tab'">
 
       <md-tab id="current-param-tab"
               md-label="Current configuration"
@@ -47,6 +48,8 @@ with this file. If not, see
 
       <configuration-template class="content"
                               v-if="tabDisplayed === 1"
+                              :tempData="tempData"
+                              :item="item"
                               :currentConfiguration="currentConfiguration"
                               @currentConf="getCurrentConfiguration">
       </configuration-template>
@@ -91,13 +94,42 @@ export default {
   data() {
     return {
       tabDisplayed: 1,
-      currentConfiguration: undefined
+      currentConfiguration: undefined,
+      item: {
+        categorySelected: "",
+        categories: [],
+        groupSelected: "",
+        groups: [],
+        configurationSelected: "",
+        configurations: []
+      },
+      tempData: {}
     };
   },
   mounted() {},
   methods: {
     opened(params) {
       this.getCurrentConfiguration();
+
+      if (params && Object.keys(params).length > 0) {
+        this.tempData = params;
+        this.tabDisplayed = 1;
+      }
+
+      // if (params.hasOwnProperty("categoryId")) {
+      //   this.item.categorySelected = params.categoryId;
+      //   this.tabDisplayed = 1;
+      // }
+
+      // if (params.hasOwnProperty("groupId")) {
+      //   this.item.groupSelected = params.groupId;
+      //   this.tabDisplayed = 1;
+      // }
+
+      // if (params.hasOwnProperty("configId")) {
+      //   this.item.configurationSelected = params.configId;
+      //   this.tabDisplayed = 1;
+      // }
     },
 
     changeTab(activeTab) {

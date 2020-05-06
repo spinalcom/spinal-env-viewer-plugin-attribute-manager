@@ -25,13 +25,13 @@ with this file. If not, see
 <template>
   <md-content class="container md-scrollbar">
 
-    <div class="header">
+    <!-- <div class="header">
       <v-btn outline
              color="#448aff">Import</v-btn>
 
       <v-btn outline
              color="#448aff">Export</v-btn>
-    </div>
+    </div> -->
 
     <configuration-component class="configuration"
                              v-if="currentConfiguration"
@@ -84,7 +84,8 @@ export default {
 
 .container .configuration {
   width: 100%;
-  height: calc(100% - 60px);
+  height: 100%;
+  /* height: calc(100% - 60px); */
 }
 
 .container .empty {
