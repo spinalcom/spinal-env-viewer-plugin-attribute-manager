@@ -620,7 +620,7 @@ export default {
       )[0];
 
       const div = $(
-        `<div class="v-datatable__actions__page-number">${this.pagination.page}</div>`
+        `<div class="v-datatable__actions__page-number">Page : ${this.pagination.page} / ${this.pages}</div>`
       );
 
       actionDiv.before(div[0]);
@@ -671,7 +671,8 @@ export default {
     pagination() {
       const div = $(".v-datatable__actions__page-number")[0];
 
-      if (div) div.innerHTML = this.pagination.page;
+      if (div) div.innerHTML = `Page : ${this.pagination.page} / ${this.pages}`;
+      // this.pagination.page;
     }
   }
 };
@@ -899,15 +900,15 @@ export default {
   font-size: 1.5em;
   font-weight: bold; */
 
-  width: 50px;
+  width: 100px;
   height: 50px;
-  font-size: 1.5em;
-  font-weight: bold;
+  /* font-size: 1.5em; */
+  /* font-weight: bold; */
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid;
-  border-radius: 50%;
+  /* border: 1px solid;
+  border-radius: 50%; */
 }
 
 ._tableContent

@@ -125,6 +125,7 @@ export default {
           });
       } else {
         this.showDialog = false;
+        this.callback();
       }
 
       // this.showDialog = false;
