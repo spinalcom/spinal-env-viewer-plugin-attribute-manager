@@ -6,6 +6,8 @@ import Vue from "vue";
 ////////////////////////////////////
 import attributePanel from "../vue/panels/attributePanel/panel.vue";
 import configurationPanel from "../vue/panels/configurationPanel/configurationPanel.vue";
+import generateGroupPanel from "../vue/panels/generateGroupPanel/panel.vue";
+
 
 ////////////////////////////////////
 //            Dialogs
@@ -49,6 +51,18 @@ let panels = [{
   vueMountComponent: Vue.extend(configurationPanel),
   panel: {
     title: "Configuration Panel",
+    closeBehaviour: "hide"
+  },
+  style: {
+    minWidth: "620px",
+    height: "475px",
+    left: "400px"
+  }
+}, {
+  name: "generateGroupPanel",
+  vueMountComponent: Vue.extend(generateGroupPanel),
+  panel: {
+    title: "Generate Group Panel",
     closeBehaviour: "hide"
   },
   style: {

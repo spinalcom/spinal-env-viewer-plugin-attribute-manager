@@ -34,7 +34,8 @@ with this file. If not, see
                       @link="LinkItem"
                       @edit="ActiveEditMode"
                       @valid="validateOrCancel"
-                      @setToColumn="setValueToColumn"></fabs-component>
+                      @setToColumn="setValueToColumn"
+                      @generateGroup="generateGroup"></fabs-component>
     </div>
 
     <div class="mdToolbar"
@@ -624,6 +625,18 @@ export default {
       );
 
       actionDiv.before(div[0]);
+    },
+
+    generateGroup() {
+      if (this.itemsSelected.length === 0) {
+        window.alert("select at less one item");
+        return;
+      }
+
+      spinalPanelManagerService.openPanel("generateGroupPanel", {
+        type: this.typeSelected,
+        items: this.itemsSelected
+      });
     }
   },
   computed: {

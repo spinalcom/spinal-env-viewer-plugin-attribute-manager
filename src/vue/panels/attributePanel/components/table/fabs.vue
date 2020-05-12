@@ -81,6 +81,11 @@ export default {
   data() {
     this.buttons = [
       {
+        icon: "build",
+        text: "Classify in group",
+        event: "generateGroup"
+      },
+      {
         icon: "settings_applications",
         text: "Configuration",
         event: "configure",
@@ -120,6 +125,10 @@ export default {
 .fabs {
   width: 100%;
   height: 100%;
+}
+
+.fabs .mdSpeedDialBtn {
+  z-index: 999;
 }
 
 .fabs > * {

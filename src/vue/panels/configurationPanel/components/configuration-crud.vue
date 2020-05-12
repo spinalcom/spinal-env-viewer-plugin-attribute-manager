@@ -39,12 +39,14 @@ with this file. If not, see
                        :fieldText="'Configuration Profil Name'"
                        @create="createConfiguration"
                        :disabled="!item.groupSelected"
+                       v-if="item.groupSelected"
                        :icon="'add'"></create-item>
 
           <create-item :title="'Create Group'"
                        :fieldText="'Group Name'"
                        @create="createGroup"
                        :disabled="!item.categorySelected"
+                       v-if="item.categorySelected"
                        :icon="'add'"></create-item>
 
           <create-item :title="'Create Category'"
@@ -312,8 +314,10 @@ export default {
 
         data.name = configFound.name;
 
-        data.rows.push(["Category", "Group", "Configuration Profil"]);
-        data.rows.push([categoryFound.name, groupFound.name, configFound.name]);
+        data.rows.push(["Category : ", categoryFound.name]);
+        data.rows.push(["Group : ", groupFound.name]);
+        data.rows.push(["Configuration Profil : ", configFound.name]);
+
         data.rows.push([, ,]);
         data.rows.push([, ,]);
         data.rows.push(["Attribute Category", "Attribute Name"]);
@@ -473,6 +477,10 @@ export default {
   justify-content: center;
   align-items: flex-end;
 } */
+
+._container .fabs .mdSpeedDialBtn {
+  z-index: 999;
+}
 </style>
 
 

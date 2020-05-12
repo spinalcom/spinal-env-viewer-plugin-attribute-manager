@@ -216,7 +216,7 @@ export default {
 
         if (typeof attributeFound === "undefined") {
           attributeCategoryFound.attributes.push({
-            show: false,
+            show: true,
             name: element["Attribute Name"],
             id: Date.now()
           });
