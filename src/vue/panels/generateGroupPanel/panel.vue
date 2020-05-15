@@ -28,10 +28,13 @@ with this file. If not, see
 
     <md-steppers md-vertical
                  class="steppers"
-                 :md-dynamic-height="true">
+                 :md-dynamic-height="true"
+                 @md-changed="changeStep">
       <md-step id="first"
                md-label="Configuration Step"
-               md-description="configure">
+               md-description="configure"
+               :md-error="errorInConfig">
+
         <configuration-step :data="data"
                             :type="type"></configuration-step>
       </md-step>
@@ -39,7 +42,13 @@ with this file. If not, see
       <md-step id="second"
                md-label="Creation Step"
                md-description="create">
-        hello world
+
+        <launch-generation-step :data="data"
+                                :items="items"
+                                :type="type"
+                                @error="errorInFirstStep">
+        </launch-generation-step>
+
       </md-step>
 
     </md-steppers>
@@ -49,16 +58,22 @@ with this file. If not, see
 
 <script>
 import ConfigurationStep from "./components/configuration.vue";
+import launchGenerationStep from "./components/launchGenerationStep.vue";
+import create_data from "./js/data.js";
 
 export default {
   name: "generateGroupPanel",
   components: {
-    "configuration-step": ConfigurationStep
+    "configuration-step": ConfigurationStep,
+    "launch-generation-step": launchGenerationStep
   },
   data() {
+    this.CREATE_DATA = create_data;
+
     return {
       active: "first",
       first: false,
+      errorInConfig: null,
       second: false,
       type: undefined,
       data: {
@@ -66,13 +81,38 @@ export default {
           create: false,
           id: "",
           name: ""
+        },
+        category: {
+          createBy: this.CREATE_DATA.attribute,
+          fixed: false,
+          name: "",
+          regex: ""
+        },
+        group: {
+          createBy: this.CREATE_DATA.attribute,
+          fixed: false,
+          name: "",
+          regex: ""
         }
-      }
+      },
+
+      items: []
     };
   },
   methods: {
     opened(params) {
       this.type = params.type;
+      this.items = params.items;
+    },
+
+    errorInFirstStep() {
+      this.errorInConfig = "This is an error!";
+    },
+
+    changeStep(step) {
+      if (step === "first") {
+        this.errorInConfig = null;
+      }
     }
 
     // setDone(res) {
@@ -95,6 +135,7 @@ export default {
 ._container .steppers {
   width: 100%;
   height: 100%;
+  background-color: transparent;
 }
 </style>
 

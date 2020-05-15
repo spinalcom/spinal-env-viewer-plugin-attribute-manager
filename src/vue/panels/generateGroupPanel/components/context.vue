@@ -104,20 +104,21 @@ export default {
 .sub-content .contentDiv {
   padding: 0px 16px 0px 16px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  /* justify-content: space-between; */
 }
 
 .sub-content .contentDiv .inputDiv {
-  width: calc(100% - 350px);
+  width: 100%;
   display: flex;
   align-items: center;
 }
 
 .sub-content .contentDiv .radios {
-  width: 300px;
+  width: 100%;
   display: flex;
   align-items: center;
-  padding-top: 16px;
+  /* padding-top: 16px; */
 }
 </style>
 

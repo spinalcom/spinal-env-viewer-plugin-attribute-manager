@@ -15,11 +15,12 @@ import generateGroupPanel from "../vue/panels/generateGroupPanel/panel.vue";
 import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
 import ParamDialogComponent from "../vue/dialogs/paramsDialog.vue";
 import ImportAttributeExcelDialog from '../vue/dialogs/importAttributeExcelDialog.vue';
-
-
 import ExportConfigurationDialog from "../vue/panels/configurationPanel/dialogs/export.vue"
 import ImportConfigurationDialog from "../vue/panels/configurationPanel/dialogs/import.vue"
-
+import ConfigureGenerationDialog from "../vue/panels/generateGroupPanel/dialogs/configurations.vue";
+////////////////////////////////////
+//            Others
+////////////////////////////////////
 const {
   SpinalForgeExtention
 } = require("spinal-env-viewer-panel-manager-service_spinalforgeextention");
@@ -67,7 +68,7 @@ let panels = [{
   },
   style: {
     minWidth: "620px",
-    height: "475px",
+    height: "740px",
     left: "400px"
   }
 }]
@@ -108,6 +109,10 @@ const dialogs = [{
   }, {
     name: "importConfigurationDialog",
     vueMountComponent: Vue.extend(ImportConfigurationDialog),
+    parentContainer: document.body
+  }, {
+    name: "configureGenerationDialog",
+    vueMountComponent: Vue.extend(ConfigureGenerationDialog),
     parentContainer: document.body
   }
 ];

@@ -31,17 +31,11 @@ with this file. If not, see
 
       <!-- <md-divider></md-divider> -->
 
-      <div class="sub-content">
-        <md-subheader>Category</md-subheader>
-        <div class="contentDiv"></div>
-      </div>
+      <category-vue :data="data"></category-vue>
 
       <!-- <md-divider></md-divider> -->
 
-      <div class="sub-content">
-        <md-subheader>Group</md-subheader>
-        <div class="contentDiv"></div>
-      </div>
+      <group-vue :data="data"></group-vue>
 
     </div>
   </div>
@@ -49,6 +43,8 @@ with this file. If not, see
 
 <script>
 import contextVue from "./context.vue";
+import categoryVue from "./category.vue";
+import groupVue from "./group.vue";
 
 export default {
   name: "configuration",
@@ -57,7 +53,9 @@ export default {
     type: {}
   },
   components: {
-    "context-vue": contextVue
+    "context-vue": contextVue,
+    "category-vue": categoryVue,
+    "group-vue": groupVue
   },
   data() {
     return {};
