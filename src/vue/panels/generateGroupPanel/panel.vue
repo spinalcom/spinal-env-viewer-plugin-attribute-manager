@@ -23,31 +23,45 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="_container"
-       v-if="data && type">
+  <div class="_container">
 
     <md-steppers md-vertical
                  class="steppers"
                  :md-dynamic-height="true"
                  @md-changed="changeStep">
-      <md-step id="first"
-               md-label="Configuration Step"
-               md-description="configure"
-               :md-error="errorInConfig">
 
-        <configuration-step :data="data"
-                            :type="type"></configuration-step>
+      <md-step id="first"
+               md-label="Selection Step"
+               md-description="select">
+        <md-content class="step-container md-scrollbar">
+          <selection-step :data="data"
+                          :type="type"
+                          @changeType="changeType"></selection-step>
+        </md-content>
+
       </md-step>
 
       <md-step id="second"
+               md-label="Configuration Step"
+               md-description="configure"
+               :md-error="errorInConfig">
+        <md-content class="step-container md-scrollbar">
+          <configuration-step :data="data"
+                              :type="type"></configuration-step>
+        </md-content>
+
+      </md-step>
+
+      <md-step id="third"
                md-label="Creation Step"
                md-description="create">
 
-        <launch-generation-step :data="data"
-                                :items="items"
-                                :type="type"
-                                @error="errorInFirstStep">
-        </launch-generation-step>
+        <md-content class="step-container md-scrollbar">
+          <launch-generation-step :data="data"
+                                  :type="type"
+                                  @error="errorInFirstStep">
+          </launch-generation-step>
+        </md-content>
 
       </md-step>
 
@@ -57,15 +71,18 @@ with this file. If not, see
 
 
 <script>
-import ConfigurationStep from "./components/configuration.vue";
+import ConfigurationStep from "./components/configurationStep.vue";
 import launchGenerationStep from "./components/launchGenerationStep.vue";
+import selectionStep from "./components/selectionStep.vue";
+
 import create_data from "./js/data.js";
 
 export default {
   name: "generateGroupPanel",
   components: {
     "configuration-step": ConfigurationStep,
-    "launch-generation-step": launchGenerationStep
+    "launch-generation-step": launchGenerationStep,
+    "selection-step": selectionStep
   },
   data() {
     this.CREATE_DATA = create_data;
@@ -75,8 +92,10 @@ export default {
       first: false,
       errorInConfig: null,
       second: false,
+      third: false,
       type: undefined,
       data: {
+        items: [],
         context: {
           create: false,
           id: "",
@@ -94,15 +113,13 @@ export default {
           name: "",
           regex: ""
         }
-      },
-
-      items: []
+      }
     };
   },
   methods: {
     opened(params) {
       this.type = params.type;
-      this.items = params.items;
+      this.data.items = params.items;
     },
 
     errorInFirstStep() {
@@ -110,9 +127,12 @@ export default {
     },
 
     changeStep(step) {
-      if (step === "first") {
+      if (step === "second") {
         this.errorInConfig = null;
       }
+    },
+    changeType(type) {
+      this.type = type;
     }
 
     // setDone(res) {
@@ -137,10 +157,23 @@ export default {
   height: 100%;
   background-color: transparent;
 }
+
+._container .steppers .step-container {
+  height: 100%;
+  max-height: 450px;
+  padding: 16px;
+  overflow: hidden;
+  overflow-y: auto;
+  background-color: transparent;
+}
 </style>
 
 <style>
 ._container .md-steppers.md-vertical .md-stepper-content {
   padding: 0 0 0 35px;
 }
+
+/* ._container .md-steppers.md-steppers.md-vertical .md-stepper-content.md-active {
+  max-height: calc(100% - 180px);
+} */
 </style>

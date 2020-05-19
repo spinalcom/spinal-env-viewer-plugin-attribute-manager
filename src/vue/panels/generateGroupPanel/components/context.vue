@@ -100,9 +100,14 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.sub-content {
+  padding: 16px;
+  border: 1px solid gray;
+  margin-bottom: 10px;
+}
+
 .sub-content .contentDiv {
-  padding: 0px 16px 0px 16px;
   display: flex;
   flex-direction: column;
   /* justify-content: space-between; */

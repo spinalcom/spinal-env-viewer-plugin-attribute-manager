@@ -64,7 +64,6 @@ export default {
   name: "launchGeneration",
   props: {
     data: {},
-    items: {},
     type: {}
   },
   data() {
@@ -134,7 +133,7 @@ export default {
       const res = [];
       const unclassify = "unclassify";
 
-      for (const item of this.items) {
+      for (const item of this.data.items) {
         const spinalId = item.id;
 
         const categoryName = await utilities.getValue(spinalId, categoryRegex);

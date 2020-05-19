@@ -18,6 +18,8 @@ import ImportAttributeExcelDialog from '../vue/dialogs/importAttributeExcelDialo
 import ExportConfigurationDialog from "../vue/panels/configurationPanel/dialogs/export.vue"
 import ImportConfigurationDialog from "../vue/panels/configurationPanel/dialogs/import.vue"
 import ConfigureGenerationDialog from "../vue/panels/generateGroupPanel/dialogs/configurations.vue";
+import SelectTypeDialog from "../vue/panels/generateGroupPanel/dialogs/select-type.vue";
+
 ////////////////////////////////////
 //            Others
 ////////////////////////////////////
@@ -113,6 +115,10 @@ const dialogs = [{
   }, {
     name: "configureGenerationDialog",
     vueMountComponent: Vue.extend(ConfigureGenerationDialog),
+    parentContainer: document.body
+  }, {
+    name: "selectTypeDialog",
+    vueMountComponent: Vue.extend(SelectTypeDialog),
     parentContainer: document.body
   }
 ];

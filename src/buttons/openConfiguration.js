@@ -9,9 +9,10 @@ import {
 import {
   spinalConfigurationService
 } from '../services';
-import {
-  SpinalGraphService
-} from "spinal-env-viewer-graph-service";
+
+// import {
+//   SpinalGraphService
+// } from "spinal-env-viewer-graph-service";
 
 export default class OpenConfigurationPanel extends SpinalContextApp {
   constructor() {
@@ -25,7 +26,6 @@ export default class OpenConfigurationPanel extends SpinalContextApp {
   }
 
   isShown(option) {
-    console.log(option)
     const nodeType = option.context.type.get();
 
     const configContextType =
