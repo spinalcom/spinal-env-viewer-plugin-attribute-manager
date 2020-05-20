@@ -28,50 +28,12 @@ with this file. If not, see
              @md-closed="closeDialog(false)">
 
     <md-dialog-title class="dialogTitle">
-      configurations
+      Use Regex
     </md-dialog-title>
 
     <md-dialog-content class="dialogContent">
 
-      <!-- <div class="sub-content">
-        <md-radio v-model="data.createBy"
-                  :value="CREATE_DATA.attribute"
-                  class="md-primary">Create by attribute</md-radio>
-
-        <md-field>
-          <label>Value or Regex</label>
-          <md-input v-model="initial"></md-input>
-        </md-field>
-
-      </div>
-
-      <div class="sub-content">
-
-        <md-radio v-model="data.createBy"
-                  :value="CREATE_DATA.name"
-                  class="md-primary">Create by name content</md-radio>
-
-      </div>
-
-      <div class="sub-content">
-
-        <md-radio v-model="data.createBy"
-                  :value="CREATE_DATA.value"
-                  class="md-primary">Create by value</md-radio>
-
-      </div> -->
-
-      <div class="_title">
-        <!-- <md-field>
-          <label for="create">Create By</label>
-          <md-select v-model="data.createBy"
-                     name="create"
-                     id="create">
-            <md-option :value="CREATE_DATA.attribute">Attribute</md-option>
-            <md-option :value="CREATE_DATA.name">Name</md-option>
-            <md-option :value="CREATE_DATA.value">Valu</md-option>
-          </md-select>
-        </md-field> -->
+      <!-- <div class="_title">
 
         <md-subheader>Create By using : </md-subheader>
 
@@ -85,27 +47,26 @@ with this file. If not, see
                     class="md-primary">Dynamic Value</md-radio>
         </div>
 
-      </div>
+      </div> -->
 
       <div class="content">
 
-        <div class="advancedCheckbox">
+        <!-- <div class="advancedCheckbox">
           <md-checkbox v-model="advanced"
                        class="md-primary">Use advanced option</md-checkbox>
-        </div>
+        </div> -->
 
         <!-- 
         //////////////////////////////////////////
         //  NOT Advanced
         //////////////////////////////////////////
      -->
-        <div class="normal"
+        <!-- <div class="normal"
              v-if="!advanced">
 
           <md-list>
             <md-list-item>
               <md-field>
-                <!-- <label>{{getLabel}}</label> -->
                 <label>name</label>
                 <md-input v-model="value"></md-input>
               </md-field>
@@ -118,24 +79,16 @@ with this file. If not, see
             </md-list-item>
           </md-list>
 
-        </div>
+        </div> -->
         <!-- 
         //////////////////////////////////////////
         //  Advanced
         //////////////////////////////////////////
      -->
-        <div class="advanced"
-             v-else>
+        <div class="advanced">
           <md-list>
             <md-list-item>
               <md-field class="_mdField">
-
-                <!-- <md-menu>
-                  
-                  <md-button class="md-icon md-prefix">{{delimiterV}}
-                  </md-button>
-
-                </md-menu> -->
                 <label>Regex</label>
                 <span class="md-prefix">{{delimiterV}}</span>
                 <md-input v-model="value"
@@ -196,7 +149,7 @@ export default {
     return {
       showDialog: true,
       value: "",
-      advanced: false,
+      advanced: true,
       contains: false,
       delimiterV: "/",
       flags: [],

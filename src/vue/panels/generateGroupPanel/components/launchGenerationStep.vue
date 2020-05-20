@@ -27,27 +27,29 @@ with this file. If not, see
 
     <div class="buttons"
          v-if="appState === STATES.normal">
-      <md-button v-if="!verified"
+      <!-- <md-button v-if="!verified"
                  class="md-raised md-primary"
-                 @click="launchVerification">Verify</md-button>
-      <md-button v-else
+                 @click="launchVerification">Verify</md-button> -->
+      <md-button :disabled="error"
                  class="md-raised md-primary"
                  @click="launchGeneration">Launch Generation</md-button>
     </div>
 
     <div class="state"
          v-else-if="appState === STATES.loading">
+      <md-progress-spinner md-mode="indeterminate"></md-progress-spinner>
 
     </div>
 
     <div class="state"
          v-else-if="appState === STATES.success">
+      <md-icon class="md-size-4x">check</md-icon>
 
     </div>
 
     <div class="state"
          v-else-if="appState === STATES.error">
-
+      <md-icon class="md-size-4x">close</md-icon>
     </div>
 
   </div>
@@ -60,11 +62,14 @@ import utilities from "../js/utilities.js";
 import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 import groupManagerService from "spinal-env-viewer-plugin-group-manager-service";
 
+import { Ptr, Model } from "spinal-core-connectorjs_type";
+
 export default {
   name: "launchGeneration",
   props: {
     data: {},
-    type: {}
+    type: {},
+    error: {}
   },
   data() {
     this.STATES = {
@@ -92,16 +97,17 @@ export default {
         this.data.group.regex.toString().length > 0 ||
         this.data.group.name.trim().length > 0;
 
-      if (contextCondition && categoryCondition && groupCondition) {
-        this.valueGrouped = await this.classifyItem(
-          this.data.category.regex,
-          this.data.group.regex
-        );
+      // if (contextCondition && categoryCondition && groupCondition) {
+      this.valueGrouped = await this.classifyItem(
+        this.data.category,
+        this.data.group
+      );
 
-        this.verified = true;
-      } else {
-        this.$emit("error");
-      }
+      this.verified = true;
+      // } else {
+      //   this.$emit("error");
+      // }
+      console.log("items", this.valueGrouped);
       this.appState = this.STATES.normal;
     },
 
@@ -109,35 +115,41 @@ export default {
       this.appState = this.STATES.loading;
       let contextId = await this.getContext();
 
-      for (const obj of this.valueGrouped) {
-        const category = await utilities.createCategory(contextId, obj.name);
-
-        for (const el of obj.groups) {
-          const group = await utilities.createGroup(
-            contextId,
-            category.info.id.get(),
-            el.name
-          );
-
-          for (const item of el.items) {
-            utilities.addElement(contextId, group.info.id.get(), item.id);
-          }
-        }
-      }
-
-      this.appState = this.STATES.normal;
-      this.verified = false;
+      this.createNodes(contextId)
+        .then(res => {
+          this.saveConfiguration(contextId, this.data);
+          this._displayResult(this.STATES.success);
+        })
+        .catch(err => {
+          this._displayResult(this.STATES.error);
+          console.error(err);
+        });
     },
 
-    async classifyItem(categoryRegex, groupRegex) {
+    _displayResult(result) {
+      this.appState = result;
+      setTimeout(() => {
+        this.appState = this.STATES.normal;
+      }, 1000);
+    },
+
+    async classifyItem(categoryInfo, groupInfo) {
       const res = [];
       const unclassify = "unclassify";
 
       for (const item of this.data.items) {
         const spinalId = item.id;
 
-        const categoryName = await utilities.getValue(spinalId, categoryRegex);
-        const groupName = await utilities.getValue(spinalId, groupRegex);
+        const categoryName = await utilities.getValue(
+          spinalId,
+          categoryInfo,
+          this.type
+        );
+        const groupName = await utilities.getValue(
+          spinalId,
+          groupInfo,
+          this.type
+        );
 
         let categoryFound = res.find(el => {
           if (categoryName) return el.name === categoryName;
@@ -182,6 +194,55 @@ export default {
       }
 
       return this.data.context.id;
+    },
+
+    async createNodes(contextId) {
+      this.valueGrouped = await this.classifyItem(
+        this.data.category,
+        this.data.group
+      );
+
+      for (const obj of this.valueGrouped) {
+        const category = await utilities.createCategory(contextId, obj.name);
+
+        for (const el of obj.groups) {
+          const group = await utilities.createGroup(
+            contextId,
+            category.info.id.get(),
+            el.name
+          );
+
+          for (const item of el.items) {
+            utilities.addElement(contextId, group.info.id.get(), item.id);
+          }
+        }
+      }
+
+      return;
+    },
+
+    saveConfiguration(contextId, configuration) {
+      const context = SpinalGraphService.getRealNode(contextId);
+      const dataCopy = Object.assign({}, this.data);
+
+      dataCopy.category.regex = dataCopy.category.regex.toString();
+      dataCopy.group.regex = dataCopy.group.regex.toString();
+
+      if (context) {
+        if (context.info.generate_group_config) {
+          context.info.rem_attr("generate_group_config");
+        }
+
+        const model = new Model({
+          context: dataCopy.context,
+          category: dataCopy.category,
+          group: dataCopy.group
+        });
+
+        context.info.add_attr({
+          generate_group_config: new Ptr(model)
+        });
+      }
     }
   }
 };

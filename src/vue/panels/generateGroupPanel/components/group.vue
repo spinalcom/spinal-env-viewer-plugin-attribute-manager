@@ -43,6 +43,21 @@ with this file. If not, see
       </div>
 
       <div class="content">
+
+        <create-by-attribute v-if="data.group.createBy === CREATE_DATA.attribute"
+                             :propsName="this.data.group.name"
+                             :propsContains="this.data.group.contains"
+                             :propsRegex="this.data.group.regex"
+                             :propsAdvanced="this.data.group.advanced"
+                             @setValue="setAttributeValue">
+        </create-by-attribute>
+
+        <create-by-name v-else-if="data.group.createBy === CREATE_DATA.name"
+                        :propsSeparator="this.data.group.separator"
+                        :propsPosition="this.data.group.position"
+                        @setValue="setNameValue">
+        </create-by-name>
+
         <!-- <md-field class="fixedInput inputDiv"
                   v-if="data.group.fixed">
           <label>Category Name</label>
@@ -50,7 +65,7 @@ with this file. If not, see
                     v-model="data.group.name"></md-input>
         </md-field> -->
 
-        <div class="dynamicDiv">
+        <!-- <div class="dynamicDiv">
           <md-field class="inputDiv">
             <label>regex</label>
             <md-input v-model="data.group.regex"
@@ -64,7 +79,7 @@ with this file. If not, see
             Edit
           </md-button>
 
-        </div>
+        </div> -->
 
       </div>
 
@@ -77,25 +92,41 @@ with this file. If not, see
 <script>
 import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
 import create_data from "../js/data.js";
+import CreateByAttribute from "./createByAttribute.vue";
+import CreateByName from "./createByName.vue";
 
 export default {
   name: "groupVue",
+  components: {
+    "create-by-attribute": CreateByAttribute,
+    "create-by-name": CreateByName
+  },
   props: {
     data: {}
   },
   data() {
     this.CREATE_DATA = create_data;
-
     return {};
   },
   methods: {
-    openDialog() {
-      spinalPanelManagerService.openPanel("configureGenerationDialog", {
-        callback: (regex, fixed) => {
-          this.data.group.regex = regex;
-          this.data.group.fixed = fixed;
-        }
-      });
+    // openDialog() {
+    //   spinalPanelManagerService.openPanel("configureGenerationDialog", {
+    //     callback: (regex, fixed) => {
+    //       this.data.group.regex = regex;
+    //       this.data.group.fixed = fixed;
+    //     }
+    //   });
+    // }
+
+    setAttributeValue(res) {
+      this.data.group.contains = res.contains;
+      this.data.group.name = res.name;
+      this.data.group.regex = res.regex;
+    },
+
+    setNameValue(res) {
+      this.data.group.separator = res.separator;
+      this.data.group.index = res.index;
     }
   }
 };
@@ -116,6 +147,9 @@ export default {
 
 .sub-content .contentDiv .radiosDiv {
   width: 100%;
+  display: flex;
+  /* justify-content: space-around; */
+  margin-bottom: 10px;
 }
 
 .sub-content .contentDiv .content {

@@ -43,6 +43,21 @@ with this file. If not, see
       </div>
 
       <div class="content">
+
+        <create-by-attribute v-if="data.category.createBy === CREATE_DATA.attribute"
+                             :propsName="this.data.category.name"
+                             :propsContains="this.data.category.contains"
+                             :propsRegex="this.data.category.regex"
+                             :propsAdvanced="this.data.category.advanced"
+                             @setValue="setAttributeValue">
+        </create-by-attribute>
+
+        <create-by-name v-else-if="data.category.createBy === CREATE_DATA.name"
+                        :propsSeparator="this.data.category.separator"
+                        :propsPosition="this.data.category.position"
+                        @setValue="setNameValue">
+        </create-by-name>
+
         <!-- <md-field class="fixedInput inputDiv"
                   v-if="data.category.fixed">
           <label>Category Name</label>
@@ -50,7 +65,7 @@ with this file. If not, see
                     v-model="data.category.name"></md-input>
         </md-field> -->
 
-        <div class="dynamicDiv">
+        <!-- <div class="dynamicDiv">
           <md-field class="inputDiv">
             <label>regex</label>
             <md-input v-model="data.category.regex"
@@ -64,44 +79,27 @@ with this file. If not, see
             Edit
           </md-button>
 
-        </div>
+        </div> -->
 
       </div>
 
     </div>
 
   </div>
-
-  <!-- <div class="checkboxDiv">
-        <md-checkbox class="md-primary"
-                     v-model="data.category.fixed">Fixed</md-checkbox>
-      </div> -->
-
-  <!-- <md-field class="inputDiv">
-    <label>Category Name</label>
-    <md-input :disabled="!data.category.fixed"
-              v-model="data.category.name"></md-input>
-  </md-field>
-
-  <div class="dynamicDialog">
-    <md-button class="md-raised md-primary"
-               :disabled="data.category.fixed"
-               @click="openDialog">
-      <md-tooltip>Create dynamically</md-tooltip>
-      Create dynamically
-    </md-button>
-  </div> 
-
-  </div>
-  </div>-->
 </template>
 
 <script>
 import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
 import create_data from "../js/data.js";
+import CreateByAttribute from "./createByAttribute.vue";
+import CreateByName from "./createByName.vue";
 
 export default {
   name: "categoryVue",
+  components: {
+    "create-by-attribute": CreateByAttribute,
+    "create-by-name": CreateByName
+  },
   props: {
     data: {}
   },
@@ -110,13 +108,24 @@ export default {
     return {};
   },
   methods: {
-    openDialog() {
-      spinalPanelManagerService.openPanel("configureGenerationDialog", {
-        callback: (regex, fixed) => {
-          this.data.category.regex = regex;
-          this.data.category.fixed = fixed;
-        }
-      });
+    // openDialog() {
+    //   spinalPanelManagerService.openPanel("configureGenerationDialog", {
+    //     callback: (regex, fixed) => {
+    //       this.data.category.regex = regex;
+    //       this.data.category.fixed = fixed;
+    //     }
+    //   });
+    // }
+
+    setAttributeValue(res) {
+      this.data.category.contains = res.contains;
+      this.data.category.name = res.name;
+      this.data.category.regex = res.regex;
+    },
+
+    setNameValue(res) {
+      this.data.category.separator = res.separator;
+      this.data.category.index = res.index;
     }
   }
 };
@@ -137,6 +146,9 @@ export default {
 
 .sub-content .contentDiv .radiosDiv {
   width: 100%;
+  display: flex;
+  /* justify-content: space-around; */
+  margin-bottom: 10px;
 }
 
 .sub-content .contentDiv .content {

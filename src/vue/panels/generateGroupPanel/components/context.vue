@@ -71,6 +71,9 @@ with this file. If not, see
 
 <script>
 import { groupManagerService } from "spinal-env-viewer-plugin-group-manager-service";
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
+
+import PanelVue from "../panel.vue";
 
 export default {
   name: "contextTemplate",
@@ -87,14 +90,60 @@ export default {
     async getContexts() {
       this.contexts = await groupManagerService.getGroupĈontexts(this.type);
     },
-    selectItem(id) {
-      const item = this.contexts.find(el => el.id === id);
 
-      if (item) this.data.context.name = item.name;
+    async selectItem(id) {
+      const config = await this.getConfiguration(id);
+
+      if (config && config.context) {
+        this._setValue("context", config.context.get());
+      }
+      if (config && config.category) {
+        this._setValue("category", config.category.get());
+      }
+      if (config && config.group) {
+        this._setValue("group", config.group.get());
+      }
+
+      console.log("data", this.data);
     },
     changeRadio() {
       this.data.context.name = "";
       this.data.context.id = "";
+    },
+    getConfiguration(id) {
+      const context = SpinalGraphService.getRealNode(id);
+
+      let _ptr = context.info.generate_group_config;
+
+      if (typeof _ptr !== "undefined") {
+        return new Promise(resolve => {
+          _ptr.load(info => {
+            resolve(info);
+          });
+        });
+      }
+    },
+
+    _setValue(objectProperty, liste) {
+      for (const key of Object.keys(liste)) {
+        if (this.data[objectProperty].hasOwnProperty(key)) {
+          if (key === "regex") {
+            this.data[objectProperty][key] = this._getRegex(liste[key]);
+          } else {
+            this.data[objectProperty][key] = liste[key];
+          }
+        }
+      }
+    },
+
+    _getRegex(inputstring) {
+      var match = inputstring.match(new RegExp("^/(.*?)/([gimyu]*)$"));
+      return new RegExp(match[1], match[2]);
+    }
+  },
+  watch: {
+    type() {
+      this.getContexts();
     }
   }
 };

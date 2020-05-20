@@ -59,7 +59,7 @@ with this file. If not, see
         <md-content class="step-container md-scrollbar">
           <launch-generation-step :data="data"
                                   :type="type"
-                                  @error="errorInFirstStep">
+                                  :error="firstStepError">
           </launch-generation-step>
         </md-content>
 
@@ -89,11 +89,12 @@ export default {
 
     return {
       active: "first",
-      first: false,
       errorInConfig: null,
+      first: false,
       second: false,
       third: false,
       type: undefined,
+      firstStepError: false,
       data: {
         items: [],
         context: {
@@ -103,15 +104,33 @@ export default {
         },
         category: {
           createBy: this.CREATE_DATA.attribute,
-          fixed: false,
+          contains: false,
           name: "",
-          regex: ""
+          regex: "",
+          separator: "",
+          index: -1
         },
         group: {
           createBy: this.CREATE_DATA.attribute,
-          fixed: false,
+          contains: false,
           name: "",
-          regex: ""
+          regex: "",
+          separator: "",
+          index: -1
+        }
+      },
+      verification: {
+        context: {
+          isVerified: false,
+          message: ""
+        },
+        category: {
+          isVerified: false,
+          message: ""
+        },
+        group: {
+          isVerified: false,
+          message: ""
         }
       }
     };
@@ -129,10 +148,48 @@ export default {
     changeStep(step) {
       if (step === "second") {
         this.errorInConfig = null;
+      } else if (step === "third") {
+        const contextIsOk = this.contextIsVerified();
+        const categoryisOk = this.categoryOrGroupIsVerified(this.data.category);
+        const groupIsOk = this.categoryOrGroupIsVerified(this.data.group);
+
+        if (!contextIsOk || !categoryisOk || !groupIsOk) {
+          this.firstStepError = true;
+          this.errorInConfig = "This is an error!";
+        } else {
+          this.firstStepError = false;
+        }
       }
     },
+
     changeType(type) {
       this.type = type;
+    },
+
+    contextIsVerified() {
+      if (this.data.context.create) {
+        return this.data.context.name.trim().length > 0;
+      } else {
+        return (
+          this.data.context.name.trim().length > 0 &&
+          this.data.context.id.trim().length > 0
+        );
+      }
+    },
+
+    categoryOrGroupIsVerified(info) {
+      // createBy: this.CREATE_DATA.attribute,
+      //     contains: false,
+      //     name: "",
+      //     regex: "",
+      //     separator: "",
+      //     index: -1
+
+      if (info.createBy === this.CREATE_DATA.attribute) {
+        return info.regex.toString().trim().length > 0;
+      } else if (info.createBy === this.CREATE_DATA.name) {
+        return info.separator.length > 0 && parseInt(info.index) >= 1;
+      }
     }
 
     // setDone(res) {

@@ -24,10 +24,12 @@ with this file. If not, see
 
 <template>
   <div class="_container">
-    <div class="content">
+    <div class="content"
+         v-if="isLoaded">
 
       <context-vue :data="data"
-                   :type="type"></context-vue>
+                   :type="type"
+                   @load="refresh"></context-vue>
 
       <!-- <md-divider></md-divider> -->
 
@@ -36,6 +38,10 @@ with this file. If not, see
       <!-- <md-divider></md-divider> -->
 
       <group-vue :data="data"></group-vue>
+
+    </div>
+    <div class="loading"
+         v-else>
 
     </div>
   </div>
@@ -58,9 +64,18 @@ export default {
     "group-vue": groupVue
   },
   data() {
-    return {};
+    return {
+      isLoaded: true
+    };
   },
   methods: {
+    refresh() {
+      this.isLoaded = false;
+      setTimeout(() => {
+        this.isLoaded = true;
+      }, 300);
+    }
+
     // goToNext() {
     //   this.$emit("next", { id: "first", index: "second" });
     // }
