@@ -103,8 +103,6 @@ export default {
       if (config && config.group) {
         this._setValue("group", config.group.get());
       }
-
-      console.log("data", this.data);
     },
     changeRadio() {
       this.data.context.name = "";

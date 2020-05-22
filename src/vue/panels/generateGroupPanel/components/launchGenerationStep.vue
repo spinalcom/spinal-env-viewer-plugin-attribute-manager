@@ -172,7 +172,8 @@ export default {
         if (typeof groupFound === "undefined") {
           groupFound = {
             name: groupName ? groupName : unclassify,
-            items: []
+            items: [],
+            color: groupName ? this._generateColor() : "#ff0000"
           };
           categoryFound.groups.push(groupFound);
         }
@@ -185,8 +186,12 @@ export default {
 
     async getContext() {
       if (this.data.context.create) {
+        const contextName = utilities._getValidContextName(
+          this.data.context.name
+        );
+
         const context = await groupManagerService.createGroupContext(
-          this.data.context.name,
+          contextName,
           this.type
         );
 
@@ -209,7 +214,8 @@ export default {
           const group = await utilities.createGroup(
             contextId,
             category.info.id.get(),
-            el.name
+            el.name,
+            el.color
           );
 
           for (const item of el.items) {
@@ -225,6 +231,7 @@ export default {
       const context = SpinalGraphService.getRealNode(contextId);
       const dataCopy = Object.assign({}, this.data);
 
+      dataCopy.context.create = true;
       dataCopy.category.regex = dataCopy.category.regex.toString();
       dataCopy.group.regex = dataCopy.group.regex.toString();
 
@@ -243,6 +250,10 @@ export default {
           generate_group_config: new Ptr(model)
         });
       }
+    },
+
+    _generateColor() {
+      return "#" + ((Math.random() * 0xffffff) << 0).toString(16);
     }
   }
 };
