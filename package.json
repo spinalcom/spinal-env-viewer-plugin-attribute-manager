@@ -20,6 +20,7 @@
     "spinal-env-viewer-plugin-excel-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-excel-manager-service.git",
     "spinal-env-viewer-plugin-group-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-group-manager-service.git",
     "spinal-env-viewer-room-manager": "git+https://github.com/spinalcom/spinal-env-viewer-room-manager.git",
+    "spinal-env-viewer-bim-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-bim-manager-service.git",
     "v-tooltip": "^2.0.2"
   },
   "browserify": {

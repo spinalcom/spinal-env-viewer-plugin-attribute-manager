@@ -27,13 +27,14 @@ with this file. If not, see
 
     <div class="fabs">
       <md-speed-dial md-direction="top"
-                     md-event="click">
+                     md-event="click"
+                     md-effect="scale">
         <md-speed-dial-target class="md-fab md-bottom-right md-mini md-primary">
           <md-icon class="md-morph-initial">menu</md-icon>
           <md-icon class="md-morph-final">menu_open</md-icon>
         </md-speed-dial-target>
 
-        <md-speed-dial-content class="mdSpeedDialBtn">
+        <md-speed-dial-content class="configMdSpeedDialBtn">
 
           <create-item :title="'Create Configuration Profil'"
                        :fieldText="'Configuration Profil Name'"
@@ -393,6 +394,10 @@ export default {
       });
 
       return Promise.all(promises);
+    },
+
+    Open(...res) {
+      console.log("res", res);
     }
   },
   watch: {
@@ -478,15 +483,39 @@ export default {
   align-items: flex-end;
 } */
 
-._container .fabs .mdSpeedDialBtn {
+/* ._container .fabs .configMdSpeedDialBtn {
   z-index: 999;
-}
+} */
 </style>
 
 
 <style>
-._container .fabs .mdSpeedDialBtn .md-button .md-ripple {
+._container .fabs .configMdSpeedDialBtn .md-button .md-ripple {
   width: 250px;
+}
+
+._container .fabs .md-speed-dial-content {
+  z-index: unset !important;
+}
+
+/* 
+when fabs not active 
+*/
+._container
+  .fabs
+  .md-speed-dial.md-theme-default.md-direction-top.md-effect-scale
+  .md-speed-dial-content.configMdSpeedDialBtn {
+  display: none;
+}
+
+/* 
+when fabs active 
+*/
+._container
+  .fabs
+  .md-speed-dial.md-theme-default.md-active.md-direction-top.md-effect-scale
+  .md-speed-dial-content.configMdSpeedDialBtn {
+  display: flex;
 }
 
 /* ._container

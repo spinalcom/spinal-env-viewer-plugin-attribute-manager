@@ -40,23 +40,32 @@ with this file. If not, see
                   :value="CREATE_DATA.name"
                   class="md-primary">Name</md-radio>
 
+        <md-radio v-model="data.group.createBy"
+                  :value="CREATE_DATA.fixed"
+                  class="md-primary">Fixed value</md-radio>
+
       </div>
 
       <div class="content">
 
         <create-by-attribute v-if="data.group.createBy === CREATE_DATA.attribute"
-                             :propsName="this.data.group.name"
-                             :propsContains="this.data.group.contains"
-                             :propsRegex="this.data.group.regex"
-                             :propsAdvanced="this.data.group.advanced"
+                             :propsName="data.group.name"
+                             :propsContains="data.group.contains"
+                             :propsRegex="data.group.regex"
+                             :propsAdvanced="data.group.advanced"
                              @setValue="setAttributeValue">
         </create-by-attribute>
 
         <create-by-name v-else-if="data.group.createBy === CREATE_DATA.name"
-                        :propsSeparator="this.data.group.separator"
-                        :propsPosition="this.data.group.position"
+                        :propsSeparator="data.group.separator"
+                        :propsPosition="data.group.position"
                         @setValue="setNameValue">
         </create-by-name>
+
+        <create-by-fixed-value v-else-if="data.group.createBy === CREATE_DATA.fixed"
+                               @setValue="setFixedValue"
+                               :propsName="data.group.fixedValue">
+        </create-by-fixed-value>
 
         <!-- <md-field class="fixedInput inputDiv"
                   v-if="data.group.fixed">
@@ -94,12 +103,14 @@ import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-servi
 import create_data from "../js/data.js";
 import CreateByAttribute from "./createByAttribute.vue";
 import CreateByName from "./createByName.vue";
+import CreateByFixedValue from "./createByFixedValue.vue";
 
 export default {
   name: "groupVue",
   components: {
     "create-by-attribute": CreateByAttribute,
-    "create-by-name": CreateByName
+    "create-by-name": CreateByName,
+    "create-by-fixed-value": CreateByFixedValue
   },
   props: {
     data: {}
@@ -127,6 +138,10 @@ export default {
     setNameValue(res) {
       this.data.group.separator = res.separator;
       this.data.group.index = res.index;
+    },
+
+    setFixedValue(res) {
+      this.data.group.fixedValue = res.name;
     }
   }
 };

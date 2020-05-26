@@ -136,7 +136,9 @@ export default {
 
     _getRegex(inputstring) {
       var match = inputstring.match(new RegExp("^/(.*?)/([gimyu]*)$"));
-      return new RegExp(match[1], match[2]);
+      if (match) return new RegExp(match[1], match[2]);
+
+      return "";
     }
   },
   watch: {

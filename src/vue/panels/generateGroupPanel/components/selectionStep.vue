@@ -55,6 +55,7 @@ with this file. If not, see
 
 <script>
 import geographicService from "spinal-env-viewer-context-geographic-service";
+import { bimObjectManagerService } from "spinal-env-viewer-bim-manager-service";
 
 export default {
   name: "selectionStep",
@@ -85,7 +86,10 @@ export default {
     },
 
     async addItemSelected() {
-      const selection = window.spinal.ForgeViewer.viewer.getAggregateSelection();
+      const aggregateSelection = window.spinal.ForgeViewer.viewer.getAggregateSelection();
+
+      const selection = await this.getLeafDbIds(aggregateSelection);
+
       const nodespromises = selection.map(async el => {
         return this.getBimObjectsNodes(el);
       });
@@ -96,6 +100,14 @@ export default {
         const listeFiltered = this.filterList(iterator);
         this.data.items = [...this.data.items, ...listeFiltered];
       }
+    },
+
+    getLeafDbIds(selections) {
+      const dbIds = selections.map(el => {
+        return bimObjectManagerService.getLeafDbIds(el.model, el.selection);
+      });
+
+      return Promise.all(dbIds);
     },
 
     getBimObjectsNodes(el) {

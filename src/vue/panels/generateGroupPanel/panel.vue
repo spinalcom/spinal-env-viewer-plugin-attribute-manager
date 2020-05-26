@@ -108,7 +108,8 @@ export default {
           name: "",
           regex: "",
           separator: "",
-          index: -1
+          index: 1,
+          fixedValue: ""
         },
         group: {
           createBy: this.CREATE_DATA.attribute,
@@ -116,7 +117,8 @@ export default {
           name: "",
           regex: "",
           separator: "",
-          index: -1
+          index: 1,
+          fixedValue: ""
         }
       },
       verification: {
@@ -188,7 +190,10 @@ export default {
       if (info.createBy === this.CREATE_DATA.attribute) {
         return info.regex.toString().trim().length > 0;
       } else if (info.createBy === this.CREATE_DATA.name) {
-        return info.separator.length > 0 && parseInt(info.index) >= 1;
+        return parseInt(info.index) >= 1;
+        // return info.separator.length > 0 && parseInt(info.index) >= 1;
+      } else if (info.createBy === this.CREATE_DATA.fixed) {
+        return info.fixedValue.trim().length > 0;
       }
     }
 

@@ -26,11 +26,13 @@ export default {
       const nodeInfo = SpinalGraphService.getInfo(spinalId);
       const name = nodeInfo.name.get();
 
-      if (info.separator.length === 0) return;
+      if (info.separator.length === 0) info.separator = " ";
 
       const liste = name.split(info.separator);
 
       return liste[info.index - 1];
+    } else if (info.createBy === CREATE_DATA.fixed) {
+      return info.fixedValue;
     }
 
   },
@@ -133,6 +135,7 @@ export default {
 
   _getRegex(inputstring) {
     var match = inputstring.match(new RegExp("^/(.*?)/([gimyu]*)$"));
-    return new RegExp(match[1], match[2]);
+    if (match) return new RegExp(match[1], match[2]);
+    return "";
   }
 };

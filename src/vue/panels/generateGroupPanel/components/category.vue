@@ -40,23 +40,32 @@ with this file. If not, see
                   :value="CREATE_DATA.name"
                   class="md-primary">Name</md-radio>
 
+        <md-radio v-model="data.category.createBy"
+                  :value="CREATE_DATA.fixed"
+                  class="md-primary">Fixed value</md-radio>
+
       </div>
 
       <div class="content">
 
         <create-by-attribute v-if="data.category.createBy === CREATE_DATA.attribute"
-                             :propsName="this.data.category.name"
-                             :propsContains="this.data.category.contains"
-                             :propsRegex="this.data.category.regex"
-                             :propsAdvanced="this.data.category.advanced"
+                             :propsName="data.category.name"
+                             :propsContains="data.category.contains"
+                             :propsRegex="data.category.regex"
+                             :propsAdvanced="data.category.advanced"
                              @setValue="setAttributeValue">
         </create-by-attribute>
 
         <create-by-name v-else-if="data.category.createBy === CREATE_DATA.name"
-                        :propsSeparator="this.data.category.separator"
-                        :propsPosition="this.data.category.position"
+                        :propsSeparator="data.category.separator"
+                        :propsPosition="data.category.position"
                         @setValue="setNameValue">
         </create-by-name>
+
+        <create-by-fixed-value v-else-if="data.category.createBy === CREATE_DATA.fixed"
+                               @setValue="setFixedValue"
+                               :propsName="data.category.fixedValue">
+        </create-by-fixed-value>
 
         <!-- <md-field class="fixedInput inputDiv"
                   v-if="data.category.fixed">
@@ -93,12 +102,14 @@ import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-servi
 import create_data from "../js/data.js";
 import CreateByAttribute from "./createByAttribute.vue";
 import CreateByName from "./createByName.vue";
+import CreateByFixedValue from "./createByFixedValue.vue";
 
 export default {
   name: "categoryVue",
   components: {
     "create-by-attribute": CreateByAttribute,
-    "create-by-name": CreateByName
+    "create-by-name": CreateByName,
+    "create-by-fixed-value": CreateByFixedValue
   },
   props: {
     data: {}
@@ -126,6 +137,10 @@ export default {
     setNameValue(res) {
       this.data.category.separator = res.separator;
       this.data.category.index = res.index;
+    },
+
+    setFixedValue(res) {
+      this.data.category.fixedValue = res.name;
     }
   }
 };
