@@ -88,7 +88,7 @@ export default {
   },
   methods: {
     async getContexts() {
-      this.contexts = await groupManagerService.getGroupĈontexts(this.type);
+      this.contexts = await groupManagerService.getGroupContexts(this.type);
     },
 
     async selectItem(id) {

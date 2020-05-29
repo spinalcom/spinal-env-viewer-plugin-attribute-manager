@@ -14,13 +14,10 @@ import {
   bimObjectManagerService
 } from "spinal-env-viewer-bim-manager-service";
 
-import {
-  groupManagerService
-} from "spinal-env-viewer-plugin-group-manager-service";
 
-// import {
-//   groupService
-// } from "spinal-env-viewer-room-manager/services/service.js";
+import {
+  groupService
+} from "spinal-env-viewer-room-manager/services/service.js";
 
 
 export default class SpinalAttributeService {
@@ -93,6 +90,21 @@ export default class SpinalAttributeService {
 
   getBimObjectAttribute(bimObjectInfo, attributeName) {
 
+    // let modelScenes = window.spinal.BimObjectService.mappingBimFileIdModelId[
+    //   bimObjectInfo.bimFileId
+    // ].modelScene;
+
+    // let properties = modelScenes.map(scene => {
+    //   let model = scene.model;
+    //   return bimObjectManagerService.getBimObjectsByPropertiesName(
+    //     model, {
+    //       name: attributeName
+    //     }
+    //   )
+    // })
+
+    // return Promise.all(properties).then(val => val.flat());
+
     let model = window.spinal.BimObjectService.getModelByBimfile(bimObjectInfo
       .bimFileId);
 
@@ -164,9 +176,19 @@ export default class SpinalAttributeService {
     let attr = await this.getOrCreateAttribute(nodeId, categoryName,
       attributeName);
 
+    // let attributes = await serviceDocumentation.getAttributesByCategory(
+    //   realNode,
+    //   categoryName);
+
+    // let attr = attributes.find(el => {
+    //   return el.label.get() === attributeName;
+    // })
+
     if (attr && attr.value) {
       attr.value.set(attributeValue);
     }
+
+
   }
 
   getBimObjects(nodeId) {
@@ -201,92 +223,65 @@ export default class SpinalAttributeService {
     }
   }
 
+  getAllGroupContext() {
+    return Promise.all([SpinalGraphService.getContextWithType(
+        groupService.constants.ROOMS_GROUP_CONTEXT),
+      SpinalGraphService.getContextWithType(
+        groupService.constants.EQUIPMENTS_GROUP_CONTEXT),
+      SpinalGraphService.getContextWithType(
+        groupService.constants.ENDPOINTS_GROUP_CONTEXT)
+    ]).then(values => {
+      let contexts = values.flat();
 
-  getAllGroupContext(type) {
-    // return Promise.all([SpinalGraphService.getContextWithType(
-    //     groupService.constants.ROOMS_GROUP_CONTEXT),
-    //   SpinalGraphService.getContextWithType(
-    //     groupService.constants.EQUIPMENTS_GROUP_CONTEXT),
-    //   SpinalGraphService.getContextWithType(
-    //     groupService.constants.ENDPOINTS_GROUP_CONTEXT)
-    // ]).then(values => {
-    //   let contexts = values.flat();
-
-    //   let promises = contexts.map(async context => {
-    //     let res = context.info.get();
-    //     res["category"] = await this.getCategory(res.id, res
-    //       .type);
-    //     return res;
-    //   })
-
-    //   return Promise.all(promises);
-
-    // })
-
-    console.log("service type", type);
-
-    return groupManagerService.getGroupContexts(type).then((contexts) => {
-      const promises = contexts.map(async context => {
-        context["category"] = await this.getCategory(context.id);
-        return context;
+      let promises = contexts.map(async context => {
+        let res = context.info.get();
+        res["category"] = await this.getCategory(res.id, res
+          .type);
+        return res;
       })
 
       return Promise.all(promises);
-    })
 
+    })
   }
 
-  async getCategory(contextId) {
+  getCategory(contextId, nodeType) {
+    // let relationName = nodeType === ROOMS_GROUP_CONTEXT ?
+    //   ROOMS_CATEGORY_RELATION : EQUIPMENTS_CATEGORY_RELATION;
 
-    // let relationName = groupService.constants
-    //   .CONTEXT_TO_CATEGORY_RELATION;
+    let relationName = groupService.constants
+      .CONTEXT_TO_CATEGORY_RELATION;
 
-    // return SpinalGraphService.getChildren(contextId, [relationName]).then(
-    //   children => {
-    //     let promises = children.map(async child => {
-    //       let info = child.get();
-    //       info["groups"] = await this.getGroup(child.id, child
-    //         .type);
-    //       return info;
-    //     })
+    return SpinalGraphService.getChildren(contextId, [relationName]).then(
+      children => {
+        let promises = children.map(async child => {
+          let info = child.get();
+          info["groups"] = await this.getGroup(child.id, child
+            .type);
+          return info;
+        })
 
-    //     return Promise.all(promises);
+        return Promise.all(promises);
 
-    //   })
-
-    const categories = await groupManagerService.getCategories(contextId)
-
-    const promises = categories.map(async category => {
-      let info = category.get();
-      info["groups"] = await this.getGroup(category.id);
-      return info;
-    })
-
-    return Promise.all(promises);
-
+      })
   }
 
-  async getGroup(categoryId) {
+  getGroup(categoryId, nodeType) {
+    // let relationName = nodeType === ROOMS_CATEGORY ? ROOMS_GROUP_RELATION :
+    //   EQUIPMENTS_GROUP_RELATION;
 
-    // let relationName = groupService.constants.CATEGORY_TO_GROUP_RELATION;
+    let relationName = groupService.constants.CATEGORY_TO_GROUP_RELATION;
 
 
-    // return SpinalGraphService.getChildren(categoryId, [relationName])
-    //   .then(
-    //     children => {
-    //       return children.map(el => el.get());
-    //     })
-
-    const groups = await groupManagerService.getGroups(categoryId);
-
-    return groups.map(el => el.get());
-
+    return SpinalGraphService.getChildren(categoryId, [relationName])
+      .then(
+        children => {
+          return children.map(el => el.get());
+        })
   }
 
   linkItem(contextId, parentId, itemId) {
-    // groupService.linkElementToGroup(parentId, itemId, contextId)
-    return groupManagerService.linkElementToGroup(contextId, parentId,
-      itemId);
+    groupService.linkElementToGroup(parentId, itemId, contextId)
   }
 
 }

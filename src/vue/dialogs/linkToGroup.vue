@@ -91,12 +91,12 @@ export default {
       contextSelected: undefined,
       categorySelected: undefined,
       groupSelected: undefined,
-      items: []
+      items: [],
+      type: undefined
     };
   },
 
-  created() {
-    this.getAllData();
+  mounted() {
     EventBus.$on("itemCreated", id => {
       this.getAllData();
     });
@@ -105,6 +105,9 @@ export default {
   methods: {
     opened(option) {
       this.items = option.itemSelected;
+      this.type = option.type;
+
+      this.getAllData();
     },
 
     removed(option) {
@@ -127,7 +130,7 @@ export default {
     },
 
     getAllData() {
-      attributeService.getAllGroupContext().then(res => {
+      attributeService.getAllGroupContext(this.type).then(res => {
         this.data = res;
         this.updateCategory();
         this.updateGroups();
@@ -169,15 +172,14 @@ export default {
     createContext() {
       spinalPanelManagerService.openPanel("createGroupContextDialog", {
         title: "Create a Grouping Context",
-        type: "context",
+        typePreselected: this.type,
         callback: id => (this.contextSelected = id)
       });
     },
 
     createCategory() {
-      spinalPanelManagerService.openPanel("createGroupContextDialog", {
+      spinalPanelManagerService.openPanel("createCategoryDialog", {
         title: "add Category",
-        type: "element",
         contextId: this.contextSelected,
         selectedNode: SpinalGraphService.getInfo(this.contextSelected),
         callback: id => (this.categorySelected = id)
@@ -185,9 +187,8 @@ export default {
     },
 
     createGroup() {
-      spinalPanelManagerService.openPanel("createGroupContextDialog", {
+      spinalPanelManagerService.openPanel("createGroupDialog", {
         title: "add Group",
-        type: "element",
         contextId: this.contextSelected,
         selectedNode: SpinalGraphService.getInfo(this.categorySelected),
         callback: id => (this.groupSelected = id)

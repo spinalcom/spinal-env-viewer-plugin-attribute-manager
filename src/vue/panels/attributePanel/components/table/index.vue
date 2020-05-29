@@ -518,6 +518,7 @@ export default {
         return alert("you must select at less one item");
 
       spinalPanelManagerService.openPanel("linkToGroupDialog", {
+        type: this.typeSelected,
         itemSelected: this.itemsSelected
       });
     },
