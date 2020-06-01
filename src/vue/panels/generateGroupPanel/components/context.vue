@@ -149,6 +149,8 @@ export default {
   watch: {
     type() {
       this.getContexts();
+      this.data.context.id = "";
+      this.data.context.name = "";
     }
   }
 };
