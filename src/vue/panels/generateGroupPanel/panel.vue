@@ -76,6 +76,7 @@ import launchGenerationStep from "./components/launchGenerationStep.vue";
 import selectionStep from "./components/selectionStep.vue";
 
 import create_data from "./js/data.js";
+import data_json from "./js/data.config";
 
 export default {
   name: "generateGroupPanel",
@@ -95,32 +96,7 @@ export default {
       third: false,
       type: undefined,
       firstStepError: false,
-      data: {
-        items: [],
-        context: {
-          create: false,
-          id: "",
-          name: ""
-        },
-        category: {
-          createBy: this.CREATE_DATA.attribute,
-          contains: false,
-          name: "",
-          regex: "",
-          separator: "",
-          index: 1,
-          fixedValue: ""
-        },
-        group: {
-          createBy: this.CREATE_DATA.attribute,
-          contains: false,
-          name: "",
-          regex: "",
-          separator: "",
-          index: 1,
-          fixedValue: ""
-        }
-      },
+      data: Object.assign({}, data_json),
       verification: {
         context: {
           isVerified: false,
@@ -166,6 +142,10 @@ export default {
 
     changeType(type) {
       this.type = type;
+      // if (this.data.context.create) {
+      //   this.data.context.id = "";
+      //   this.data.context.name = "";
+      // }
     },
 
     contextIsVerified() {

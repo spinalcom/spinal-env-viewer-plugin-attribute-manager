@@ -231,7 +231,8 @@ export default {
       const context = SpinalGraphService.getRealNode(contextId);
       const dataCopy = Object.assign({}, this.data);
 
-      dataCopy.context.create = true;
+      dataCopy.context.create = false;
+      dataCopy.context.id = contextId;
       dataCopy.category.regex = dataCopy.category.regex.toString();
       dataCopy.group.regex = dataCopy.group.regex.toString();
 

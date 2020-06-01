@@ -104,22 +104,27 @@ export default {
         this._setValue("group", config.group.get());
       }
     },
+
     changeRadio() {
       this.data.context.name = "";
       this.data.context.id = "";
     },
-    getConfiguration(id) {
+
+    async getConfiguration(id) {
       const context = SpinalGraphService.getRealNode(id);
+      if (context) {
+        let _ptr = context.info.generate_group_config;
 
-      let _ptr = context.info.generate_group_config;
-
-      if (typeof _ptr !== "undefined") {
-        return new Promise(resolve => {
-          _ptr.load(info => {
-            resolve(info);
+        if (typeof _ptr !== "undefined") {
+          return new Promise(resolve => {
+            _ptr.load(info => {
+              resolve(info);
+            });
           });
-        });
+        }
       }
+
+      return;
     },
 
     _setValue(objectProperty, liste) {
