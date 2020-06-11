@@ -92,7 +92,8 @@ export default {
       categorySelected: undefined,
       groupSelected: undefined,
       items: [],
-      type: undefined
+      type: undefined,
+      callback: undefined
     };
   },
 
@@ -106,6 +107,7 @@ export default {
     opened(option) {
       this.items = option.itemSelected;
       this.type = option.type;
+      this.callback = option.callback;
 
       this.getAllData();
     },
@@ -119,6 +121,16 @@ export default {
             el.id
           );
         });
+
+        if (typeof this.callback !== "undefined") {
+          const context = this.data.find(el => el.id === this.contextSelected);
+          const category = this.categories.find(
+            el => el.id === this.categorySelected
+          );
+          const group = this.groups.find(el => el.id === this.groupSelected);
+
+          this.callback(context, category, group);
+        }
       }
       this.showDialog = false;
     },
