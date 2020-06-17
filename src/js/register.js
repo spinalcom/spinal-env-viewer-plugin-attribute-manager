@@ -12,7 +12,7 @@ import generateGroupPanel from "../vue/panels/generateGroupPanel/panel.vue";
 ////////////////////////////////////
 //            Dialogs
 ////////////////////////////////////
-import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
+// import LinkToGroup from "../vue/dialogs/linkToGroup.vue";
 import ParamDialogComponent from "../vue/dialogs/paramsDialog.vue";
 import ImportAttributeExcelDialog from '../vue/dialogs/importAttributeExcelDialog.vue';
 import ExportConfigurationDialog from "../vue/panels/configurationPanel/dialogs/export.vue"
@@ -90,11 +90,13 @@ for (let index = 0; index < panels.length; index++) {
 /////////////////////////////////////////////////////////////////////////////////
 
 
-const dialogs = [{
-    name: "linkToGroupDialog",
-    vueMountComponent: Vue.extend(LinkToGroup),
-    parentContainer: document.body
-  }, {
+const dialogs = [
+  // {
+  //   name: "linkToGroupDialog",
+  //   vueMountComponent: Vue.extend(LinkToGroup),
+  //   parentContainer: document.body
+  // }, 
+  {
     name: "paramDialogComponent",
     vueMountComponent: Vue.extend(ParamDialogComponent),
     parentContainer: document.body
