@@ -85,6 +85,12 @@ export default class SpinalConfigurationService {
     });
   }
 
+  async deleteCurrentConf() {
+    const context = await this.createOrGetContext();
+    if (context && context.info.currentConfiguration)
+      context.info.rem_attr("currentConfiguration");
+  }
+
   getCurrentConfiguration() {
     return this.createOrGetContext().then((context) => {
       let confPtr = context.info.currentConfiguration;

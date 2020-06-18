@@ -23,8 +23,8 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="paramsContainer"
-       style="overflow : hidden">
+  <md-content class="paramsContainer"
+              style="overflow : hidden">
     <md-tabs class="myTabs"
              md-alignment="centered"
              @md-changed="changeTab"
@@ -75,7 +75,7 @@ with this file. If not, see
 
     </md-content>
 
-  </div>
+  </md-content>
 </template>
 
 <script>

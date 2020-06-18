@@ -63,7 +63,8 @@ with this file. If not, see
 
           <v-btn outline
                  v-if="configurationSelected === currentConfiguration"
-                 color="teal">
+                 color="teal"
+                 @click="deleteAsCurrentConf">
             <v-icon>check</v-icon>
             Current Configuration
           </v-btn>
@@ -139,6 +140,13 @@ export default {
       await spinalConfigurationService.setAsCurrentConfiguration(
         this.configurationSelected
       );
+      this.$emit("getCurrentConf");
+      this.refreshPanel();
+    },
+
+    async deleteAsCurrentConf() {
+      await spinalConfigurationService.deleteCurrentConf();
+
       this.$emit("getCurrentConf");
       this.refreshPanel();
     },
