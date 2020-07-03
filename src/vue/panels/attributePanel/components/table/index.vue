@@ -79,7 +79,7 @@ with this file. If not, see
     <!-- End First Toolbar -->
 
     <div class="_tableContainer">
-      <v-data-table v-model="itemsSelected"
+      <v-data-table :value="itemsSelected"
                     :headers="headerDisplayed"
                     :items="searched"
                     :custom-sort="sortByName"
@@ -225,6 +225,7 @@ export default {
       searchBy: 0,
 
       itemsSelected: [],
+      // selected: [],
       headerDisplayed: [],
       pagination: {
         page: 1,
@@ -259,7 +260,7 @@ export default {
   mounted() {
     this.searched = this.tableContent;
     setTimeout(() => {
-      this.itemsSelected = this.searched;
+      this.itemsSelected = Object.assign([], this.searched);
       this._addPageNumber();
     }, 200);
   },
@@ -422,11 +423,30 @@ export default {
       return true;
     },
 
+    addItemToList(itemsSelected, listes, add = true) {
+      for (const item of listes) {
+        const found = itemsSelected.find(el => el.id === item.id);
+        if (add && !found) {
+          itemsSelected.push(item);
+        } else if (!add && found) {
+          itemsSelected = itemsSelected.filter(el => el.id !== found.id);
+        }
+      }
+      return itemsSelected;
+    },
+
     selectAll(value) {
       if (value) {
-        if (this.itemsSelected.length === this.searched.length)
-          this.itemsSelected = [];
-        else this.itemsSelected = this.searched;
+        // if (this.itemsSelected.length === this.searched.length)
+        //   this.itemsSelected = [];
+        // else this.itemsSelected = this.searched;
+
+        const allAreSelected = this.allItemsIsSelected(this.searched);
+        this.itemsSelected = this.addItemToList(
+          this.itemsSelected,
+          this.searched,
+          !allAreSelected
+        );
       } else {
         const pageNumber = this.pagination.page;
         const itemByPage = this.pagination.rowsPerPage;
@@ -444,10 +464,12 @@ export default {
               el => el.id !== element.id
             );
           } else {
-            this.itemsSelected.push(element);
+            this.itemsSelected = [...this.itemsSelected, element];
           }
         }
       }
+
+      console.log("itemsSelected", this.itemsSelected);
     },
 
     selectItemInViewer(item) {
@@ -507,7 +529,7 @@ export default {
               false
             );
           } else {
-            this.setValue(id, category, attribute, value);
+            this.setValue(id, category, label, value);
           }
         }
       }
@@ -688,6 +710,9 @@ export default {
       if (div) div.innerHTML = `Page : ${this.pagination.page} / ${this.pages}`;
       // this.pagination.page;
     }
+    // itemsSelected() {
+    //   this.selected = Object.assign([], this.itemsSelected);
+    // }
   }
 };
 </script>
@@ -810,8 +835,13 @@ export default {
 </style>
 
 <style>
-._tableContent ._tableContainer .elevation-1 .v-table__overflow {
+._tableContent ._tableContainer .elevation-1 {
+  width: 100%;
   height: 100%;
+}
+
+._tableContent ._tableContainer .elevation-1 .v-table__overflow {
+  height: calc(100% - 63px);
   overflow-y: auto;
 }
 
