@@ -65,6 +65,7 @@ with this file. If not, see
 </template>
 
 <script>
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 import attributeService from "../../services";
 
 export default {
@@ -75,7 +76,7 @@ export default {
       valid: 0,
       loading: 1,
       error: 2,
-      normal: 3
+      normal: 3,
     });
 
     return {
@@ -83,7 +84,7 @@ export default {
       showDialog: true,
       data: [],
       itemsMap: new Map(),
-      callback: () => {}
+      callback: () => {},
     };
   },
   methods: {
@@ -119,8 +120,11 @@ export default {
           .then(() => {
             this.appState = this.STATES.valid;
             this.callback();
+            setTimeout(() => {
+              this.showDialog = false;
+            }, 1000);
           })
-          .catch(el => {
+          .catch((el) => {
             this.appState = this.STATES.error;
           });
       } else {
@@ -138,10 +142,11 @@ export default {
     },
 
     formatExcelData(excelData) {
-      return excelData.map(data => {
+      return excelData.map((data) => {
         let obj = { id: "", attributes: [] };
 
         obj.id = data["SpinalGraph ID"];
+        obj.name = data["Name"];
 
         const lists = ["name", "spinalgraph id", "revit id"];
 
@@ -155,7 +160,7 @@ export default {
           obj.attributes.push({
             category: list[0] ? list[0] : "",
             label: list[1] ? list[1] : "",
-            value: data[key] ? data[key] : "-"
+            value: data[key] ? data[key] : "-",
           });
         }
 
@@ -177,7 +182,7 @@ export default {
         for (const attr of content.attributes) {
           element[`${attr.category}_${attr.label}`] = {
             value: attr.value,
-            displayValue: attr.value
+            displayValue: attr.value,
           };
         }
         this.itemsMap.set(content.id, element);
@@ -187,18 +192,19 @@ export default {
     getDifferenceBetweenData(excelData, tableContent) {
       const diff = [];
       for (const dataIterator of excelData) {
-        let found = tableContent.find(el => el.id === dataIterator.id);
+        let found = tableContent.find((el) => el.id === dataIterator.id);
 
         if (found && found.attributes) {
           const diffAttr = this._getAttrDiff(found, dataIterator);
 
           if (typeof diffAttr === "undefined") {
-            return;
-          } else if (diffAttr && diffAttr.attributes.length > 0) {
+            continue;
+          } else if (
+            diffAttr &&
+            (diffAttr.newName || diffAttr.attributes.length > 0)
+          ) {
             diff.push(diffAttr);
           }
-        } else {
-          return;
         }
       }
 
@@ -210,10 +216,12 @@ export default {
 
       for (const found of this.data) {
         // const found = this.data.find(el => el.id === nodeId);
-
         // console.log("found", found);
-
         if (found && found.attributes) {
+          if (found.newName) {
+            await this.editNodeName(found.id, found.newName);
+          }
+
           for (const attr of found.attributes) {
             // let value = this.itemsMap.get(nodeId)[
             //   `${attr.category}_${attr.label}`
@@ -221,9 +229,7 @@ export default {
             // let displayValue = this.itemsMap.get(nodeId)[
             //   `${attr.category}_${attr.label}`
             // ]["displayValue"];
-
             // console.log("value", value, "displayValue", displayValue);
-
             // if (value !== displayValue) {
             promises.push(
               attributeService.updateAttributeValue(
@@ -244,23 +250,35 @@ export default {
     _getAttrDiff(tableItem, excelItem) {
       let obj = {
         id: tableItem.id,
-        attributes: []
+        attributes: [],
       };
 
+      if (tableItem.name !== excelItem.name) {
+        obj.newName = excelItem.name;
+      }
+
       for (const attr of excelItem.attributes) {
-        let attrFound = tableItem.attributes.find(el => {
+        let attrFound = tableItem.attributes.find((el) => {
           return attr.category === el.category && attr.label === el.label;
         });
 
         if (attrFound && attrFound.value != attr.value) {
           obj.attributes.push(attr);
-        } else if (typeof attrFound === "undefined") {
-          return;
         }
+        // else if (typeof attrFound === "undefined") {
+        //   return;
+        // }
       }
 
       return obj;
-    }
+    },
+
+    editNodeName(nodeId, newName) {
+      const realNode = SpinalGraphService.getRealNode(nodeId);
+      if (realNode) {
+        realNode.info.name.set(newName);
+      }
+    },
 
     /*
     convertDataToJson(tableData) {
@@ -296,7 +314,7 @@ export default {
     },
 
     */
-  }
+  },
 };
 </script>
 
