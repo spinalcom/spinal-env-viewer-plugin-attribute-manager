@@ -217,7 +217,7 @@ import StandardButtons from "./standard-buttons.vue";
 import FabsComponent from "./fabs.vue";
 
 import EventBus from "../../../../../js/events/events";
-import tableContentVue from "./tableContent.vue";
+// import tableContentVue from "./tableContent.vue";
 import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 
 const {

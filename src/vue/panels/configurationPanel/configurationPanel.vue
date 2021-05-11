@@ -23,43 +23,55 @@ with this file. If not, see
 -->
 
 <template>
-  <md-content class="paramsContainer"
-              style="overflow : hidden">
-    <md-tabs class="myTabs"
-             md-alignment="centered"
-             @md-changed="changeTab"
-             :md-active-tab="tabDisplayed ? 'all-params-tab' : 'current-param-tab'">
+   <md-content
+      class="paramsContainer"
+      style="overflow : hidden"
+   >
+      <md-tabs
+         class="myTabs"
+         md-alignment="centered"
+         @md-changed="changeTab"
+         :md-active-tab="tabDisplayed ? 'all-params-tab' : 'current-param-tab'"
+      >
 
-      <md-tab id="current-param-tab"
-              md-label="Current configuration"
-              md-icon="offline_pin"></md-tab>
+         <md-tab
+            id="current-param-tab"
+            md-label="Current configuration"
+            md-icon="offline_pin"
+         ></md-tab>
 
-      <md-tab id="all-params-tab"
-              md-label="Configurations"
-              md-icon="settings_applications"></md-tab>
+         <md-tab
+            id="all-params-tab"
+            md-label="Configurations"
+            md-icon="settings_applications"
+         ></md-tab>
 
-      <!-- <md-tab id="all-params-tab"
+         <!-- <md-tab id="all-params-tab"
                 md-label="All configuration"
                 md-icon="settings_applications"></md-tab> -->
 
-    </md-tabs>
+      </md-tabs>
 
-    <md-content class="tabsContent">
+      <md-content class="tabsContent">
 
-      <configuration-template class="content"
-                              v-if="tabDisplayed === 1"
-                              :tempData="tempData"
-                              :item="item"
-                              :currentConfiguration="currentConfiguration"
-                              @currentConf="getCurrentConfiguration">
-      </configuration-template>
+         <configuration-template
+            class="content"
+            v-if="tabDisplayed === 1"
+            :tempData="tempData"
+            :item="item"
+            :currentConfiguration="currentConfiguration"
+            @currentConf="getCurrentConfiguration"
+         >
+         </configuration-template>
 
-      <current-configuration-template class="content"
-                                      v-if="tabDisplayed === 0"
-                                      :currentConfiguration="currentConfiguration">
-      </current-configuration-template>
+         <current-configuration-template
+            class="content"
+            v-if="tabDisplayed === 0"
+            :currentConfiguration="currentConfiguration"
+         >
+         </current-configuration-template>
 
-      <!-- <current-param v-if="tabDisplayed === 0"
+         <!-- <current-param v-if="tabDisplayed === 0"
                        :currentConfiguration="currentConf"
                        @refresh="RefreshData">
         </current-param>
@@ -73,9 +85,9 @@ with this file. If not, see
         <create-param v-if="tabDisplayed === 2"
                       @refresh="RefreshData"></create-param> -->
 
-    </md-content>
+      </md-content>
 
-  </md-content>
+   </md-content>
 </template>
 
 <script>
@@ -86,104 +98,106 @@ import CurrentConfigurationComponent from "./components/currentConfiguration.vue
 import { spinalConfigurationService } from "../../../services";
 
 export default {
-  name: "configurationPanel",
-  components: {
-    "configuration-template": ConfigurationCrud,
-    "current-configuration-template": CurrentConfigurationComponent
-  },
-  data() {
-    return {
-      tabDisplayed: 1,
-      currentConfiguration: undefined,
-      item: {
-        categorySelected: "",
-        categories: [],
-        groupSelected: "",
-        groups: [],
-        configurationSelected: "",
-        configurations: []
+   name: "configurationPanel",
+   components: {
+      "configuration-template": ConfigurationCrud,
+      "current-configuration-template": CurrentConfigurationComponent,
+   },
+   data() {
+      return {
+         tabDisplayed: 1,
+         currentConfiguration: undefined,
+         item: {
+            categorySelected: "",
+            categories: [],
+            groupSelected: "",
+            groups: [],
+            configurationSelected: "",
+            configurations: [],
+         },
+         tempData: {},
+      };
+   },
+   mounted() {},
+   methods: {
+      opened(params) {
+         this.getCurrentConfiguration();
+
+         if (params && Object.keys(params).length > 0) {
+            this.tempData = params;
+            this.tabDisplayed = 1;
+         }
+
+         // if (params.hasOwnProperty("categoryId")) {
+         //   this.item.categorySelected = params.categoryId;
+         //   this.tabDisplayed = 1;
+         // }
+
+         // if (params.hasOwnProperty("groupId")) {
+         //   this.item.groupSelected = params.groupId;
+         //   this.tabDisplayed = 1;
+         // }
+
+         // if (params.hasOwnProperty("configId")) {
+         //   this.item.configurationSelected = params.configId;
+         //   this.tabDisplayed = 1;
+         // }
       },
-      tempData: {}
-    };
-  },
-  mounted() {},
-  methods: {
-    opened(params) {
-      this.getCurrentConfiguration();
 
-      if (params && Object.keys(params).length > 0) {
-        this.tempData = params;
-        this.tabDisplayed = 1;
-      }
+      closed() {},
 
-      // if (params.hasOwnProperty("categoryId")) {
-      //   this.item.categorySelected = params.categoryId;
-      //   this.tabDisplayed = 1;
-      // }
+      changeTab(activeTab) {
+         switch (activeTab) {
+            case "current-param-tab":
+               this.tabDisplayed = 0;
+               break;
 
-      // if (params.hasOwnProperty("groupId")) {
-      //   this.item.groupSelected = params.groupId;
-      //   this.tabDisplayed = 1;
-      // }
+            case "all-params-tab":
+               this.tabDisplayed = 1;
+               break;
 
-      // if (params.hasOwnProperty("configId")) {
-      //   this.item.configurationSelected = params.configId;
-      //   this.tabDisplayed = 1;
-      // }
-    },
+            // case "create-param-tab":
+            //   this.tabDisplayed = 2;
+            //   break;
+         }
+      },
 
-    changeTab(activeTab) {
-      switch (activeTab) {
-        case "current-param-tab":
-          this.tabDisplayed = 0;
-          break;
-
-        case "all-params-tab":
-          this.tabDisplayed = 1;
-          break;
-
-        // case "create-param-tab":
-        //   this.tabDisplayed = 2;
-        //   break;
-      }
-    },
-
-    async getCurrentConfiguration() {
-      const currentConf = await spinalConfigurationService.getCurrentConfiguration();
-      // console.log("currentConf", currentConf);
-      this.currentConfiguration = currentConf.id;
-    }
-  }
+      async getCurrentConfiguration() {
+         const currentConf = await spinalConfigurationService.getCurrentConfiguration();
+         // console.log("currentConf", currentConf);
+         this.currentConfiguration = currentConf.id;
+      },
+   },
 };
 </script>
 
 <style scoped>
 .paramsContainer {
-  width: 100%;
-  height: calc(100% - 15px);
-  overflow: hidden;
+   width: 100%;
+   height: calc(100% - 15px);
+   overflow: hidden;
 }
 
 .paramsContainer .myTabs {
-  width: 100%;
-  height: 70px;
+   width: 100%;
+   height: 70px;
 }
 
 .paramsContainer .tabsContent {
-  width: calc(100% - 20px);
-  height: calc(100% - 90px);
-  margin: auto;
-  margin-top: 10px;
-  overflow: hidden;
+   width: calc(100% - 20px);
+   height: calc(100% - 90px);
+   margin: auto;
+   margin-top: 10px;
+   overflow: hidden;
 }
 </style>
 
 <style>
 .paramsContainer .myTabs .md-tabs-navigation .md-button {
-  margin: 0;
-  cursor: pointer;
-  border-radius: 0;
-  font-size: 13px;
-  flex: 1 0 50%;
+   margin: 0;
+   cursor: pointer;
+   border-radius: 0;
+   font-size: 13px;
+   flex: 1 0 50%;
 }
 </style>

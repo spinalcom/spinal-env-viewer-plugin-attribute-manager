@@ -25,7 +25,7 @@ import {
 
 export default class SpinalAttributeService {
 
-  constructor() {}
+  constructor() { }
 
   getAllAttributes(nodeId, liste) {
     let realNode = SpinalGraphService.getRealNode(nodeId);
@@ -153,7 +153,7 @@ export default class SpinalAttributeService {
 
     await serviceDocumentation.addAttributeByCategory(realNode, category,
       attr
-      .label, attr.value);
+        .label, attr.value);
 
   }
 
@@ -185,9 +185,6 @@ export default class SpinalAttributeService {
           categoryName);
       }
 
-      await serviceDocumentation.addAttributeByCategory(realNode, category,
-        attributeName, "-");
-
       let attributes = await serviceDocumentation.getAttributesByCategory(
         realNode,
         categoryName);
@@ -196,7 +193,19 @@ export default class SpinalAttributeService {
         return el.label.get() === attributeName;
       })
 
-      return attr;
+      if (attr) return attr;
+
+
+      await serviceDocumentation.addAttributeByCategory(realNode, category,
+        attributeName, "-");
+
+      attributes = await serviceDocumentation.getAttributesByCategory(
+        realNode,
+        categoryName);
+
+      return attributes.find(el => {
+        return el.label.get() === attributeName;
+      })
 
     }
   }

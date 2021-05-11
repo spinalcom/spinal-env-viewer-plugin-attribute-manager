@@ -23,50 +23,64 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="_container">
+   <div class="_container">
 
-    <md-steppers md-vertical
-                 class="steppers"
-                 :md-dynamic-height="true"
-                 @md-changed="changeStep">
+      <md-steppers
+         md-vertical
+         class="steppers"
+         :md-dynamic-height="true"
+         @md-changed="changeStep"
+      >
 
-      <md-step id="first"
-               md-label="Selection Step"
-               md-description="select">
-        <md-content class="step-container md-scrollbar">
-          <selection-step :data="data"
-                          :type="type"
-                          @changeType="changeType"></selection-step>
-        </md-content>
+         <md-step
+            id="first"
+            md-label="Selection Step"
+            md-description="select"
+         >
+            <md-content class="step-container md-scrollbar">
+               <selection-step
+                  :data="data"
+                  :type="type"
+                  @changeType="changeType"
+               ></selection-step>
+            </md-content>
 
-      </md-step>
+         </md-step>
 
-      <md-step id="second"
-               md-label="Configuration Step"
-               md-description="configure"
-               :md-error="errorInConfig">
-        <md-content class="step-container md-scrollbar">
-          <configuration-step :data="data"
-                              :type="type"></configuration-step>
-        </md-content>
+         <md-step
+            id="second"
+            md-label="Configuration Step"
+            md-description="configure"
+            :md-error="errorInConfig"
+         >
+            <md-content class="step-container md-scrollbar">
+               <configuration-step
+                  :data="data"
+                  :type="type"
+               ></configuration-step>
+            </md-content>
 
-      </md-step>
+         </md-step>
 
-      <md-step id="third"
-               md-label="Creation Step"
-               md-description="create">
+         <md-step
+            id="third"
+            md-label="Creation Step"
+            md-description="create"
+         >
 
-        <md-content class="step-container md-scrollbar">
-          <launch-generation-step :data="data"
-                                  :type="type"
-                                  :error="firstStepError">
-          </launch-generation-step>
-        </md-content>
+            <md-content class="step-container md-scrollbar">
+               <launch-generation-step
+                  :data="data"
+                  :type="type"
+                  :error="firstStepError"
+               >
+               </launch-generation-step>
+            </md-content>
 
-      </md-step>
+         </md-step>
 
-    </md-steppers>
-  </div>
+      </md-steppers>
+   </div>
 </template>
 
 
@@ -79,140 +93,144 @@ import create_data from "./js/data.js";
 import data_json from "./js/data.config";
 
 export default {
-  name: "generateGroupPanel",
-  components: {
-    "configuration-step": ConfigurationStep,
-    "launch-generation-step": launchGenerationStep,
-    "selection-step": selectionStep
-  },
-  data() {
-    this.CREATE_DATA = create_data;
+   name: "generateGroupPanel",
+   components: {
+      "configuration-step": ConfigurationStep,
+      "launch-generation-step": launchGenerationStep,
+      "selection-step": selectionStep,
+   },
+   data() {
+      this.CREATE_DATA = create_data;
 
-    return {
-      active: "first",
-      errorInConfig: null,
-      first: false,
-      second: false,
-      third: false,
-      type: undefined,
-      firstStepError: false,
-      data: Object.assign({}, data_json),
-      verification: {
-        context: {
-          isVerified: false,
-          message: ""
-        },
-        category: {
-          isVerified: false,
-          message: ""
-        },
-        group: {
-          isVerified: false,
-          message: ""
-        }
-      }
-    };
-  },
-  methods: {
-    opened(params) {
-      this.type = params.type;
-      this.data.items = params.items;
-    },
+      return {
+         active: "first",
+         errorInConfig: null,
+         first: false,
+         second: false,
+         third: false,
+         type: undefined,
+         firstStepError: false,
+         data: Object.assign({}, data_json),
+         verification: {
+            context: {
+               isVerified: false,
+               message: "",
+            },
+            category: {
+               isVerified: false,
+               message: "",
+            },
+            group: {
+               isVerified: false,
+               message: "",
+            },
+         },
+      };
+   },
+   methods: {
+      opened(params) {
+         this.type = params.type;
+         this.data.items = params.items;
+      },
 
-    errorInFirstStep() {
-      this.errorInConfig = "This is an error!";
-    },
+      closed() {},
 
-    changeStep(step) {
-      if (step === "second") {
-        this.errorInConfig = null;
-      } else if (step === "third") {
-        const contextIsOk = this.contextIsVerified();
-        const categoryisOk = this.categoryOrGroupIsVerified(this.data.category);
-        const groupIsOk = this.categoryOrGroupIsVerified(this.data.group);
+      errorInFirstStep() {
+         this.errorInConfig = "This is an error!";
+      },
 
-        if (!contextIsOk || !categoryisOk || !groupIsOk) {
-          this.firstStepError = true;
-          this.errorInConfig = "This is an error!";
-        } else {
-          this.firstStepError = false;
-        }
-      }
-    },
+      changeStep(step) {
+         if (step === "second") {
+            this.errorInConfig = null;
+         } else if (step === "third") {
+            const contextIsOk = this.contextIsVerified();
+            const categoryisOk = this.categoryOrGroupIsVerified(
+               this.data.category
+            );
+            const groupIsOk = this.categoryOrGroupIsVerified(this.data.group);
 
-    changeType(type) {
-      this.type = type;
-      // if (this.data.context.create) {
-      //   this.data.context.id = "";
-      //   this.data.context.name = "";
+            if (!contextIsOk || !categoryisOk || !groupIsOk) {
+               this.firstStepError = true;
+               this.errorInConfig = "This is an error!";
+            } else {
+               this.firstStepError = false;
+            }
+         }
+      },
+
+      changeType(type) {
+         this.type = type;
+         // if (this.data.context.create) {
+         //   this.data.context.id = "";
+         //   this.data.context.name = "";
+         // }
+      },
+
+      contextIsVerified() {
+         if (this.data.context.create) {
+            return this.data.context.name.trim().length > 0;
+         } else {
+            return (
+               this.data.context.name.trim().length > 0 &&
+               this.data.context.id.trim().length > 0
+            );
+         }
+      },
+
+      categoryOrGroupIsVerified(info) {
+         // createBy: this.CREATE_DATA.attribute,
+         //     contains: false,
+         //     name: "",
+         //     regex: "",
+         //     separator: "",
+         //     index: -1
+
+         if (info.createBy === this.CREATE_DATA.attribute) {
+            return info.regex.toString().trim().length > 0;
+         } else if (info.createBy === this.CREATE_DATA.name) {
+            return parseInt(info.index) >= 1;
+            // return info.separator.length > 0 && parseInt(info.index) >= 1;
+         } else if (info.createBy === this.CREATE_DATA.fixed) {
+            return info.fixedValue.trim().length > 0;
+         }
+      },
+
+      // setDone(res) {
+      //   this[res.id] = true;
+
+      //   if (res.index) {
+      //     this.active = res.index;
+      //   }
       // }
-    },
-
-    contextIsVerified() {
-      if (this.data.context.create) {
-        return this.data.context.name.trim().length > 0;
-      } else {
-        return (
-          this.data.context.name.trim().length > 0 &&
-          this.data.context.id.trim().length > 0
-        );
-      }
-    },
-
-    categoryOrGroupIsVerified(info) {
-      // createBy: this.CREATE_DATA.attribute,
-      //     contains: false,
-      //     name: "",
-      //     regex: "",
-      //     separator: "",
-      //     index: -1
-
-      if (info.createBy === this.CREATE_DATA.attribute) {
-        return info.regex.toString().trim().length > 0;
-      } else if (info.createBy === this.CREATE_DATA.name) {
-        return parseInt(info.index) >= 1;
-        // return info.separator.length > 0 && parseInt(info.index) >= 1;
-      } else if (info.createBy === this.CREATE_DATA.fixed) {
-        return info.fixedValue.trim().length > 0;
-      }
-    }
-
-    // setDone(res) {
-    //   this[res.id] = true;
-
-    //   if (res.index) {
-    //     this.active = res.index;
-    //   }
-    // }
-  }
+   },
 };
 </script>
 
 <style scoped>
 ._container {
-  width: 100%;
-  height: calc(100% - 15px);
+   width: 100%;
+   height: calc(100% - 15px);
 }
 
 ._container .steppers {
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
+   width: 100%;
+   height: 100%;
+   background-color: transparent;
 }
 
 ._container .steppers .step-container {
-  height: 100%;
-  max-height: 450px;
-  padding: 16px;
-  overflow: hidden;
-  overflow-y: auto;
-  background-color: transparent;
+   height: 100%;
+   max-height: 450px;
+   padding: 16px;
+   overflow: hidden;
+   overflow-y: auto;
+   background-color: transparent;
 }
 </style>
 
 <style>
 ._container .md-steppers.md-vertical .md-stepper-content {
-  padding: 0 0 0 35px;
+   padding: 0 0 0 35px;
 }
 
 /* ._container .md-steppers.md-steppers.md-vertical .md-stepper-content.md-active {
