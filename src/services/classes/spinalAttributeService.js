@@ -232,7 +232,7 @@ export default class SpinalAttributeService {
 
     // })
 
-    console.log("service type", type);
+    // console.log("service type", type);
 
     return groupManagerService.getGroupContexts(type).then((contexts) => {
       const promises = contexts.map(async context => {

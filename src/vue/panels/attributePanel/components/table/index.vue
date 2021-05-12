@@ -90,13 +90,12 @@ with this file. If not, see
       </div>
       <!-- End First Toolbar -->
 
+      <!-- :value="itemsSelected"
+            :v-model="itemsSelected"  :custom-sort="sortByName"-->
       <div class="_tableContainer">
          <v-data-table
-            :value="itemsSelected"
-            :v-model="itemsSelected"
             :headers="headerDisplayed"
             :items="searched"
-            :custom-sort="sortByName"
             :rows-per-page-items="rowsPerPageText"
             :pagination.sync="pagination"
             dark
@@ -122,8 +121,9 @@ with this file. If not, see
                            <md-menu-item
                               v-for="(m,index) in checkboxSelects"
                               :key="index"
-                              @click="selectAll(m.value,items)"
+                              @click="m.action"
                            >
+                              <md-icon>{{m.value ? "check_box" : "check_box_outline_blank"}}</md-icon>
                               {{m.text}}
                            </md-menu-item>
                         </md-menu-content>
@@ -145,15 +145,15 @@ with this file. If not, see
             <template v-slot:items="props">
                <td>
                   <v-checkbox
-                     v-model="props.selected"
-                     @change="checkItem($value,props.item)"
+                     v-model="props.item.selected"
+                     @change="checkItem(props.item)"
                      primary
                      hide-details
                   ></v-checkbox>
                </td>
                <td
                   class="nameCell"
-                  @click="selectItem(props.item)"
+                  @click="selectItemInViewer(props.item)"
                >
                   <md-tooltip md-direction="top">{{ props.item.name }}</md-tooltip>
                   {{ props.item.name }}
@@ -244,8 +244,18 @@ export default {
    },
    data() {
       this.checkboxSelects = [
-         { text: "select All", value: true },
-         { text: "select in this page", value: false },
+         { text: "select All", value: true, action: this.selectAll },
+         { text: "deselect All", value: false, action: this.unSelectAll },
+         {
+            text: "select this page",
+            value: true,
+            action: this.selectCurrentPage,
+         },
+         {
+            text: "deselect select this page",
+            value: false,
+            action: this.unSelectCurrentPage,
+         },
       ];
 
       return {
@@ -285,17 +295,24 @@ export default {
          itemsMap: new Map(),
       };
    },
+
    created() {
       this.searchAndFilterTable = lodash.debounce(this.searchOnTable, 500);
    },
+
    mounted() {
-      console.log(this.tableContent);
-      this.searched = this.tableContent;
+      this.searched = this.sortByName(
+         this.tableContent.map((el) => {
+            el.selected = false;
+            return el;
+         })
+      );
       setTimeout(() => {
          // this.itemsSelected = Object.assign([], this.searched);
          this._addPageNumber();
       }, 200);
    },
+
    methods: {
       async validateOrCancel(valid) {
          // let references = this.$refs["editableComponent"]
@@ -333,46 +350,60 @@ export default {
 
       filterByName(liste, name) {
          if (name.trim().length > 0) {
-            return liste.filter((item) => {
-               return item.name
-                  .toLowerCase()
-                  .includes(name.trim().toLowerCase());
-            });
+            return liste
+               .filter((item) => {
+                  return item.name
+                     .toLowerCase()
+                     .includes(name.trim().toLowerCase());
+               })
+               .map((el) => {
+                  el.selected = false;
+                  return el;
+               });
          }
 
-         return liste;
+         return liste.map((el) => {
+            el.selected = false;
+            return el;
+         });
       },
 
       filterByValue(liste, value) {
          if (value.trim().length > 0) {
-            return liste.filter((el) => {
-               let found = el.attributes.find((attr) => {
-                  return attr.value
-                     .toString()
-                     .toLowerCase()
-                     .includes(value.trim().toLowerCase());
-               });
+            return liste
+               .filter((el) => {
+                  let found = el.attributes.find((attr) => {
+                     return attr.value
+                        .toString()
+                        .toLowerCase()
+                        .includes(value.trim().toLowerCase());
+                  });
 
-               return found ? true : false;
-            });
+                  return found ? true : false;
+               })
+               .map((el) => {
+                  el.selected = false;
+                  return el;
+               });
          }
 
-         return liste;
+         return liste.map((el) => {
+            el.selected = false;
+            return el;
+         });
       },
 
       searchOnTable() {
          switch (this.searchBy) {
             case 0:
-               this.searched = this.filterByName(
-                  this.tableContent,
-                  this.searchValue
+               this.searched = this.sortByName(
+                  this.filterByName(this.tableContent, this.searchValue)
                );
                break;
 
             case 1:
-               this.searched = this.filterByValue(
-                  this.tableContent,
-                  this.searchValue
+               this.searched = this.sortByName(
+                  this.filterByValue(this.tableContent, this.searchValue)
                );
 
                break;
@@ -381,73 +412,121 @@ export default {
          // this.searched = this.filterByName(this.tableContent, this.searchValue);
       },
 
-      onSelect(items) {
-         // this.itemsSelected = items;
-      },
+      // onSelect(items) {
+      //    // this.itemsSelected = items;
+      // },
 
-      addItemToList(itemsSelected, listes, add = true) {
-         for (const item of listes) {
-            const found = itemsSelected.find((el) => el.id === item.id);
-            if (add && !found) {
-               itemsSelected.push(item);
-            } else if (!add && found) {
-               itemsSelected = itemsSelected.filter((el) => el.id !== found.id);
-            }
-         }
-         return itemsSelected;
-      },
+      // addItemToList(itemsSelected, listes, add = true) {
+      //    for (const item of listes) {
+      //       const found = itemsSelected.find((el) => el.id === item.id);
+      //       if (add && !found) {
+      //          itemsSelected.push(item);
+      //       } else if (!add && found) {
+      //          itemsSelected = itemsSelected.filter((el) => el.id !== found.id);
+      //       }
+      //    }
+      //    return itemsSelected;
+      // },
+
+      // allItemsIsSelected(liste) {
+      //    for (const element of liste) {
+      //       let found = this.itemsSelected.find((el) => el.id === element.id);
+      //       if (typeof found === "undefined") return false;
+      //    }
+
+      //    return true;
+      // },
+
+      // selectItemInViewer(item) {
+      //    attributeService.getBimObjects(item.id);
+      // },
 
       selectAll(value) {
-         if (value) {
-            // if (this.itemsSelected.length === this.searched.length)
-            //   this.itemsSelected = [];
-            // else this.itemsSelected = this.searched;
+         this.searched = this.searched.map((el) => {
+            el.selected = true;
+            return el;
+         });
+         // if (value) {
+         //    // if (this.itemsSelected.length === this.searched.length)
+         //    //   this.itemsSelected = [];
+         //    // else this.itemsSelected = this.searched;
 
-            const allAreSelected = this.allItemsIsSelected(this.searched);
-            this.itemsSelected = this.addItemToList(
-               this.itemsSelected,
-               this.searched,
-               !allAreSelected
-            );
-         } else {
-            const pageNumber = this.pagination.page;
-            const itemByPage = this.pagination.rowsPerPage;
+         //    const allAreSelected = this.allItemsIsSelected(this.searched);
+         //    this.itemsSelected = this.addItemToList(
+         //       this.itemsSelected,
+         //       this.searched,
+         //       !allAreSelected
+         //    );
+         // } else {
+         //    const pageNumber = this.pagination.page;
+         //    const itemByPage = this.pagination.rowsPerPage;
 
-            const begin = (pageNumber - 1) * itemByPage;
-            const end = begin + itemByPage;
+         //    const begin = (pageNumber - 1) * itemByPage;
+         //    const end = begin + itemByPage;
 
-            const sortedList = Object.assign(
-               [],
-               this.sortByName(this.searched)
-            );
-            const pageItems = sortedList.slice(begin, end);
-            const allItemsIsSelected = this.allItemsIsSelected(pageItems);
+         //    const sortedList = Object.assign(
+         //       [],
+         //       this.sortByName(this.searched)
+         //    );
+         //    const pageItems = sortedList.slice(begin, end);
+         //    const allItemsIsSelected = this.allItemsIsSelected(pageItems);
 
-            for (const element of pageItems) {
-               if (allItemsIsSelected) {
-                  this.itemsSelected = this.itemsSelected.filter(
-                     (el) => el.id !== element.id
-                  );
-               } else {
-                  this.itemsSelected = [...this.itemsSelected, element];
-               }
+         //    for (const element of pageItems) {
+         //       if (allItemsIsSelected) {
+         //          this.itemsSelected = this.itemsSelected.filter(
+         //             (el) => el.id !== element.id
+         //          );
+         //       } else {
+         //          this.itemsSelected = [...this.itemsSelected, element];
+         //       }
+         //    }
+         // }
+
+         // console.log("itemsSelected", this.itemsSelected);
+      },
+
+      unSelectAll() {
+         this.searched = this.searched.map((el) => {
+            el.selected = false;
+            return el;
+         });
+      },
+
+      selectCurrentPage() {
+         const pageNumber = this.pagination.page;
+         const itemByPage = this.pagination.rowsPerPage;
+
+         const begin = (pageNumber - 1) * itemByPage;
+         const end = begin + itemByPage;
+
+         // for (let i = begin; i < end; i++) {
+         //    this.searched[i].selected = true;
+         // }
+         this.searched = this.searched.map((el, index) => {
+            // console.log("index", index);
+            if (index >= begin && index < end) {
+               el.selected = true;
             }
-         }
-
-         console.log("itemsSelected", this.itemsSelected);
+            return el;
+         });
       },
 
-      allItemsIsSelected(liste) {
-         for (const element of liste) {
-            let found = this.itemsSelected.find((el) => el.id === element.id);
-            if (typeof found === "undefined") return false;
-         }
+      unSelectCurrentPage() {
+         const pageNumber = this.pagination.page;
+         const itemByPage = this.pagination.rowsPerPage;
 
-         return true;
-      },
+         const begin = (pageNumber - 1) * itemByPage;
+         const end = begin + itemByPage;
 
-      selectItemInViewer(item) {
-         attributeService.getBimObjects(item.id);
+         // for (let i = begin; i < end; i++) {
+         //    this.searched[i].selected = false;
+         // }
+         this.searched = this.searched.map((el, index) => {
+            if (index >= begin && index < end) {
+               el.selected = false;
+            }
+            return el;
+         });
       },
 
       refresh() {
@@ -570,7 +649,7 @@ export default {
          });
       },
 
-      selectItem(item) {
+      selectItemInViewer(item) {
          EventBus.$emit("selectElement", item);
       },
 
@@ -716,8 +795,25 @@ export default {
          return liste;
       },
 
-      checkItem(selected, item) {
-         console.log(selected, item);
+      checkItem(item) {
+         // const found = this.searched.find((el) => el.id === item.id);
+         // if (found) {
+         //    console.log("found", found);
+         //    found.selected = item.selected;
+         // }
+         // if (item) {
+         //    this.searched = this.searched.map((el) => {
+         //       if (el.id === item.id) {
+         //          console.log("el found", el);
+         //          el.selected = !el.selected;
+         //       }
+         //       return el;
+         //    });
+
+         //    console.log(this.searched);
+         // }
+
+         this.itemsSelected = this.searched.filter((el) => el.selected);
       },
    },
    computed: {
@@ -728,13 +824,19 @@ export default {
       searchDataBind() {
          return `${this.searchValue}|${this.searchBy}`;
       },
+
+      // itemsSelected() {
+      //    return this.searched.filter((el) => el.selected);
+      // },
    },
    watch: {
+      searched() {
+         this.itemsSelected = this.searched.filter((el) => el.selected);
+      },
       async tableContent() {
          this.constructMap();
-         this.searched = await this.filterByName(
-            this.tableContent,
-            this.searchValue
+         this.searched = this.sortByName(
+            this.filterByName(this.tableContent, this.searchValue)
          );
          this.pagination.totalItems = this.searched.length;
       },
@@ -1034,5 +1136,9 @@ export default {
 ._tableContent
    .v-menu__content.theme--dark.v-menu__content--auto.menuable__content__active {
    position: fixed;
+}
+
+._tableContent ._tableContainer .selectionMenu .md-list-item-content {
+   justify-content: unset;
 }
 </style>
