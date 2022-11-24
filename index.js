@@ -1,18 +1,11 @@
 import "./src/js/events/eventRecepter";
 import "./src/js/register";
 
-import {
-  OPEN_PANEL_BTN,
-  OPEN_CONFIGURATION_PANEL
-} from "./src/buttons";
+import { OPEN_PANEL_BTN, OPEN_CONFIGURATION_PANEL } from "./src/buttons";
 
-import {
-  OPEN_SELECT_TYPE_BTN
-} from "./src/vue/panels/generateGroupPanel/buttons";
+import { OPEN_SELECT_TYPE_BTN } from "./src/vue/panels/generateGroupPanel/buttons";
 
-import {
-  spinalContextMenuService
-} from "spinal-env-viewer-context-menu-service";
+import { spinalContextMenuService } from "spinal-env-viewer-context-menu-service";
 
 const SIDEBAR = "GraphManagerSideBar";
 
