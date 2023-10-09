@@ -195,13 +195,13 @@ import FabsComponent from './fabs.vue';
 
 import EventBus from '../../../../../js/events/events';
 // import tableContentVue from "./tableContent.vue";
-import {SpinalGraphService} from 'spinal-env-viewer-graph-service';
+import { SpinalGraphService } from 'spinal-env-viewer-graph-service';
 
 const {
   spinalPanelManagerService,
 } = require('spinal-env-viewer-panel-manager-service');
 
-const lodash = require('lodash');
+const debounce = require('lodash.debounce');
 
 import $ from 'jquery';
 
@@ -216,28 +216,16 @@ export default {
     'fabs-component': FabsComponent,
     'table-content-component': TableContentComponent,
     'create-attribute': CreateAttributeTooltips,
-    // "change-col-value": ChangeColValue,
     'standard-buttons': StandardButtons,
   },
   data() {
     this.checkboxSelects = [
-      {text: 'select All', value: true, action: this.selectAll},
+      { text: 'select All', value: true, action: this.selectAll },
       {
         text: 'select only the current page',
         value: true,
         action: this.selectOnLyTheCurrentPage,
       },
-      // {text: 'deselect All', value: false, action: this.unSelectAll},
-      // {
-      //   text: 'select this page',
-      //   value: true,
-      //   action: this.selectCurrentPage,
-      // },
-      // {
-      //   text: 'deselect select this page',
-      //   value: false,
-      //   action: this.unSelectCurrentPage,
-      // },
     ];
 
     return {
@@ -248,7 +236,6 @@ export default {
       searchBy: 0,
 
       itemsSelected: [],
-      // selected: [],
       headerDisplayed: [],
       pagination: {
         page: 1,
@@ -256,30 +243,13 @@ export default {
         totalItems: 0,
       },
       rowsPerPageText: [20, 30, 40],
-      // buttons: [
-      //   {
-      //     icon: "settings_applications",
-      //     text: "Configuration",
-      //     action: this.OpenParamsDialog
-      //   },
-      //   {
-      //     icon: "link",
-      //     text: "Link to group",
-      //     action: this.LinkItem
-      //   },
-      //   {
-      //     icon: "edit",
-      //     text: "Active edit mode",
-      //     action: this.ActiveEditMode
-      //   }
-      // ],
 
       itemsMap: new Map(),
     };
   },
 
   created() {
-    this.searchAndFilterTable = lodash.debounce(this.searchOnTable, 500);
+    this.searchAndFilterTable = debounce(this.searchOnTable, 500);
   },
 
   mounted() {
@@ -290,34 +260,15 @@ export default {
       })
     );
     setTimeout(() => {
-      // this.itemsSelected = Object.assign([], this.searched);
       this._addPageNumber();
     }, 200);
   },
 
   methods: {
     async validateOrCancel(valid) {
-      // let references = this.$refs["editableComponent"]
-      //   ? this.$refs["editableComponent"]
-      //   : [];
-
-      // if (valid) {
-      //   references.forEach(compo => {
-      //     compo.validateValue();
-      //   });
-      // } else {
-      //   references.forEach(compo => {
-      //     compo.cancelValue();
-      //   });
-      // }
-
       if (valid) {
         await this._changeValue();
       }
-      // else {
-      //   await this._cancelValue();
-      // }
-
       this.refresh();
       this.editMode = false;
     },
@@ -388,81 +339,13 @@ export default {
 
           break;
       }
-
-      // this.searched = this.filterByName(this.tableContent, this.searchValue);
     },
-
-    // onSelect(items) {
-    //    // this.itemsSelected = items;
-    // },
-
-    // addItemToList(itemsSelected, listes, add = true) {
-    //    for (const item of listes) {
-    //       const found = itemsSelected.find((el) => el.id === item.id);
-    //       if (add && !found) {
-    //          itemsSelected.push(item);
-    //       } else if (!add && found) {
-    //          itemsSelected = itemsSelected.filter((el) => el.id !== found.id);
-    //       }
-    //    }
-    //    return itemsSelected;
-    // },
-
-    // allItemsIsSelected(liste) {
-    //    for (const element of liste) {
-    //       let found = this.itemsSelected.find((el) => el.id === element.id);
-    //       if (typeof found === "undefined") return false;
-    //    }
-
-    //    return true;
-    // },
-
-    // selectItemInViewer(item) {
-    //    attributeService.getBimObjects(item.id);
-    // },
 
     selectAll(value) {
       this.searched = this.searched.map((el) => {
         el.selected = true;
         return el;
       });
-      // if (value) {
-      //    // if (this.itemsSelected.length === this.searched.length)
-      //    //   this.itemsSelected = [];
-      //    // else this.itemsSelected = this.searched;
-
-      //    const allAreSelected = this.allItemsIsSelected(this.searched);
-      //    this.itemsSelected = this.addItemToList(
-      //       this.itemsSelected,
-      //       this.searched,
-      //       !allAreSelected
-      //    );
-      // } else {
-      //    const pageNumber = this.pagination.page;
-      //    const itemByPage = this.pagination.rowsPerPage;
-
-      //    const begin = (pageNumber - 1) * itemByPage;
-      //    const end = begin + itemByPage;
-
-      //    const sortedList = Object.assign(
-      //       [],
-      //       this.sortByName(this.searched)
-      //    );
-      //    const pageItems = sortedList.slice(begin, end);
-      //    const allItemsIsSelected = this.allItemsIsSelected(pageItems);
-
-      //    for (const element of pageItems) {
-      //       if (allItemsIsSelected) {
-      //          this.itemsSelected = this.itemsSelected.filter(
-      //             (el) => el.id !== element.id
-      //          );
-      //       } else {
-      //          this.itemsSelected = [...this.itemsSelected, element];
-      //       }
-      //    }
-      // }
-
-      // console.log("itemsSelected", this.itemsSelected);
     },
 
     unSelectAll() {
@@ -484,11 +367,7 @@ export default {
       const begin = (pageNumber - 1) * itemByPage;
       const end = begin + itemByPage;
 
-      // for (let i = begin; i < end; i++) {
-      //    this.searched[i].selected = true;
-      // }
       this.searched = this.searched.map((el, index) => {
-        // console.log("index", index);
         if (index >= begin && index < end) {
           el.selected = true;
         }
@@ -503,9 +382,6 @@ export default {
       const begin = (pageNumber - 1) * itemByPage;
       const end = begin + itemByPage;
 
-      // for (let i = begin; i < end; i++) {
-      //    this.searched[i].selected = false;
-      // }
       this.searched = this.searched.map((el, index) => {
         if (index >= begin && index < end) {
           el.selected = false;
@@ -516,21 +392,6 @@ export default {
 
     refresh() {
       this.$emit('refresh');
-
-      // let item = this.tableContent.find(el => el.id === argData.item.id);
-
-      // let found;
-      // if (item && argData.attribute) {
-      //   found = item.attributes.find(el => {
-      //     return (
-      //       el.label === argData.attribute.label &&
-      //       el.category === argData.attribute.category
-      //     );
-      //   });
-      // }
-      // if (typeof found !== "undefined") {
-      //   found.value = argData.value;
-      // }
     },
 
     setValueToColumn(res) {
@@ -726,18 +587,9 @@ export default {
                   displayValue
                 )
               );
-              // .then(() => {
-              //   this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
-              //     "value"
-              //   ] = this.itemsMap.get(nodeId)[
-              //     `${attr.category}_${attr.label}`
-              //   ]["displayValue"];
-              // });
             }
           }
         }
-
-        // obj[`${category}_${label}`]["displayValue"] = value;
       }
 
       return Promise.all(promises);
@@ -785,23 +637,6 @@ export default {
     },
 
     checkItem(item) {
-      // const found = this.searched.find((el) => el.id === item.id);
-      // if (found) {
-      //    console.log("found", found);
-      //    found.selected = item.selected;
-      // }
-      // if (item) {
-      //    this.searched = this.searched.map((el) => {
-      //       if (el.id === item.id) {
-      //          console.log("el found", el);
-      //          el.selected = !el.selected;
-      //       }
-      //       return el;
-      //    });
-
-      //    console.log(this.searched);
-      // }
-
       this.itemsSelected = this.searched.filter((el) => el.selected);
     },
   },
@@ -813,10 +648,6 @@ export default {
     searchDataBind() {
       return `${this.searchValue}|${this.searchBy}`;
     },
-
-    // itemsSelected() {
-    //    return this.searched.filter((el) => el.selected);
-    // },
   },
   watch: {
     searched() {
@@ -853,32 +684,14 @@ export default {
       ];
     },
 
-    /////////////////////////////
-    //   if pagination change  //
-    /////////////////////////////
     pagination() {
       const div = $('.v-datatable__actions__page-number')[0];
       if (div) div.innerHTML = `Page : ${this.pagination.page} / ${this.pages}`;
     },
 
-    /////////////////////////////
-    //  if search data change  //
-    /////////////////////////////
     searchDataBind() {
       this.searchAndFilterTable();
     },
-
-    // searchValue() {
-    //    this.searchAndFilterTable();
-    // },
-
-    // searchBy() {
-    //    this.searchAndFilterTable();
-    // },
-
-    // itemsSelected() {
-    //   this.selected = Object.assign([], this.itemsSelected);
-    // }
   },
 };
 </script>
@@ -906,7 +719,6 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* border-right: 1px dashed grey; */
 }
 
 ._tableContent .mdToolbar .toolbar-end {
@@ -914,8 +726,6 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  /* align-items: center; */
-  /* justify-content: flex-end; */
 }
 
 ._tableContent .mdToolbar .toolbar-end .searchDiv {
@@ -925,17 +735,6 @@ export default {
 ._tableContent .md-content.md-theme-default {
   background: transparent !important;
 }
-
-/* ._tableContent .secondMdToolbar {
-  width: 100%;
-  height: 50px;
-  padding: 0px !important;
-  background-color: transparent;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-} */
 
 ._tableContent ._tableContainer {
   width: 100%;
@@ -957,10 +756,6 @@ export default {
   align-items: center;
 }
 
-/* ._tableContent ._tableContainer .paginationDiv > * { */
-/* width: 30%; */
-/* } */
-
 ._tableContent ._tableContainer .paginationDiv .detail {
   display: flex;
   align-items: center;
@@ -972,32 +767,6 @@ export default {
   bottom: 20px;
   right: 20px;
 }
-
-/* .buttonFab > * {
-  justify-content: center;
-  align-items: flex-end;
-} */
-
-/* .buttonFab .editModeBtn {
-  display: flex;
-  flex-direction: row;
-} */
-
-/* .secondToolbar .md-toolbar-end {
-  display: flex;
-  justify-content: flex-end !important;
-} */
-
-/* .elevation-1 {
-  height: calc(100% - 50px);
-  overflow: auto;
-} */
-
-/* ._tableContent .pageNumber {
-  width: 100%;
-  height: 50px;
-  background-color: blue;
-} */
 </style>
 
 <style>
