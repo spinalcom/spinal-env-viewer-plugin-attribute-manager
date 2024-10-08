@@ -23,36 +23,20 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="list"
-       v-if="configurationCopy">
+  <div class="list" v-if="configurationCopy">
 
     <div class="header">
-      <div>{{configurationCopy.name}}</div>
-
-      <!-- <v-alert :value="true"
-               color="green"
-               outline
-               icon="check_circle">
-        current configuration.
-      </v-alert> -->
-
+      <div>{{ configurationCopy.name }}</div>
     </div>
 
-    <display-list-component class="content md-scrollbar"
-                            :categories="configurationCopy.categories"
-                            :editMode="true"
-                            :message="'No category found create. Create one with the button below !'"
-                            @add="addSubItem"
-                            @remove="removeItem">
+    <display-list-component class="content md-scrollbar" :categories="configurationCopy.categories" :editMode="true"
+      :message="'No category found create. Create one with the button below !'" @add="addSubItem" @remove="removeItem">
     </display-list-component>
 
     <div class="header">
-      <menu-component class="addCatBtn"
-                      @add="addCategory"></menu-component>
+      <menu-component class="addCatBtn" @add="addCategory"></menu-component>
 
-      <v-btn outline
-             color="#2196f3"
-             @click="updateConfiguration">
+      <v-btn outline color="#2196f3" @click="updateConfiguration">
         <v-icon dark>check</v-icon>
         &nbsp;
         Save Modification
@@ -62,9 +46,8 @@ with this file. If not, see
 
   </div>
 
-  <div class="empty"
-       v-else>
-    No current configuration is set
+  <div class="empty" v-else>
+    No configuration is set yet !
   </div>
 
 </template>
@@ -73,7 +56,7 @@ with this file. If not, see
 import displayListComponent from "../components/displayList.vue";
 import menuComponent from "../../../vue/panels/attributePanel/components/tooltips/addItem.vue";
 
-import Utilities from "../../../js/utilities";
+import Utilities from "../../../js/utils/utilities";
 
 export default {
   name: "currentParams",
@@ -94,62 +77,56 @@ export default {
   },
   methods: {
     async updateConfiguration() {
-      await Utilities.editConfiguration(
-        this.configurationCopy.id,
-        this.configurationCopy
-      );
-
+      await Utilities.editConfiguration(this.configurationCopy.id, this.configurationCopy);
       this.$emit("refresh");
     },
+
     addCategory(res) {
-      let found = this.configurationCopy.categories.find(
-        el => el.name === res.category
-      );
+      let category = this.getCategory(res.category);
+      if (category) return;
 
-      if (!found) {
-        this.configurationCopy.categories.push({
-          id: Date.now(),
-          name: res.category,
-          attributes: []
-        });
-      }
+      this.configurationCopy.categories.push({ id: Date.now(), name: res.category, attributes: [] });
     },
+
     addSubItem(res) {
-      if (res.category && res.label) {
-        let found = this.configurationCopy.categories.find(el => {
-          return el.name === res.category;
-        });
+      let category = this.getCategory(res.category);
+      if (!category) return; // category not found
 
-        if (found) {
-          let attrFound = found.attributes.find(el => el.name === res.label);
-          if (typeof attrFound === "undefined") {
-            found.attributes.push({
-              show: false,
-              name: res.label,
-              id: Date.now()
-            });
-          }
-        }
-      }
+      let attrFound = this.getAttributeFromCategory(category, res.label);
+      if (attrFound) return; // attribute already exist
+
+
+      category.attributes.push({
+        show: false,
+        name: res.label,
+        id: Date.now()
+      });
     },
-    removeItem(res) {
-      if (typeof res.attr === "undefined") {
-        this.configurationCopy.categories = this.configurationCopy.categories.filter(
-          el => {
-            return el.id !== res.category.id;
-          }
-        );
-      } else {
-        let found = this.configurationCopy.categories.find(el => {
-          return el.id === res.category.id;
-        });
 
-        if (found) {
-          found.attributes = found.attributes.filter(
-            el => el.id !== res.attr.id
-          );
-        }
+    removeItem(res) {
+      const isCategory = typeof res.attr === "undefined";
+
+      // remove category
+      if (isCategory) {
+        this.configurationCopy.categories = this.configurationCopy.categories.filter(el => el.id !== res.category.id);
+        return;
       }
+
+      // remove attribute
+      let found = this.configurationCopy.categories.find(el => el.id === res.category.id);
+      if (!found) return;
+
+      found.attributes = found.attributes.filter(el => el.id !== res.attr.id);
+    },
+
+    getCategory(categoryName) {
+      if (!categoryName) return;
+      return this.configurationCopy.categories.find(el => el.name === categoryName || el.id === categoryName);
+    },
+
+    getAttributeFromCategory(category, attributeName) {
+      if (!category || !attributeName) return;
+      return category.attributes.find(el => el.name === attributeName || el.id === attributeName);
     }
   },
   watch: {
@@ -163,7 +140,8 @@ export default {
 <style scoped>
 .list {
   width: 100%;
-  height: 100%; /* border: 1px solid red; */
+  height: 100%;
+  /* border: 1px solid red; */
 }
 
 .list .content {

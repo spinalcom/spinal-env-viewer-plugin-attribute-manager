@@ -23,31 +23,13 @@ with this file. If not, see
 -->
 
 <template>
-  <md-dialog class="mdDialogContainer"
-             :md-active.sync="showDialog"
-             @md-closed="closeDialog(false)">
+  <md-dialog class="mdDialogContainer" :md-active.sync="showDialog" @md-closed="closeDialog(false)">
 
     <md-dialog-title class="dialogTitle">
       Use Regex
     </md-dialog-title>
 
     <md-dialog-content class="dialogContent">
-
-      <!-- <div class="_title">
-
-        <md-subheader>Create By using : </md-subheader>
-
-        <div class="radios">
-          <md-radio v-model="data.fixed"
-                    :value="fase"
-                    class="md-primary">Fixed Value</md-radio>
-
-          <md-radio v-model="data.fixed"
-                    :value="true"
-                    class="md-primary">Dynamic Value</md-radio>
-        </div>
-
-      </div> -->
 
       <div class="content">
 
@@ -90,10 +72,9 @@ with this file. If not, see
             <md-list-item>
               <md-field class="_mdField">
                 <label>Regex</label>
-                <span class="md-prefix">{{delimiterV}}</span>
-                <md-input v-model="value"
-                          palceholder="Regex"></md-input>
-                <span class="md-icon md-suffix">{{delimiterV}}</span>
+                <span class="md-prefix">{{ delimiterV }}</span>
+                <md-input v-model="value" palceholder="Regex"></md-input>
+                <span class="md-icon md-suffix">{{ delimiterV }}</span>
 
               </md-field>
             </md-list-item>
@@ -102,15 +83,10 @@ with this file. If not, see
               <md-field class="_mdField">
                 <label>Flags</label>
 
-                <md-select v-model="flags"
-                           name="flags"
-                           id="flags"
-                           md-dense
-                           multiple>
+                <md-select v-model="flags" name="flags" id="flags" md-dense multiple>
 
-                  <md-option v-for="(flag,index) in flagsList"
-                             :key="index"
-                             :value="flag.value">{{flag.name}}</md-option>
+                  <md-option v-for="(flag, index) in flagsList" :key="index" :value="flag.value">{{ flag.name
+                    }}</md-option>
 
                 </md-select>
 
@@ -125,11 +101,9 @@ with this file. If not, see
     </md-dialog-content>
 
     <md-dialog-actions>
-      <md-button class="md-primary"
-                 @click="closeDialog(false)">Close</md-button>
+      <md-button class="md-primary" @click="closeDialog(false)">Close</md-button>
 
-      <md-button class="md-primary"
-                 @click="closeDialog(true)">Save</md-button>
+      <md-button class="md-primary" @click="closeDialog(true)">Save</md-button>
 
     </md-dialog-actions>
   </md-dialog>
@@ -190,11 +164,8 @@ export default {
 
       switch (advanced) {
         case false:
-          if (contains) {
-            regex = new RegExp(`${RegExp.escape(value.trim())}`, "i");
-          } else {
-            regex = new RegExp(`^${RegExp.escape(value.trim())}$`, "i");
-          }
+          const text = contains ? `${RegExp.escape(value.trim())}` : `^${RegExp.escape(value.trim())}$`;
+          regex = new RegExp(text, "i");
           break;
         case true:
           regex = new RegExp(value, flag);

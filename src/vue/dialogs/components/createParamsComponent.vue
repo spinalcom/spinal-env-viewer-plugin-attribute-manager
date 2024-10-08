@@ -33,32 +33,8 @@ with this file. If not, see
       </md-field>
 
       <display-list-component :categories="data.categories"
-                              :message="'No category found create. Create one with the button below !'"
-                              @add="addAttributes">
+        :message="'No category found create. Create one with the button below !'" @add="addAttributes">
       </display-list-component>
-
-      <!-- <md-list :md-expand-single="false">
-        <md-list-item v-for="(item,index) in data.categories"
-                      :key="index"
-                      md-expand>
-
-          <span class="md-list-item-text">{{item.name}}</span>
-
-          <menu-component :category="item.name"
-                          @add="addAttributes"></menu-component>
-
-          <md-list slot="md-expand">
-            <md-list-item class="md-inset"
-                          v-for="(attr,i) in item.attributes"
-                          :key="i">
-              <md-checkbox class="md-primary"
-                           v-model="attr.show" />
-              <span class="md-list-item-text">{{attr.name}}</span>
-            </md-list-item>
-
-          </md-list>
-        </md-list-item>
-      </md-list> -->
     </div>
 
     <div class="header">
@@ -67,10 +43,8 @@ with this file. If not, see
         <menu-component @add="addAttributes"></menu-component>
 
         <div class="trigger">
-          <md-button title="add category"
-                     class="md-dense md-primary"
-                     :disabled="disableSaveButton()"
-                     @click="saveConfiguration">
+          <md-button title="add category" class="md-dense md-primary" :disabled="disableSaveButton()"
+            @click="saveConfiguration">
             <md-icon>save_alt</md-icon>
             &nbsp;
             Save configuration
@@ -87,7 +61,7 @@ with this file. If not, see
 import menuComponent from "../../../vue/panels/attributePanel/components/tooltips/addItem.vue";
 import displayListComponent from "../components/displayList.vue";
 
-import utilities from "../../../js/utilities";
+import utilities from "../../../js/utils/utilities";
 
 export default {
   name: "createParamsComponent",
@@ -157,7 +131,8 @@ export default {
 <style scoped>
 .list {
   width: 100%;
-  height: 100%; /* border: 1px solid red; */
+  height: 100%;
+  /* border: 1px solid red; */
 }
 
 .list .header {

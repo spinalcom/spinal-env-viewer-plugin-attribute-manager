@@ -1,0 +1,2 @@
+import "./registerPanel";
+import "./registerDialog";

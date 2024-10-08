@@ -23,66 +23,37 @@ with this file. If not, see
 -->
 
 <template>
-   <div
-      class="container"
-      v-if="configurationData"
-   >
+   <div class="container" v-if="configurationData">
       <div class="header">
 
          <div class="name">
-            <md-tooltip>{{configurationData.name}}</md-tooltip>
-            <span>{{configurationData.name}}</span>
+            <md-tooltip>{{ configurationData.name }}</md-tooltip>
+            <span>{{ configurationData.name }}</span>
          </div>
 
          <div class="actions">
-            <div
-               class="editMode"
-               v-if="editMode"
-            >
+            <div class="editMode" v-if="editMode">
                <!-- <v-btn outline
                  color="#448aff">Add Category</v-btn> -->
 
                <!-- color="#448aff" -->
 
-               <v-btn
-                  outline
-                  color="teal"
-                  @click="save"
-               >Save</v-btn>
+               <v-btn outline color="teal" @click="save">Save</v-btn>
 
-               <v-btn
-                  outline
-                  color="#ff5252"
-                  @click="cancel"
-               >Cancel</v-btn>
+               <v-btn outline color="#ff5252" @click="cancel">Cancel</v-btn>
 
                <menu-component @add="addAttributeCategory"></menu-component>
             </div>
 
-            <div
-               class="normalMode"
-               v-else
-            >
+            <div class="normalMode" v-else>
                <!-- #448aff -->
-               <v-btn
-                  outline
-                  color="orange"
-                  @click="activeEditMode"
-               >Active edit Mode</v-btn>
+               <v-btn outline color="orange" @click="activeEditMode">Active edit Mode</v-btn>
 
-               <v-btn
-                  outline
-                  color="#448aff"
-                  v-if="configurationSelected !== currentConfiguration"
-                  @click="setAsCurrentConf"
-               >Set as Current Configuration</v-btn>
+               <v-btn outline color="#448aff" v-if="configurationSelected !== currentConfiguration"
+                  @click="setAsCurrentConf">Set as Current Configuration</v-btn>
 
-               <v-btn
-                  outline
-                  v-if="configurationSelected === currentConfiguration"
-                  color="teal"
-                  @click="deleteAsCurrentConf"
-               >
+               <v-btn outline v-if="configurationSelected === currentConfiguration" color="teal"
+                  @click="deleteAsCurrentConf">
                   <v-icon>check</v-icon>
                   Current Configuration
                </v-btn>
@@ -92,14 +63,8 @@ with this file. If not, see
       </div>
 
       <div class="content">
-         <display-list
-            class="displayList md-scrollbar"
-            :categories="configurationData.categories"
-            :editMode="editMode"
-            :message="'No Attribute category found !'"
-            @add="addSubItem"
-            @remove="removeItem"
-         >
+         <display-list class="displayList md-scrollbar" :categories="configurationData.categories" :editMode="editMode"
+            :message="'No Attribute category found !'" @add="addSubItem" @remove="removeItem">
          </display-list>
       </div>
 
@@ -187,41 +152,28 @@ export default {
 
       addSubItem(res) {
          if (res.category && res.label) {
-            let found = this.configurationData.categories.find((el) => {
-               return el.name === res.category;
-            });
+            let found = this.configurationData.categories.find((el) => el.name === res.category);
+            if (!found) return;
 
-            if (found) {
-               let attrFound = found.attributes.find(
-                  (el) => el.name === res.label
-               );
-               if (typeof attrFound === "undefined") {
-                  found.attributes.push({
-                     show: true,
-                     name: res.label,
-                     id: Date.now(),
-                  });
-               }
-            }
+            let attrFound = found.attributes.find((el) => el.name === res.label);
+            if (attrFound) return;
+
+            found.attributes.push({
+               show: true,
+               name: res.label,
+               id: Date.now(),
+            });
          }
       },
 
       removeItem(res) {
          if (typeof res.attr === "undefined") {
-            this.configurationData.categories = this.configurationData.categories.filter(
-               (el) => {
-                  return el.id !== res.category.id;
-               }
-            );
+            this.configurationData.categories = this.configurationData.categories.filter((el) => el.id !== res.category.id);
          } else {
-            let found = this.configurationData.categories.find((el) => {
-               return el.id === res.category.id;
-            });
+            let found = this.configurationData.categories.find((el) => el.id === res.category.id);
 
             if (found) {
-               found.attributes = found.attributes.filter(
-                  (el) => el.id !== res.attr.id
-               );
+               found.attributes = found.attributes.filter((el) => el.id !== res.attr.id);
             }
          }
       },
@@ -312,4 +264,3 @@ export default {
    overflow-y: auto;
 }
 </style>
-

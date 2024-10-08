@@ -23,16 +23,12 @@ with this file. If not, see
 -->
 
 <template>
-  <v-popover :auto-hide="false"
-             offset="16"
-             :open="show && !disabled">
+  <v-popover :auto-hide="false" offset="16" :open="show && !disabled">
 
-    <md-button class="md-dense md-raised md-primary"
-               :disabled="disabled"
-               @click.stop="OpenAttribute">
-      <md-tooltip>{{title}}</md-tooltip>
-      <md-icon>{{icon}}</md-icon>
-      {{title}}
+    <md-button class="md-dense md-raised md-primary" :disabled="disabled" @click.stop="OpenAttribute">
+      <md-tooltip>{{ title }}</md-tooltip>
+      <!-- <md-icon>{{ icon }}</md-icon> -->
+      {{ title }}
     </md-button>
 
     <template slot="popover">
@@ -40,18 +36,16 @@ with this file. If not, see
         <div class="_popoverContent">
 
           <md-field class="tooltip-content">
-            <label>{{fieldText}}</label>
+            <label>{{ fieldText }}</label>
             <md-input v-model="name"></md-input>
           </md-field>
 
         </div>
 
         <div class="_popoverBtn">
-          <a class="btn"
-             @click="Validate(false)">Close</a>
+          <a class="btn" @click="Validate(false)">Close</a>
 
-          <a class="btn"
-             @click="Validate(true)">OK</a>
+          <a class="btn" @click="Validate(true)">OK</a>
         </div>
       </div>
 
@@ -64,6 +58,9 @@ with this file. If not, see
 export default {
   name: "createItem",
   props: {
+    // icon: {
+    //   type: String
+    // },
     title: {
       type: String
     },

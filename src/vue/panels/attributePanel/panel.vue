@@ -25,22 +25,14 @@ with this file. If not, see
 <template>
    <md-content class="mdContainer md-scrollbar">
 
-      <type-lst-component
-         v-if="data && appState === STATES.normal && visiblePage === pages.types"
-         :types="data.types"
-         @select="selectType"
-      >
+      <type-lst-component v-if="allNodesTree && appState === STATES.normal && visiblePage === pages.types"
+         :types="allNodesTree.types" @select="selectType">
       </type-lst-component>
 
-      <table-page
-         v-if="appState === STATES.normal && typeSelected && visiblePage === pages.table"
-         :itemDisplayed="itemDisplayed"
-         :attributesDisplayed="attributesDisplayed"
-         :typeSelected="typeSelected"
-         @back="goBack"
-         @refresh="validateItem"
-         @openExportDialog="openExportDialog"
-      >
+      <!-- :attributesDisplayed="attributesDisplayed" -->
+      <table-page v-if="appState === STATES.normal && typeSelected && visiblePage === pages.table"
+         :itemDisplayed="itemDisplayed" :typeSelected="typeSelected" @back="goBack" @refresh="validateItem"
+         @openExportDialog="openExportDialog">
       </table-page>
 
       <!--
@@ -48,10 +40,7 @@ with this file. If not, see
           Loading
           ////////////////////////////////
         -->
-      <div
-         v-if="appState === STATES.loading"
-         class="loading"
-      >
+      <div v-if="appState === STATES.loading" class="loading">
          <md-progress-spinner md-mode="indeterminate"></md-progress-spinner>
       </div>
    </md-content>
@@ -92,7 +81,7 @@ export default {
          table: 1,
       });
 
-      this.data = null;
+      this.allNodesTree = null;
 
       return {
          appState: this.STATES.normal,
@@ -110,35 +99,32 @@ export default {
          this.contextSelected = params.context;
       },
 
-      closed() {},
+      closed() { },
 
       setTitle(title) {
-         spinalPanelManagerService.panels.attributeManagerPanel.panel.setTitle(
-            title
-         );
+         spinalPanelManagerService.panels.attributeManagerPanel.panel.setTitle(title);
       },
+
       getAllData() {
-         return SpinalAttributeManager.getAllData(
-            this.contextSelected.id,
-            this.itemSelected.id
-         );
+         return SpinalAttributeManager.getAllData(this.contextSelected.id, this.itemSelected.id);
       },
+
       selectType(type) {
          this.typeSelected = type;
-         this.itemDisplayed = this.data.data[type];
-         // this.attributesDisplayed = this.data.attributes;
+         this.itemDisplayed = this.allNodesTree.data[type];
+         // this.attributesDisplayed = this.allNodesTree.attributes;
          // this.attributesDisplayed = this.getAttributes();
          this.visiblePage = this.pages.table;
       },
 
       getAttributes() {
-         return this.data.data[this.typeSelected]
-            .map((el) => {
-               return el.attributes.map((el2) => {
-                  return { category: el2.category, label: el2.label };
-               });
-            })
-            .flat();
+         return this.allNodesTree.data[this.typeSelected].reduce((list, el) => {
+            for (const attribute of el.attributes) {
+               list.push({ category: attribute.category, label: attribute.label });
+            }
+
+            return list;
+         }, [])
       },
 
       goBack() {
@@ -147,36 +133,27 @@ export default {
       },
 
       validateItem() {
-         // setTimeout(() => {
          this.refreshData();
-         // }, 500);
       },
 
-      refreshData() {
-         this.appState = this.STATES.loading;
+      async refreshData() {
 
-         this.getAllData()
-            .then((res) => {
-               this.data = res;
+         try {
+            this.appState = this.STATES.loading;
+            this.allNodesTree = await this.getAllData();
 
-               const typeFound = this.data.types.find(
-                  (el) => el === this.typeSelected
-               );
+            const typeFound = this.allNodesTree.types.find((el) => el === this.typeSelected);
+            this.typeSelected = typeFound ? typeFound : null;
 
-               this.typeSelected = typeFound ? typeFound : null;
+            if (this.typeSelected) this.selectType(this.typeSelected);
+            else this.visiblePage = this.pages.types;
 
-               if (this.typeSelected) {
-                  this.selectType(this.typeSelected);
-               } else {
-                  this.visiblePage = this.pages.types;
-               }
+            this.appState = this.STATES.normal;
+         } catch (error) {
+            this.appState = this.STATES.normal;
+            console.error(err);
+         }
 
-               this.appState = this.STATES.normal;
-            })
-            .catch((err) => {
-               this.appState = this.STATES.normal;
-               console.error(err);
-            });
       },
 
       openExportDialog(res) {

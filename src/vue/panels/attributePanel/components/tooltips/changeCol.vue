@@ -23,17 +23,9 @@ with this file. If not, see
 -->
 
 <template>
-  <v-popover :auto-hide="false"
-             offset="16">
-    <!-- <md-button class="md-primary attr_btn"
-               title="add attribute">
-      <md-icon>view_column</md-icon>
-      EDIT COLUMN
-    </md-button> -->
+  <v-popover :auto-hide="false" offset="16">
 
-    <md-button title="edit column value"
-               class="md-fab md-mini md-plain"
-               style="background-color : #f39508">
+    <md-button title="edit column value" class="md-fab md-mini md-plain" style="background-color : #f39508">
       <md-icon>view_column</md-icon>
     </md-button>
 
@@ -42,18 +34,13 @@ with this file. If not, see
         <div class="_popoverContent">
 
           <md-field class="tooltip-content">
-            <md-select v-model="columnSelected"
-                       placeholder="Select Column"
-                       name="columns"
-                       id="columns">
+            <md-select v-model="columnSelected" placeholder="Select Column" name="columns" id="columns">
 
-              <md-option v-if="!columnsFiltered || columnsFiltered.length === 0"
-                         disabled>No column</md-option>
+              <md-option v-if="!columnsFiltered || columnsFiltered.length === 0" disabled>No column</md-option>
 
-              <md-option v-for="(head,index) in columnsFiltered"
-                         :key="index"
-                         :value="`${head.category}/${head.label}`">
-                {{`${head.category} / ${head.label}`}}
+              <md-option v-for="(head, index) in columnsFiltered" :key="index"
+                :value="`${head.category}/${head.label}`">
+                {{ `${head.category} / ${head.label}` }}
               </md-option>
             </md-select>
           </md-field>
@@ -63,37 +50,29 @@ with this file. If not, see
                          class="md-primary">get BIM Value</md-checkbox>
           </div> -->
 
-          <md-checkbox v-model="useMaquetteValue"
-                       class="md-primary">Import from BIM value</md-checkbox>
+          <md-checkbox v-model="useMaquetteValue" class="md-primary">Import from BIM value</md-checkbox>
 
           <md-field class="tooltip-content">
             <label>Value</label>
             <md-input v-model="value"
-                      :disabled="useMaquetteValue || (!columnSelected || columnSelected.trim().length === 0)">
+              :disabled="useMaquetteValue || (!columnSelected || columnSelected.trim().length === 0)">
             </md-input>
           </md-field>
 
           <div class="tooltip-content pageSelect">
 
-            <md-radio v-model="pageOnly"
-                      class="md-primary"
-                      :value="true">This page only</md-radio>
+            <md-radio v-model="pageOnly" class="md-primary" :value="true">This page only</md-radio>
 
-            <md-radio v-model="pageOnly"
-                      class="md-primary"
-                      :value="false">All page</md-radio>
+            <md-radio v-model="pageOnly" class="md-primary" :value="false">All page</md-radio>
 
           </div>
 
         </div>
 
         <div class="_popoverBtn">
-          <a class="btn"
-             v-close-popover>Close</a>
+          <a class="btn" v-close-popover>Close</a>
 
-          <a class="btn"
-             v-close-popover
-             @click="Validate">OK</a>
+          <a class="btn" v-close-popover @click="Validate">OK</a>
         </div>
       </div>
 
@@ -131,11 +110,8 @@ export default {
   },
   methods: {
     Validate() {
-      if (
-        this.itemsSelected &&
-        (this.value.trim().length > 0 || this.useMaquetteValue)
-      ) {
-        const value = this.$emit("setValueToColumn", {
+      if (this.itemsSelected && (this.value.trim().length > 0 || this.useMaquetteValue)) {
+        this.$emit("setValueToColumn", {
           value: this.value.trim(),
           column: this.columnSelected,
           pageOnly: this.pageOnly,

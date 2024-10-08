@@ -23,43 +23,38 @@ with this file. If not, see
 -->
 
 <template>
-  <md-dialog :md-active.sync="showDialog"
-             @md-closed="closeDialog(false)">
+  <md-dialog :md-active.sync="showDialog" @md-closed="closeDialog(false)">
     <md-dialog-title class="dialogTitle">Import Data</md-dialog-title>
+
     <md-dialog-content class="mdDialogContainer">
-      <div v-if="appState === STATES.valid"
-           class="valid">
+      <!-- Valid State -->
+      <div v-if="appState === STATES.valid" class="valid">
         <md-icon class="md-size-4x">check</md-icon>
         <div>File imported.</div>
-
       </div>
 
-      <div v-if="appState === STATES.normal"
-           class="valid">
-
+      <!-- Normal State -->
+      <div v-if="appState === STATES.normal" class="valid">
         <div>This file can be imported.</div>
       </div>
 
-      <div v-else-if="appState === STATES.loading"
-           class="loading">
+      <!-- Loading State -->
+      <div v-else-if="appState === STATES.loading" class="loading">
         <md-progress-spinner md-mode="indeterminate"></md-progress-spinner>
-
       </div>
 
-      <div class="error"
-           v-else-if="appState === STATES.error">
+      <!-- Error State -->
+      <div class="error" v-else-if="appState === STATES.error">
         <md-icon class="md-size-4x">close</md-icon>
         <div>Something went wrong !</div>
         <div>Check if the file is the same as the exported one</div>
       </div>
 
     </md-dialog-content>
+
     <md-dialog-actions>
-      <md-button class="md-primary"
-                 @click="closeDialog(false)">Cancel</md-button>
-      <md-button class="md-primary"
-                 @click="closeDialog(true)"
-                 :disabled="appState !== STATES.normal">Import</md-button>
+      <md-button class="md-primary" @click="closeDialog(false)">Cancel</md-button>
+      <md-button class="md-primary" @click="updateData" :disabled="appState !== STATES.normal">Import</md-button>
     </md-dialog-actions>
   </md-dialog>
 </template>
@@ -67,6 +62,7 @@ with this file. If not, see
 <script>
 import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 import attributeService from "../../services";
+import { importExcelUtils } from "../../js/utils/importExcelUtils";
 
 export default {
   name: "ImportAttributeExcelDialog",
@@ -82,57 +78,59 @@ export default {
     return {
       appState: this.STATES.normal,
       showDialog: true,
-      data: [],
+      dataToUpdate: [],
       itemsMap: new Map(),
-      callback: () => {},
+      callback: () => { },
     };
   },
+
   methods: {
     async opened(option) {
-      this.appState = this.STATES.loading;
 
-      this.callback = option.callback;
+      try {
+        this.appState = this.STATES.loading;
+        this.callback = option.callback;
 
-      this.constructMap(option.tableData);
+        // this.constructMap(option.tableData);
+        // const excelData = this.concatSheets(option.excelData);
 
-      const excelData = this.concatSheets(option.excelData);
+        // const data = this.formatExcelData(excelData);
+        // this.data = await this.getDifferenceBetweenData(data, option.tableData);
 
-      const data = this.formatExcelData(excelData);
 
-      this.data = await this.getDifferenceBetweenData(data, option.tableData);
+        this.itemsMap = importExcelUtils.convertTableToMap(option.tableData);
+        const excelDataFormatted = importExcelUtils.convertExcelDataToObj(option.excelData);
+        this.dataToUpdate = importExcelUtils.getDifferenceBetweenTableAndExcel(excelDataFormatted, option.tableData);
 
-      if (this.data) {
-        this.appState = this.STATES.normal;
-      } else {
+        if (this.dataToUpdate) this.appState = this.STATES.normal;
+        else this.appState = this.STATES.error;
+
+      } catch (error) {
+        console.error(error);
         this.appState = this.STATES.error;
       }
 
-      // const tableFormated = this.convertDataToJson(option.tableData);
-
-      // this.data = this.getDataModified(excelData, tableFormated);
     },
 
     async removed(option) {
-      this.appState = this.STATES.loading;
+      await this.callback();
+      this.showDialog = false;
+    },
 
-      if (option && this.data) {
-        this._changeValue()
-          .then(() => {
-            this.appState = this.STATES.valid;
-            this.callback();
-            setTimeout(() => {
-              this.showDialog = false;
-            }, 1000);
-          })
-          .catch((el) => {
-            this.appState = this.STATES.error;
-          });
-      } else {
-        this.showDialog = false;
-        this.callback();
+    async updateData() {
+
+      try {
+        this.appState = this.STATES.loading;
+
+        await this._changeValue()
+        await this.callback();
+
+        this.appState = this.STATES.valid;
+
+      } catch (error) {
+        console.error(error);
+        this.appState = this.STATES.error;
       }
-
-      // this.showDialog = false;
     },
 
     closeDialog(closeResult) {
@@ -141,137 +139,129 @@ export default {
       }
     },
 
-    formatExcelData(excelData) {
-      return excelData.map((data) => {
-        let obj = { id: "", attributes: [] };
+    // formatExcelData(excelData) {
+    //   return excelData.map((data) => {
+    //     let obj = { id: "", attributes: [] };
 
-        obj.id = data["SpinalGraph ID"];
-        obj.name = data["Name"];
+    //     obj.id = data["SpinalGraph ID"];
+    //     obj.name = data["Name"];
 
-        const lists = ["name", "spinalgraph id", "revit id"];
+    //     const lists = ["name", "spinalgraph id", "revit id"];
 
-        for (const key of Object.keys(data)) {
-          // if (!key.includes(" / ")) continue;
+    //     for (const key of Object.keys(data)) {
+    //       // if (!key.includes(" / ")) continue;
 
-          if (lists.indexOf(key.toLowerCase()) !== -1) continue;
+    //       if (lists.indexOf(key.toLowerCase()) !== -1) continue;
 
-          const list = key.split(" / ");
+    //       const list = key.split(" / ");
 
-          obj.attributes.push({
-            category: list[0] ? list[0] : "",
-            label: list[1] ? list[1] : "",
-            value: data[key] ? data[key] : "-",
-          });
-        }
+    //       obj.attributes.push({
+    //         category: list[0] ? list[0] : "",
+    //         label: list[1] ? list[1] : "",
+    //         value: data[key] ? data[key] : "-",
+    //       });
+    //     }
 
-        return obj;
-      });
-    },
+    //     return obj;
+    //   });
+    // },
 
-    concatSheets(excelData) {
-      const data = [];
-      for (const values of Object.values(excelData)) {
-        data.push(...values);
-      }
-      return data;
-    },
+    // concatSheets(excelData) {
+    //   const data = [];
+    //   for (const values of Object.values(excelData)) {
+    //     data.push(...values);
+    //   }
+    //   return data;
+    // },
 
-    constructMap(tableContent) {
-      for (const content of tableContent) {
-        const element = {};
-        for (const attr of content.attributes) {
-          element[`${attr.category}_${attr.label}`] = {
-            value: attr.value,
-            displayValue: attr.value,
-          };
-        }
-        this.itemsMap.set(content.id, element);
-      }
-    },
+    // constructMap(tableContent) {
+    //   for (const content of tableContent) {
+    //     const element = {};
+    //     for (const attr of content.attributes) {
+    //       element[`${attr.category}_${attr.label}`] = {
+    //         value: attr.value,
+    //         displayValue: attr.value,
+    //       };
+    //     }
+    //     this.itemsMap.set(content.id, element);
+    //   }
+    // },
 
-    getDifferenceBetweenData(excelData, tableContent) {
-      const diff = [];
-      for (const dataIterator of excelData) {
-        let found = tableContent.find((el) => el.id === dataIterator.id);
+    // getDifferenceBetweenData(excelData, tableContent) {
+    //   const diff = [];
+    //   for (const dataIterator of excelData) {
+    //     let found = tableContent.find((el) => el.id === dataIterator.id);
 
-        if (found && found.attributes) {
-          const diffAttr = this._getAttrDiff(found, dataIterator);
+    //     if (found && found.attributes) {
+    //       const diffAttr = this._getAttrDiff(found, dataIterator);
 
-          if (typeof diffAttr === "undefined") {
-            continue;
-          } else if (
-            diffAttr &&
-            (diffAttr.newName || diffAttr.attributes.length > 0)
-          ) {
-            diff.push(diffAttr);
-          }
-        }
-      }
+    //       if (typeof diffAttr === "undefined") {
+    //         continue;
+    //       } else if (
+    //         diffAttr &&
+    //         (diffAttr.newName || diffAttr.attributes.length > 0)
+    //       ) {
+    //         diff.push(diffAttr);
+    //       }
+    //     }
+    //   }
 
-      return diff;
-    },
+    //   return diff;
+    // },
 
     async _changeValue() {
       const promises = [];
 
-      for (const found of this.data) {
-        // const found = this.data.find(el => el.id === nodeId);
-        // console.log("found", found);
-        if (found && found.attributes) {
-          if (found.newName) {
-            await this.editNodeName(found.id, found.newName);
-          }
+      for (const found of this.dataToUpdate) {
+        if (found && found.newName) await this.editNodeName(found.id, found.newName);
 
-          for (const attr of found.attributes) {
-            // let value = this.itemsMap.get(nodeId)[
-            //   `${attr.category}_${attr.label}`
-            // ]["value"];
-            // let displayValue = this.itemsMap.get(nodeId)[
-            //   `${attr.category}_${attr.label}`
-            // ]["displayValue"];
-            // console.log("value", value, "displayValue", displayValue);
-            // if (value !== displayValue) {
-            promises.push(
-              attributeService.updateAttributeValue(
-                found.id,
-                attr.category,
-                attr.label,
-                attr.value
-              )
-            );
-            // }
-          }
+        const obj = this._classifyByCategory(found.attributes);
+
+        for (const category in obj) {
+          const attributes = obj[category];
+          promises.push(attributeService.updateSeveralAttributes(found.id, category, attributes));
         }
       }
 
       return Promise.all(promises);
     },
 
-    _getAttrDiff(tableItem, excelItem) {
-      let obj = {
-        id: tableItem.id,
-        attributes: [],
-      };
-
-      if (tableItem.name !== excelItem.name) {
-        obj.newName = excelItem.name;
-      }
-
-      for (const attr of excelItem.attributes) {
-        let attrFound = tableItem.attributes.find((el) => {
-          return attr.category === el.category && attr.label === el.label;
-        });
-
-        if (attrFound && attrFound.value != attr.value) {
-          obj.attributes.push(attr);
+    _classifyByCategory(attributes = []) {
+      return attributes.reduce((acc, attr) => {
+        if (acc[attr.category]) {
+          acc[attr.category].push(attr);
+        } else {
+          acc[attr.category] = [attr];
         }
-        // else if (typeof attrFound === "undefined") {
-        //   return;
-        // }
-      }
-
-      return obj;
+        return acc;
+      }, {});
     },
+
+    // _getAttrDiff(tableItem, excelItem) {
+    //   let obj = {
+    //     id: tableItem.id,
+    //     attributes: [],
+    //   };
+
+    //   if (tableItem.name !== excelItem.name) {
+    //     obj.newName = excelItem.name;
+    //   }
+
+    //   for (const attr of excelItem.attributes) {
+    //     let attrFound = tableItem.attributes.find((el) => {
+    //       return attr.category === el.category && attr.label === el.label;
+    //     });
+
+    //     if (attrFound && attrFound.value != attr.value) {
+    //       obj.attributes.push(attr);
+    //     }
+    //     // else if (typeof attrFound === "undefined") {
+    //     //   return;
+    //     // }
+    //   }
+
+    //   return obj;
+    // },
 
     editNodeName(nodeId, newName) {
       const realNode = SpinalGraphService.getRealNode(nodeId);
@@ -284,35 +274,35 @@ export default {
     convertDataToJson(tableData) {
       return tableData.map(el => {
         let res = {};
-
+  
         res["SpinalGraph ID"] = el.id;
         res["Name"] = el.name;
-
+  
         el.attributes.forEach(attr => {
           res[`${attr.category} / ${attr.label}`] = attr.value;
         });
-
+  
         return res;
       });
     },
-
+  
     getDataModified(excelData, tableData) {
       let formated = excelData.map(data => {
         let found = tableData.find(el => {
           return el["SpinalGraph ID"] === data["SpinalGraph ID"];
         });
-
+  
         if (typeof found !== "undefined") {
         }
-
+  
         return;
       });
-
+  
       return formated.filter(el => {
         return typeof el !== "undefined";
       });
     },
-
+  
     */
   },
 };

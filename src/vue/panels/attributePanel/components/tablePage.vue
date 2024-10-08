@@ -23,10 +23,8 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="tablePage"
-       v-if="itemDisplayed">
-    <div class="_mdContainer"
-         v-if="appState === STATES.normal">
+  <div class="tablePage" v-if="itemDisplayed">
+    <div class="_mdContainer" v-if="appState === STATES.normal">
       <div class="header">
         <div class="backBtn">
           <md-button @click="back">
@@ -36,14 +34,12 @@ with this file. If not, see
           </md-button>
         </div>
         <div class="exportImport">
-          <md-button class="md-primary attr_btn"
-                     @click="importExcel">
+          <md-button class="md-primary attr_btn" @click="importExcel">
             <md-icon>get_app</md-icon>
             &nbsp;
             Import
           </md-button>
-          <md-button class="md-primary attr_btn"
-                     @click="exportData">
+          <md-button class="md-primary attr_btn" @click="exportData">
             <md-icon>publish</md-icon>
             &nbsp;
             Export
@@ -53,16 +49,12 @@ with this file. If not, see
       </div>
 
       <div class="tableContent">
-        <table-component ref="tableContent"
-                         :tableContent="tableContent"
-                         :header="header"
-                         :typeSelected="typeSelected"
-                         @refresh="createAttribute"></table-component>
+        <table-component ref="tableContent" :tableContent="tableContent" :header="header" :typeSelected="typeSelected"
+          @refresh="createAttribute"></table-component>
       </div>
     </div>
 
-    <div class="loading"
-         v-if="appState === STATES.loading">
+    <div class="loading" v-if="appState === STATES.loading">
       <md-progress-spinner md-mode="indeterminate"></md-progress-spinner>
 
     </div>
@@ -77,9 +69,6 @@ with this file. If not, see
 
 import TableComponent from "./table/index.vue";
 import spinalExcelManager from "spinal-env-viewer-plugin-excel-manager-service";
-
-import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
-
 import FileSaver from "file-saver";
 
 // import utilities from "../../../../js/utilities";
@@ -110,7 +99,6 @@ export default {
     });
 
     return {
-      // showAttrTooltip: false,
       appState: this.STATES.normal,
       tableContent: [],
       header: [],
@@ -120,139 +108,91 @@ export default {
     this.tableContent = await this.getTableContent();
     this.header = await this.getAttributes();
   },
+
   methods: {
     back() {
       this.$emit("back");
     },
 
-    // openCreateAttrTooltips() {
-    //   this.showAttrTooltip = !this.showAttrTooltip;
-    // },
     createAttribute() {
       this.$emit("refresh");
     },
 
     async getTableContent() {
-      let content = [];
-      let attributes = await this.getAttributes();
+      if (!this.itemDisplayed) return [];
 
-      if (this.itemDisplayed) {
-        content = this.itemDisplayed.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-            type: item.type,
-            attributes: attributes.map((el) => {
-              return {
-                category: el.category,
-                label: el.label,
-                date: el.date,
-                value: this.getAttributeValue(item, el),
-              };
-            }),
-          };
-        });
-      }
-
-      // return { header: attributes, data: content };
-      return content;
+      return this.formatItemDisplayed(this.itemDisplayed);
     },
 
-    getAttributes() {
-      // if (this.itemDisplayed) {
-      //   this.itemDisplayed.forEach(el => {
-      //     attrs.push(...el.attributes);
-      //   });
-      // }
+    async formatItemDisplayed(itemDisplayed) {
+      let attributes = await this.getAttributes();
 
-      // return attrs.filter((elem, index, self) => {
-      //   return (
-      //     self.findIndex(t => {
-      //       return t.category === elem.category && t.label === elem.label;
-      //     }) === index
-      //   );
-      // });
+      return itemDisplayed.map(item => ({
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        attributes: attributes.map((el) => {
+          return {
+            category: el.category,
+            label: el.label,
+            date: el.date,
+            value: this.getAttributeValue(item, el),
+          };
+        }),
+      }))
+    },
 
-      return spinalConfigurationService
-        .getCurrentConfiguration()
-        .then((conf) => {
-          let values = conf.categories;
+    async getAttributes() {
+      const conf = await spinalConfigurationService.getCurrentConfiguration();
+      let categories = conf.categories;
 
-          // let values = res.get();
-          let attrs = [];
+      return categories.reduce((list, category) => {
+        const attributes = category.attributes;
+        for (const attribute of attributes) {
+          if (attribute.show) {
+            list.push({
+              category: category.name,
+              label: attribute.name,
+            });
+          }
+        }
 
-          values.forEach((value) => {
-            let items = value.attributes
-              .map((attr) => {
-                if (attr.show) {
-                  return {
-                    category: value.name,
-                    label: attr.name,
-                  };
-                }
-                return;
-              })
-              .filter((el2) => typeof el2 !== "undefined");
+        return list;
+      }, []);
 
-            attrs.push(...items);
-          });
-
-          return attrs;
-        });
     },
 
     getAttributeValue(item, attr) {
       let found;
       if (item && attr) {
-        found = item.attributes.find((el) => el.label === attr.label);
+        found = item.attributes.find((el) => el.category === attr.category && el.label === attr.label);
       }
 
-      return typeof found !== "undefined" ? found.value : "-";
+      return found ? found.value : "-";
     },
 
     getExportHeadersData() {
       let headers = [
-        {
-          key: "id",
-          header: "SpinalGraph ID",
-          width: 65,
-        },
-        {
-          key: "revit_id",
-          header: "Revit ID",
-          width: 15,
-        },
-        {
-          key: "name",
-          header: "Name",
-          width: 50,
-        },
-        // {
-        //   key: "type",
-        //   header: "Type",
-        //   width: 30
-        // }
+        { key: "id", header: "SpinalGraph ID", width: 65 },
+        { key: "revit_id", header: "Revit ID", width: 15 },
+        { key: "name", header: "Name", width: 50 }
       ];
 
-      this.header.forEach((head) => {
+      for (const head of this.header) {
         headers.push({
           key: `${head.category}_${head.label}`,
           header: `${head.category} / ${head.label}`,
           width: 15,
         });
-      });
+      }
 
       return headers;
     },
 
     getValue(item, attribute) {
-      let found = item.attributes.find((el) => {
-        return (
-          el.label === attribute.label && el.category === attribute.category
-        );
-      });
+      let found = item.attributes.find(el => el.label === attribute.label && el.category === attribute.category);
 
-      return typeof found !== "undefined" ? found.value : "-";
+      return found ? found.value : "-";
     },
 
     _sortByName(items) {
@@ -261,37 +201,35 @@ export default {
         const name2 = b.name.toUpperCase();
 
         let comparison = 0;
-        if (name1 > name2) {
-          comparison = 1;
-        } else if (name1 < name2) {
-          comparison = -1;
-        }
+        if (name1 > name2) comparison = 1;
+        else if (name1 < name2) comparison = -1;
+
         return comparison;
       });
     },
 
     getExportRowsData() {
       const tableReference = this.$refs["tableContent"];
+      if (!tableReference) return;
 
-      if (tableReference) {
-        const liste = tableReference.itemsSelected || [];
-        const tableSorted = this._sortByName(liste);
-        return tableSorted.map((content) => {
-          let info = {
-            id: content.id,
-            name: content.name,
-            revit_id:
-              content.type === BIM_OBJECT_TYPE
-                ? this._getRevitID(content.name)
-                : "-",
-          };
-          this.header.forEach((head) => {
-            let value = this.getValue(content, head);
-            info[`${head.category}_${head.label}`] = value;
-          });
-          return info;
-        });
-      }
+      const liste = tableReference.itemsSelected || [];
+      const tableSorted = this._sortByName(liste);
+
+      return tableSorted.map((content) => {
+        let info = {
+          id: content.id,
+          name: content.name,
+          revit_id: content.type === BIM_OBJECT_TYPE ? this._getRevitID(content.name) : "-",
+        };
+
+        for (const head of this.header) {
+          let value = this.getValue(content, head);
+          info[`${head.category}_${head.label}`] = value;
+        }
+
+        return info;
+      });
+
     },
 
     formatExportData() {
@@ -310,15 +248,13 @@ export default {
 
     exportData() {
       let result = this.formatExportData();
-
-      spinalExcelManager.export(result).then((buffer) => {
-        FileSaver.saveAs(new Blob(buffer), `spinalcom.xlsx`);
-      });
+      spinalExcelManager.export(result).then((buffer) => FileSaver.saveAs(new Blob(buffer), `spinalcom.xlsx`));
     },
 
     _getRevitID(name) {
       let reg = /\[(.*)\]/gim;
       let macthed = name.match(reg);
+
       if (macthed && macthed.length > 0) {
         let value = JSON.parse(JSON.stringify(macthed[macthed.length - 1]));
         return value.replace(/\[|\]/g, (el) => "");
@@ -330,29 +266,21 @@ export default {
     importExcel() {
       let input = document.createElement("input");
       input.type = "file";
-      input.accept =
-        ".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
+      input.accept = ".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
+
       input.click();
 
-      input.addEventListener(
-        "change",
-        async (event) => {
-          const file = event.target.files[0];
+      input.addEventListener("change", async (event) => {
+        this.appState = this.STATES.loading;
 
-          this.appState = this.STATES.loading;
+        const file = event.target.files[0];
+        const dataJson = await spinalExcelManager.convertExcelToJson(file);
 
-          const dataJson = await spinalExcelManager.convertExcelToJson(file);
+        this.$emit("openExportDialog", { data: dataJson, table: this.tableContent });
+        this.$destroy();
 
-          this.$emit("openExportDialog", {
-            data: dataJson,
-            table: this.tableContent,
-          });
-
-          this.$destroy();
-          // this.appState = this.STATES.normal;
-        },
-        false
-      );
+        // this.appState = this.STATES.normal;
+      }, false);
     },
   },
   watch: {
@@ -360,11 +288,8 @@ export default {
       this.tableContent = await this.getTableContent();
       this.header = await this.getAttributes();
     },
-    // attributesDisplayed: function() {
-
-    //   lodash.debounce(this.getTableContent, 500, { maxWait: 1000 });
-    // }
   },
+
   beforeDestroy() {
     this.appState = this.STATES.normal;
   },

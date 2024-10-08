@@ -6,7 +6,4 @@ const spinalConfigurationService = new SpinalConfigurationService()
 
 export default spinalAttributeService;
 
-export {
-  spinalAttributeService,
-  spinalConfigurationService
-}
+export { spinalAttributeService, spinalConfigurationService }

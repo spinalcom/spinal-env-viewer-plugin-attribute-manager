@@ -23,29 +23,17 @@ with this file. If not, see
 -->
 
 <template>
-  <div class="content"
-       v-if="data"
-       @mouseover="mouseIsOver"
-       @mouseleave="mouseOutOver">
+  <div class="content" v-if="data" @mouseover="mouseIsOver" @mouseleave="mouseOutOver">
 
-    <div class="valueDiv"
-         :class="{'contentEditable' : editable}"
-         :contenteditable="editable"
-         ref="display"
-         @input="changeValue">
-      {{data.displayValue}}
+    <div class="valueDiv" :class="{ 'contentEditable': editable }" :contenteditable="editable" ref="display"
+      @input="changeValue">
+      {{ data.displayValue }}
     </div>
 
-    <md-button class="contentIcon md-icon-button md-dense"
-               v-if="displayBtn()"
-               @click="findValueInMaquette">
+    <md-button class="contentIcon md-icon-button md-dense" v-if="displayBtn()" @click="findValueInMaquette">
       <md-tooltip>find value in maquette</md-tooltip>
       <md-icon>my_location</md-icon>
     </md-button>
-
-    <!-- <md-icon class="contentIcon"
-             v-if="displayBtn()"
-             @click="findValueInMaquette">my_location</md-icon> -->
 
   </div>
 </template>
@@ -60,39 +48,18 @@ export default {
   props: ["editable", "item", "attribute", "itemsMap"],
   data() {
     return {
-      // value: "",
-      // displayValue: ""
+
       data: undefined,
       mouseOver: false,
     };
   },
   mounted() {
-    // this.value = this.getValue();
-    // this.displayValue = this.value;
-
     this.data = this.getValue();
   },
   methods: {
     getValue() {
       let value = this.itemsMap.get(this.item.id);
       return value[`${this.attribute.category}_${this.attribute.label}`];
-      // let found;
-      // if (this.item && this.attribute) {
-      //   found = this.item.attributes.find(el => {
-      //     return (
-      //       el.label === this.attribute.label &&
-      //       el.category === this.attribute.category
-      //     );
-      //   });
-      // }
-      // if (found) {
-      //   found["displayValue"] = found.value;
-      //   return found;
-      // }
-      // return {
-      //   value: "-",
-      //   displayValue: "-"
-      // };
     },
 
     setValue() {
@@ -106,50 +73,35 @@ export default {
     cancelValue() {
       this.data.displayValue = this.data.value;
       this.$refs.display.innerText = this.data.displayValue;
-      this.itemsMap.get(this.item.id)[
-        `${this.attribute.category}_${this.attribute.label}`
-      ]["displayValue"] = this.itemsMap.get(this.item.id)[
-        `${this.attribute.category}_${this.attribute.label}`
-      ]["value"];
+
+      const key = `${this.attribute.category}_${this.attribute.label}`
+
+      this.itemsMap.get(this.item.id)[key]["displayValue"] = this.itemsMap.get(this.item.id)[key]["value"];
     },
 
     changeValue(event) {
       const el = event.target;
-
-      this.itemsMap.get(this.item.id)[
-        `${this.attribute.category}_${this.attribute.label}`
-      ]["displayValue"] = this.$refs.display.innerText;
+      const key = `${this.attribute.category}_${this.attribute.label}`
+      this.itemsMap.get(this.item.id)[key]["displayValue"] = this.$refs.display.innerText;
       this.displayValue = el.innerText;
 
       this.setCursorAtEnd(el);
     },
 
     setValueToColumn(category, label, value) {
-      if (
-        value.length > 0 &&
-        this.attribute.category === category &&
-        this.attribute.label === label
-      ) {
+      if (value.length > 0 && this.attribute.category === category && this.attribute.label === label) {
         this.data.displayValue = value;
         this.$refs.display.innerText = value;
       }
     },
 
-    validateValue() {
+    async validateValue() {
       this.data.displayValue = this.$refs.display.innerText;
 
       if (this.data.displayValue !== this.data.value) {
-        attributeService
-          .updateAttributeValue(
-            this.item.id,
-            this.attribute.category,
-            this.attribute.label,
-            this.data.displayValue
-          )
-          .then(() => {
-            this.data.value = this.data.displayValue;
-            this.setValue();
-          });
+        await attributeService.updateAttributeValue(this.item.id, this.attribute.category, this.attribute.label, this.data.displayValue)
+        this.data.value = this.data.displayValue;
+        this.setValue();
       }
     },
 
@@ -159,10 +111,7 @@ export default {
 
     displayBtn() {
       let nodeInfo = SpinalGraphService.getInfo(this.item.id);
-
-      // const isBimObject = nodeInfo && nodeInfo.type.get() === "BIMObject";
       const is3DItem = nodeInfo && (nodeInfo.dbId || nodeInfo.externalId);
-
       return this.editable && this.mouseOver && is3DItem;
     },
 
@@ -180,17 +129,17 @@ export default {
 
     setCursorAtEnd(el) {
       el.focus();
-      if (
-        typeof window.getSelection != "undefined" &&
-        typeof document.createRange != "undefined"
-      ) {
+      if (window.getSelection && document.createRange) {
         var range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(false);
         var sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-      } else if (typeof document.body.createTextRange != "undefined") {
+        return;
+      }
+
+      if (document.body.createTextRange) {
         var textRange = document.body.createTextRange();
         textRange.moveToElementText(el);
         textRange.collapse(false);

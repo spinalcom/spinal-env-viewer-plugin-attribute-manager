@@ -48,15 +48,8 @@ with this file. If not, see
     </md-dialog-content>
 
     <md-dialog-actions>
-      <md-button class="md-primary" @click="closeDialog(false)"
-        >Close</md-button
-      >
-      <md-button
-        class="md-primary"
-        @click="closeDialog(true)"
-        :disabled="appState !== STATES.normal"
-        >Import</md-button
-      >
+      <md-button class="md-primary" @click="closeDialog(false)">Close</md-button>
+      <md-button class="md-primary" @click="closeDialog(true)" :disabled="appState !== STATES.normal">Import</md-button>
     </md-dialog-actions>
   </md-dialog>
 </template>
@@ -92,13 +85,12 @@ export default {
     async removed(option) {
       this.appState = this.STATES.loading;
       if (option) {
-        this.createElements(this.data)
-          .then(() => {
-            this.appState = this.STATES.valid;
-          })
-          .catch((el) => {
-            this.appState = this.STATES.error;
-          });
+        try {
+          await this.createElements(this.data);
+          this.appState = this.STATES.valid;
+        } catch (error) {
+          this.appState = this.STATES.error;
+        }
       } else {
         this.showDialog = false;
       }
@@ -122,78 +114,20 @@ export default {
       const data = [];
 
       for (const element of argExcelData) {
-        let categoryFound = data.find((el) => {
-          return el.name.toLowerCase() == element.Category.toLowerCase();
-        });
 
-        if (typeof categoryFound === 'undefined') {
-          categoryFound = {
-            name: element.Category,
-            groups: [],
-          };
+        const { categoryFound, groupFound, configurationFound } = this.getTreeInData(data, element);
 
-          data.push(categoryFound);
-        }
-
-        let groupFound = categoryFound.groups.find((el) => {
-          return el.name.toLowerCase() == element.Group.toLowerCase();
-        });
-
-        if (typeof groupFound === 'undefined') {
-          groupFound = {
-            name: element.Group,
-            configurations: [],
-          };
-
-          categoryFound.groups.push(groupFound);
-        }
-
-        let configurationFound = groupFound.configurations.find((el) => {
-          return (
-            el.name.toLowerCase() ==
-            element['Configuration Profil'].toLowerCase()
-          );
-        });
-
-        if (typeof configurationFound === 'undefined') {
-          configurationFound = {
-            name: element['Configuration Profil'],
-            categories: [],
-          };
-
-          groupFound.configurations.push(configurationFound);
-        }
-
-        let attributeCategoryFound = configurationFound.categories.find(
-          (el) => {
-            return (
-              el.name.toLowerCase() ===
-              element['Attribute Category'].toLowerCase()
-            );
-          }
-        );
+        let attributeCategoryFound = configurationFound.categories.find((el) => (el.name.toLowerCase() === element['Attribute Category'].toLowerCase()));
 
         if (typeof attributeCategoryFound === 'undefined') {
-          attributeCategoryFound = {
-            name: element['Attribute Category'],
-            attributes: [],
-          };
-
+          attributeCategoryFound = { name: element['Attribute Category'], attributes: [], };
           configurationFound.categories.push(attributeCategoryFound);
         }
 
-        let attributeFound = attributeCategoryFound.attributes.find((el) => {
-          return (
-            el.name.toLowerCase() === element['Attribute Name'].toLowerCase()
-          );
-        });
+        let attributeFound = attributeCategoryFound.attributes.find((el) => (el.name.toLowerCase() === element['Attribute Name'].toLowerCase()));
 
         if (typeof attributeFound === 'undefined') {
-          attributeCategoryFound.attributes.push({
-            show: true,
-            name: element['Attribute Name'],
-            id: Date.now(),
-          });
+          attributeCategoryFound.attributes.push({ show: true, name: element['Attribute Name'], id: Date.now() });
         }
       }
 
@@ -250,6 +184,31 @@ export default {
 
       return configuration.info.id.get();
     },
+
+    getTreeInData(data, element) {
+      let categoryFound = data.find((el) => el.name.toLowerCase() == element.Category.toLowerCase());
+
+      if (!categoryFound) {
+        categoryFound = { name: element.Category, groups: [] };
+        data.push(categoryFound);
+      }
+
+      let groupFound = categoryFound.groups.find((el) => el.name.toLowerCase() == element.Group.toLowerCase());
+
+      if (groupFound) {
+        groupFound = { name: element.Group, configurations: [] };
+        categoryFound.groups.push(groupFound);
+      }
+
+      let configurationFound = groupFound.configurations.find((el) => (el.name.toLowerCase() == element['Configuration Profil'].toLowerCase()));
+
+      if (!configurationFound) {
+        configurationFound = { name: element['Configuration Profil'], categories: [] };
+        groupFound.configurations.push(configurationFound);
+      }
+
+      return { categoryFound, groupFound, configurationFound }
+    }
   },
 };
 </script>

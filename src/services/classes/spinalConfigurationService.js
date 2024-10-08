@@ -8,6 +8,7 @@ import {
 } from "spinal-env-viewer-graph-service";
 
 export default class SpinalConfigurationService {
+
   constructor() {
     this.CONTEXT_NAME = "NomenclatureConfiguration";
     this.CONFIGURATION_PROFIL_TYPE = "AttributeConfiguration";
@@ -15,12 +16,7 @@ export default class SpinalConfigurationService {
   }
 
   async createOrGetContext() {
-    const context = await groupManagerService.createGroupContext(
-      this.CONTEXT_NAME,
-      this.CONFIGURATION_PROFIL_TYPE
-    );
-
-    return context;
+    return groupManagerService.createGroupContext(this.CONTEXT_NAME, this.CONFIGURATION_PROFIL_TYPE);
   }
 
   async createCategory(categoryName, iconName) {
@@ -34,55 +30,31 @@ export default class SpinalConfigurationService {
     const context = await this.createOrGetContext();
     const contextId = context ? context.info.id.get() : undefined;
 
-    return groupManagerService.addGroup(
-      contextId,
-      categoryId,
-      groupName,
-      groupColor
-    );
+    return groupManagerService.addGroup(contextId, categoryId, groupName, groupColor);
   }
 
-  async createConfiguration(
-    groupId,
-    configurationName,
-    configurationCategories = []
-  ) {
+  async createConfiguration(groupId, configurationName, configurationCategories = []) {
     const context = await this.createOrGetContext();
     const contextId = context ? context.info.id.get() : undefined;
 
-    const configurationNodeId = SpinalGraphService.createNode({
-        name: configurationName,
-        type: this.CONFIGURATION_PROFIL_TYPE,
-      },
-      new Model({
-        name: configurationName,
-        categories: configurationCategories,
-      })
-    );
+    const element = new Model({ name: configurationName, categories: configurationCategories, })
+    const configurationNodeId = SpinalGraphService.createNode({ name: configurationName, type: this.CONFIGURATION_PROFIL_TYPE }, element);
 
-    await groupManagerService.linkElementToGroup(
-      contextId,
-      groupId,
-      configurationNodeId
-    );
+    await groupManagerService.linkElementToGroup(contextId, groupId, configurationNodeId);
 
     return SpinalGraphService.getRealNode(configurationNodeId);
   }
 
-  setAsCurrentConfiguration(nodeId) {
-    this.createOrGetContext().then((context) => {
-      let realNode = SpinalGraphService.getRealNode(nodeId);
+  async setAsCurrentConfiguration(nodeId) {
+    const context = await this.createOrGetContext();
 
-      if (realNode) {
-        if (context.info.currentConfiguration) {
-          context.info.rem_attr("currentConfiguration");
-        }
+    let realNode = SpinalGraphService.getRealNode(nodeId);
 
-        context.info.add_attr({
-          currentConfiguration: new Ptr(realNode),
-        });
-      }
-    });
+    if (!realNode) return;
+
+    if (context.info.currentConfiguration) context.info.rem_attr("currentConfiguration");
+
+    context.info.add_attr({ currentConfiguration: new Ptr(realNode) });
   }
 
   async deleteCurrentConf() {
@@ -91,51 +63,40 @@ export default class SpinalConfigurationService {
       context.info.rem_attr("currentConfiguration");
   }
 
-  getCurrentConfiguration() {
-    return this.createOrGetContext().then((context) => {
-      let confPtr = context.info.currentConfiguration;
+  async getCurrentConfiguration() {
+    const context = await this.createOrGetContext();
+    let confPtr = context.info.currentConfiguration;
+    if (!confPtr) return { name: "", categories: [] };
 
-      if (typeof confPtr !== "undefined") {
-        return new Promise((resolve) => {
-          confPtr.load((realNode) => {
-            SpinalGraphService._addNode(realNode);
-            return realNode.getElement().then((el) => {
-              let element = el.get();
-              element["id"] = realNode.info.id.get();
-              resolve(element);
-            });
-          });
-        });
-      }
-
-      return {
-        name: "",
-        categories: [],
-      };
+    return new Promise((resolve) => {
+      confPtr.load(async (realNode) => {
+        SpinalGraphService._addNode(realNode);
+        const el = await realNode.getElement();
+        let element = el.get();
+        element.id = realNode.getId().get();
+        resolve(element);
+      });
     });
   }
 
-  editConfiguration(configurationId, configurationElement) {
+  async editConfiguration(configurationId, configurationElement) {
     let realNode = SpinalGraphService.getRealNode(configurationId);
+    if (!realNode) return;
 
-    if (realNode) {
-      realNode.getElement().then((element) => {
-        element.set(configurationElement);
-      });
-    }
+    const element = await realNode.getElement()
+    element.set(configurationElement);
   }
 
   async getConfigurationById(configId) {
     const realNode = SpinalGraphService.getRealNode(configId);
+    if (!realNode) return;
 
-    if (realNode) {
-      const elementModel = await realNode.getElement();
+    const elementModel = await realNode.getElement();
 
-      if (elementModel) {
-        let element = elementModel.get();
-        element["id"] = configId;
-        return element;
-      }
+    if (elementModel) {
+      let element = elementModel.get();
+      element.id = configId;
+      return element;
     }
 
   }
@@ -146,7 +107,6 @@ export default class SpinalConfigurationService {
   }
 
   getGroups(nodeId) {
-    // const context = await this.createOrGetContext();
     return groupManagerService.getGroups(nodeId);
   }
 
@@ -170,41 +130,35 @@ export default class SpinalConfigurationService {
   }
 
   async getTree(info) {
-    const obj = {
-      categoryId: undefined,
-      groupId: undefined,
-      configId: undefined
-    }
+    if (this.isCategory(info.type)) return this.getTreeUntilCategory(info.id);
 
-    if (this.isCategory(info.type)) {
+    if (this.isGroup(info.type)) return this.getTreeUntilGroup(info.id);
 
-      obj.categoryId = info.id;
+    if (info.type === this.CONFIGURATION_PROFIL_TYPE) return this.getTreeUntilProfile(info.id);
 
-    } else if (this.isGroup(info.type)) {
+    return {};
+  }
 
-      const category = await groupManagerService.getGroupCategory(info.id);
-      if (category) obj.categoryId = category.id.get();
 
-      obj.groupId = info.id;
+  getTreeUntilCategory(id) {
+    return { categoryId: id }
+  }
 
-    } else if (info.type === this.CONFIGURATION_PROFIL_TYPE) {
+  async getTreeUntilGroup(id) {
+    const category = await groupManagerService.getGroupCategory(id);
 
-      obj.configId = info.id;
-      const group = await this.getElementGroup(info.id);
+    return { categoryId: category.id.get(), groupId: id }
+  }
 
-      if (group) {
-        obj.groupId = group.id.get();
-        const category = await groupManagerService.getGroupCategory(group.id
-          .get());
+  async getTreeUntilProfile(id) {
+    const group = await this.getElementGroup(id);
+    if (!group) return {};
 
-        if (category) obj.categoryId = category.id.get();
-
-      }
-
-    }
+    const obj = await this.getTreeUntilGroup(group.id.get());
+    obj.configId = id;
 
     return obj;
-
   }
+
 
 }

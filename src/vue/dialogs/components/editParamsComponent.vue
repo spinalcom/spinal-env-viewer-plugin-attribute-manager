@@ -25,44 +25,14 @@ with this file. If not, see
 <template>
   <div class="list">
 
-    <!-- <md-list :md-expand-single="false">
-      <md-list-item v-for="(item,index) in data"
-                    :key="index"
-                    md-expand>
-
-        <span class="md-list-item-text">{{item.category}}</span>
-
-        <menu-component :category="item.category"
-                        @add="addLabel"></menu-component>
-
-        <md-list slot="md-expand">
-          <md-list-item class="md-inset"
-                        v-for="(attr,i) in item.attributes"
-                        :key="i">
-            <md-checkbox class="md-primary"
-                         v-model="attr.show" />
-            <span class="md-list-item-text">{{attr.label}}</span>
-          </md-list-item>
-
-        </md-list>
-      </md-list-item>
-    </md-list>
-
-    <menu-component class="addCategoryBtn"
-                    @add="addLabel"></menu-component> -->
-
-    <div v-if="!editMode"
-         class="md-layout md-alignment-space-between header">
+    <div v-if="!editMode" class="md-layout md-alignment-space-between header">
 
       <div class="md-layout-item md-size-55">
         <md-field>
           <label for="movie">Select configuration</label>
-          <md-select v-model="configurationSelected"
-                     name="configuration"
-                     id="configuration">
-            <md-option v-for="(configuration,index) in data"
-                       :key="index"
-                       :value="configuration.id">{{configuration.name}}
+          <md-select v-model="configurationSelected" name="configuration" id="configuration">
+            <md-option v-for="(configuration, index) in data" :key="index" :value="configuration.id">{{
+              configuration.name }}
             </md-option>
 
           </md-select>
@@ -70,63 +40,38 @@ with this file. If not, see
       </div>
 
       <div class="md-layout-item md-size-40">
-        <v-btn outline
-               v-if="!isCurrentConfiguration()"
-               @click="setAsCurrentConfiguration"
-               :disabled="!configurationSelected"
-               color="blue">Set as current configuration</v-btn>
+        <v-btn outline v-if="!isCurrentConfiguration()" @click="setAsCurrentConfiguration"
+          :disabled="!configurationSelected" color="blue">Set as current configuration</v-btn>
 
-        <v-alert :value="true"
-                 v-if="isCurrentConfiguration()"
-                 color="green"
-                 outline
-                 icon="check_circle">
+        <v-alert :value="true" v-if="isCurrentConfiguration()" color="green" outline icon="check_circle">
           current configuration.
         </v-alert>
       </div>
 
     </div>
 
-    <div v-if="configurationSelected"
-         class="content"
-         :class="{'contentWithOutHeader' : editMode}">
+    <div v-if="configurationSelected" class="content" :class="{ 'contentWithOutHeader': editMode }">
       <div class="header">
-        <div>{{configurationData.name}}</div>
+        <div>{{ configurationData.name }}</div>
 
         <div class="buttons">
-          <v-btn fab
-                 blue
-                 outline
-                 small
-                 color="red"
-                 v-if="editMode"
-                 @click="activeEditMode(false)">
+          <v-btn fab blue outline small color="red" v-if="editMode" @click="activeEditMode(false)">
             <v-icon>close</v-icon>
           </v-btn>
 
-          <v-btn fab
-                 blue
-                 outline
-                 small
-                 color="blue"
-                 @click="activeEditMode(true)">
-            <v-icon>{{editMode ? "check" : "edit"}}</v-icon>
+          <v-btn fab blue outline small color="blue" @click="activeEditMode(true)">
+            <v-icon>{{ editMode ? "check" : "edit" }}</v-icon>
           </v-btn>
         </div>
       </div>
 
-      <display-list-component class="content md-scrollbar"
-                              :categories="configurationData.categories"
-                              :editMode="editMode"
-                              :message="'No category found create. Create one with the button below !'"
-                              @add="addSubItem"
-                              @remove="removeItem">
+      <display-list-component class="content md-scrollbar" :categories="configurationData.categories"
+        :editMode="editMode" :message="'No category found create. Create one with the button below !'" @add="addSubItem"
+        @remove="removeItem">
       </display-list-component>
 
       <div class="header">
-        <menu-component class="addCat"
-                        v-if="editMode"
-                        @add="addCategory"></menu-component>
+        <menu-component class="addCat" v-if="editMode" @add="addCategory"></menu-component>
 
       </div>
     </div>
@@ -140,7 +85,7 @@ with this file. If not, see
 import displayListComponent from "../components/displayList.vue";
 import menuComponent from "../../../vue/panels/attributePanel/components/tooltips/addItem.vue";
 
-import Utilities from "../../../js/utilities";
+import Utilities from "../../../js/utils/utilities";
 
 export default {
   name: "editParamsComponent",
@@ -173,12 +118,9 @@ export default {
       this.editMode = !this.editMode;
 
       if (!this.editMode && edit) {
-        await Utilities.editConfiguration(
-          this.configurationSelected,
-          this.configurationData
-        );
-
+        await Utilities.editConfiguration(this.configurationSelected, this.configurationData);
         this.$emit("refresh");
+
       } else if (!this.editMode && !edit) {
         // console.log("cancel edit", this.copyItem);
         this.configurationData = JSON.parse(JSON.stringify(this.copyItem));
@@ -191,68 +133,55 @@ export default {
     },
 
     isCurrentConfiguration() {
-      if (typeof this.configurationSelected === "undefined") return false;
+      if (!this.configurationSelected) return false;
 
-      if (
-        this.currentConfiguration &&
-        this.currentConfiguration.id === this.configurationSelected
-      )
+      if (this.currentConfiguration && this.currentConfiguration.id === this.configurationSelected)
         return true;
 
       return false;
     },
 
     addSubItem(res) {
-      if (res.category && res.label) {
-        let found = this.configurationData.categories.find(el => {
-          return el.name === res.category;
-        });
+      if (!res.category || !res.label) return;
 
-        if (found) {
-          let attrFound = found.attributes.find(el => el.name === res.label);
-          if (typeof attrFound === "undefined") {
-            found.attributes.push({
-              show: false,
-              name: res.label,
-              id: Date.now()
-            });
-          }
-        }
-      }
+      let found = this.configurationData.categories.find(el => el.name === res.category);
+
+      if (!found) return; // category not found
+
+      let attrFound = found.attributes.find(el => el.name === res.label);
+      if (attrFound) return; // attribute already exist in category
+
+      found.attributes.push({ show: false, name: res.label, id: Date.now() });
     },
 
     removeItem(res) {
-      if (typeof res.attr === "undefined") {
-        this.configurationData.categories = this.configurationData.categories.filter(
-          el => {
-            return el.id !== res.category.id;
-          }
-        );
-      } else {
-        let found = this.configurationData.categories.find(el => {
-          return el.id === res.category.id;
-        });
-
-        if (found) {
-          found.attributes = found.attributes.filter(
-            el => el.id !== res.attr.id
-          );
-        }
+      // delete category
+      if (!res.attr) {
+        this.configurationData.categories = this.configurationData.categories.filter(el => el.id !== res.category.id);
+        return;
       }
+
+
+
+      // else delete attribute
+      let found = this.configurationData.categories.find(el => el.id === res.category.id);
+
+      if (found) {
+        found.attributes = found.attributes.filter(el => el.id !== res.attr.id);
+      }
+
     },
 
     addCategory(res) {
-      let found = this.configurationData.categories.find(
-        el => el.name === res.category
-      );
+      let found = this.configurationData.categories.find(el => el.name === res.category);
 
-      if (!found) {
-        this.configurationData.categories.push({
-          id: Date.now(),
-          name: res.category,
-          attributes: []
-        });
-      }
+      if (found) return; // category already exist
+
+      this.configurationData.categories.push({
+        id: Date.now(),
+        name: res.category,
+        attributes: []
+      });
     }
   },
   watch: {
@@ -268,7 +197,8 @@ export default {
 <style scoped>
 .list {
   width: 100%;
-  height: 100%; /* border: 1px solid red; */
+  height: 100%;
+  /* border: 1px solid red; */
 }
 
 .list .header {
@@ -321,7 +251,7 @@ export default {
 } */
 </style>
 
-<style >
+<style>
 .list .content .content .myListContainer .v-list.listContainer.theme--dark {
   overflow: auto;
 }

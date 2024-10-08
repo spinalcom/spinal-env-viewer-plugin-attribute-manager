@@ -23,46 +23,12 @@ with this file. If not, see
 -->
 
 <template>
-  <v-popover :auto-hide="false"
-             offset="16"
-             :open="show">
+  <v-popover :auto-hide="false" offset="16" :open="show">
 
-    <!-- <md-button v-if="category"
-               class="md-icon-button"
-               title="add label"
-               @click.stop="OpenAttribute">
-      <md-icon>add_circle_outline</md-icon>
-    </md-button> -->
+    <v-btn outline color="#448aff" v-if="!category" title="add category" @click.stop="OpenAttribute">Add
+      category</v-btn>
 
-    <!-- <md-button v-if="!category"
-               class="md-icon-button md-raised md-primary"
-               title="add category"
-               @click.stop="OpenAttribute">
-      <md-icon>add</md-icon>
-    </md-button> -->
-
-    <!-- <md-button v-if="!category"
-               title="add category"
-               @click.stop="OpenAttribute"
-               class="md-dense md-primary">
-      <md-icon>add</md-icon>
-      &nbsp;
-      Add category
-    </md-button> -->
-
-    <v-btn outline
-           color="#448aff"
-           v-if="!category"
-           title="add category"
-           @click.stop="OpenAttribute">Add category</v-btn>
-
-    <v-btn v-if="category"
-           title="add label"
-           @click.stop="OpenAttribute"
-           flat
-           icon
-           small
-           color="blue">
+    <v-btn v-if="category" title="add label" @click.stop="OpenAttribute" flat icon small color="blue">
       <v-icon>add</v-icon>
     </v-btn>
 
@@ -71,18 +37,16 @@ with this file. If not, see
         <div class="_popoverContent">
 
           <md-field class="tooltip-content">
-            <label>{{category ? "Add attribute" : "Add category"}}</label>
+            <label>{{ category ? "Add attribute" : "Add category" }}</label>
             <md-input v-model="name"></md-input>
           </md-field>
 
         </div>
 
         <div class="_popoverBtn">
-          <a class="btn"
-             @click="Validate(false)">Close</a>
+          <a class="btn" @click="Validate(false)">Close</a>
 
-          <a class="btn"
-             @click="Validate(true)">OK</a>
+          <a class="btn" @click="Validate(true)">OK</a>
         </div>
       </div>
 

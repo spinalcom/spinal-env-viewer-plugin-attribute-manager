@@ -24,37 +24,23 @@ with this file. If not, see
 
 <template>
   <div class="myListContainer">
-    <v-list v-if="categories && categories.length > 0"
-            class="listContainer"
-            expand
-            flat
-            dark>
-      <v-list-group v-for="(item,index) in categories"
-                    :key="index"
-                    prepend-icon="keyboard_arrow_down"
-                    append-icon=""
-                    :one-line="false"
-                    no-action>
+    <v-list v-if="categories && categories.length > 0" class="listContainer" expand flat dark>
+      <v-list-group v-for="(item, index) in categories" :key="index" prepend-icon="keyboard_arrow_down" append-icon=""
+        :one-line="false" no-action>
         <v-list-tile slot="activator">
 
           <v-list-tile-content>
-            <v-list-tile-title>{{item.name}}</v-list-tile-title>
+            <v-list-tile-title>{{ item.name }}</v-list-tile-title>
           </v-list-tile-content>
 
           <v-list-tile-action v-if="editMode">
 
-            <menu-component :category="item.name"
-                            @add="addAttributes"></menu-component>
+            <menu-component :category="item.name" @add="addAttributes"></menu-component>
 
           </v-list-tile-action>
 
           <v-list-tile-action v-if="editMode">
-            <v-btn flat
-                   icon
-                   small
-                   color="red"
-                   title="remove"
-                   @click.stop="remove(item,true)">
+            <v-btn flat icon small color="red" title="remove" @click.stop="remove(item, true)">
               <v-icon>remove_circle_outline</v-icon>
             </v-btn>
           </v-list-tile-action>
@@ -66,26 +52,18 @@ with this file. If not, see
         |                       SubHeaders                      |
         ---------------------------------------------------------
      -->
-        <v-list-tile v-for="(subItem,subIndex) in item.attributes"
-                     :key="subIndex">
+        <v-list-tile v-for="(subItem, subIndex) in item.attributes" :key="subIndex">
 
           <v-list-tile-action>
-            <v-checkbox :disabled="!editMode"
-                        color="blue"
-                        v-model="subItem.show"></v-checkbox>
+            <v-checkbox :disabled="!editMode" color="blue" v-model="subItem.show"></v-checkbox>
           </v-list-tile-action>
 
           <v-list-tile-content>
-            <v-list-tile-title>{{subItem.name}}</v-list-tile-title>
+            <v-list-tile-title>{{ subItem.name }}</v-list-tile-title>
           </v-list-tile-content>
 
           <v-list-tile-action v-if="editMode">
-            <v-btn icon
-                   flat
-                   small
-                   color="red"
-                   title="remove"
-                   @click="remove(item,false,subItem)">
+            <v-btn icon flat small color="red" title="remove" @click="remove(item, false, subItem)">
               <v-icon>remove_circle_outline</v-icon>
             </v-btn>
           </v-list-tile-action>
@@ -101,9 +79,8 @@ with this file. If not, see
       </v-list-group>
     </v-list>
 
-    <div class="emptyList"
-         v-if="categories && categories.length === 0">
-      {{message}}
+    <div class="emptyList" v-if="categories && categories.length === 0">
+      {{ message }}
     </div>
 
   </div>

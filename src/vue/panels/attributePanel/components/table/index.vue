@@ -25,39 +25,20 @@ with this file. If not, see
 <template>
   <div class="_tableContent" data-app>
     <div class="buttonFab">
-      <fabs-component
-        :editMode="editMode"
-        :itemsSelected="itemsSelected"
-        :headerDisplayed="headerDisplayed"
-        @configure="OpenParamsDialog"
-        @link="LinkItem"
-        @edit="ActiveEditMode"
-        @valid="validateOrCancel"
-        @setToColumn="setValueToColumn"
-        @generateGroup="generateGroup"
-      ></fabs-component>
+      <fabs-component :editMode="editMode" :itemsSelected="itemsSelected" :headerDisplayed="headerDisplayed"
+        @configure="OpenParamsDialog" @link="LinkItem" @edit="ActiveEditMode" @valid="validateOrCancel"
+        @setToColumn="setValueToColumn" @generateGroup="generateGroup"></fabs-component>
     </div>
 
     <div class="mdToolbar" md-elevation="0">
       <div class="toolbar-start">
-        <standard-buttons
-          :itemsSelected="itemsSelected"
-          @refresh="refresh"
-        ></standard-buttons>
+        <standard-buttons :itemsSelected="itemsSelected" @refresh="refresh"></standard-buttons>
       </div>
 
       <div class="toolbar-end">
         <div class="searchDiv">
-          <!-- <md-radio v-model="searchBy"
-                    class="md-primary"
-                    :value="0">Search by name</md-radio>
-
-          <md-radio v-model="searchBy"
-                    class="md-primary"
-                    :value="1">Search by value</md-radio> -->
 
           <md-field>
-            <!-- <label for="searchBy">Search By</label> -->
             <md-select v-model="searchBy" name="searchBy" id="searchBy">
               <md-option :value="0">Search by name</md-option>
               <md-option :value="1">Search by value</md-option>
@@ -66,28 +47,16 @@ with this file. If not, see
         </div>
 
         <md-field>
-          <input
-            class="md-input"
-            placeholder="Search..."
-            v-model="searchValue"
-          />
+          <input class="md-input" placeholder="Search..." v-model="searchValue" />
           <md-icon>search</md-icon>
         </md-field>
       </div>
     </div>
     <!-- End First Toolbar -->
 
-    <!-- :value="itemsSelected"
-            :v-model="itemsSelected"  :custom-sort="sortByName"-->
     <div class="_tableContainer">
-      <v-data-table
-        :headers="headerDisplayed"
-        :items="searched"
-        :rows-per-page-items="rowsPerPageText"
-        :pagination.sync="pagination"
-        dark
-        class="elevation-1"
-      >
+      <v-data-table :headers="headerDisplayed" :items="searched" :rows-per-page-items="rowsPerPageText"
+        :pagination.sync="pagination" dark class="elevation-1">
         <template v-slot:headers="props">
           <tr>
             <th style="text-align: left">
@@ -98,25 +67,14 @@ with this file. If not, see
                 </md-button>
 
                 <md-menu-content>
-                  <md-menu-item
-                    v-for="(m, index) in checkboxSelects"
-                    :key="index"
-                    @click="m.action"
-                  >
-                    <!-- <md-icon>{{
-                      m.value ? 'check_box' : 'check_box_outline_blank'
-                    }}</md-icon> -->
+                  <md-menu-item v-for="(m, index) in checkboxSelects" :key="index" @click="m.action">
                     {{ m.text }}
                   </md-menu-item>
                 </md-menu-content>
               </md-menu>
             </th>
 
-            <th
-              style="text-align: left"
-              v-for="(head, index) in props.headers"
-              :key="index"
-            >
+            <th style="text-align: left" v-for="(head, index) in props.headers" :key="index">
               {{ head.text }}
             </th>
             <th></th>
@@ -125,39 +83,20 @@ with this file. If not, see
 
         <template v-slot:items="props">
           <td>
-            <v-checkbox
-              v-model="props.item.selected"
-              @change="checkItem(props.item)"
-              primary
-              hide-details
-            ></v-checkbox>
+            <v-checkbox v-model="props.item.selected" @change="checkItem(props.item)" primary hide-details></v-checkbox>
           </td>
           <td class="nameCell" @click="selectItemInViewer(props.item)">
             <md-tooltip md-direction="top">{{ props.item.name }}</md-tooltip>
             {{ props.item.name }}
           </td>
           <td>{{ props.item.type }}</td>
-          <td
-            class="text-xs-center"
-            v-for="(attribute, index) in header"
-            :key="index"
-          >
-            <table-content-component
-              :editable="editMode"
-              :item="props.item"
-              :attribute="attribute"
-              :itemsMap="itemsMap"
-              @setValue="refresh"
-              @findValueInMaquette="findValueInMaquette"
-              ref="editableComponent"
-            >
+          <td class="text-xs-center" v-for="(attribute, index) in header" :key="index">
+            <table-content-component :editable="editMode" :item="props.item" :attribute="attribute" :itemsMap="itemsMap"
+              @setValue="refresh" @findValueInMaquette="findValueInMaquette" ref="editableComponent">
             </table-content-component>
           </td>
           <td>
-            <md-button
-              class="md-icon-button"
-              @click="openAttributesPanel(props.item)"
-            >
+            <md-button class="md-icon-button" @click="openAttributesPanel(props.item)">
               <md-tooltip>Open Properties Panel</md-tooltip>
               <md-icon>tune</md-icon>
             </md-button>
@@ -165,44 +104,24 @@ with this file. If not, see
         </template>
       </v-data-table>
 
-      <!-- <div class="text-xs-center pt-2"> -->
-      <!-- <div class="paginationDiv">
-        <v-pagination v-model="pagination.page"
-                      :length="pages"
-                      :total-visible="5"
-                      color="blue"></v-pagination>
-
-        <div class="detail">
-          Total items : {{searched.length}}
-        </div>
-
-      </div> -->
     </div>
-
-    <!-- <div class="pageNumber"></div> -->
-    <!-- </md-table> -->
   </div>
 </template>
 
 <script>
 import TableContentComponent from './tableContent.vue';
 import CreateAttributeTooltips from '../tooltips/createAttribute.vue';
-// import ChangeColValue from "../tooltips/changeCol.vue";
 import attributeService from '../../../../../services';
 
 import StandardButtons from './standard-buttons.vue';
 import FabsComponent from './fabs.vue';
 
 import EventBus from '../../../../../js/events/events';
-// import tableContentVue from "./tableContent.vue";
 import { SpinalGraphService } from 'spinal-env-viewer-graph-service';
 
-const {
-  spinalPanelManagerService,
-} = require('spinal-env-viewer-panel-manager-service');
+const { spinalPanelManagerService } = require('spinal-env-viewer-panel-manager-service');
 
 const debounce = require('lodash.debounce');
-
 import $ from 'jquery';
 
 export default {
@@ -221,11 +140,7 @@ export default {
   data() {
     this.checkboxSelects = [
       { text: 'select All', value: true, action: this.selectAll },
-      {
-        text: 'select only the current page',
-        value: true,
-        action: this.selectOnLyTheCurrentPage,
-      },
+      { text: 'select only the current page', value: true, action: this.selectOnLyTheCurrentPage },
     ];
 
     return {
@@ -257,14 +172,21 @@ export default {
       this.tableContent.map((el) => {
         el.selected = false;
         return el;
-      })
-    );
+      }));
+
     setTimeout(() => {
       this._addPageNumber();
     }, 200);
   },
 
   methods: {
+    _addSelectedPropertyToListItem(liste) {
+      return liste.map((el) => {
+        el.selected = false;
+        return el;
+      });
+    },
+
     async validateOrCancel(valid) {
       if (valid) {
         await this._changeValue();
@@ -282,61 +204,45 @@ export default {
     },
 
     filterByName(liste, name) {
-      if (name.trim().length > 0) {
-        return liste
-          .filter((item) => {
-            return item.name.toLowerCase().includes(name.trim().toLowerCase());
-          })
-          .map((el) => {
-            el.selected = false;
-            return el;
-          });
-      }
+      const value = name.trim().toLowerCase();
 
-      return liste.map((el) => {
-        el.selected = false;
-        return el;
-      });
+      if (value.length === 0) return this._addSelectedPropertyToListItem(liste);
+
+      return liste.reduce((acc, item) => {
+        if (item.name.toLowerCase().includes(value)) {
+          item.selected = false;
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+
     },
 
     filterByValue(liste, value) {
-      if (value.trim().length > 0) {
-        return liste
-          .filter((el) => {
-            let found = el.attributes.find((attr) => {
-              return attr.value
-                .toString()
-                .toLowerCase()
-                .includes(value.trim().toLowerCase());
-            });
+      value = value.trim().toLowerCase();
+      if (value.length === 0) return this._addSelectedPropertyToListItem(liste);
 
-            return found ? true : false;
-          })
-          .map((el) => {
-            el.selected = false;
-            return el;
-          });
-      }
+      return liste.reduce((acc, item) => {
+        const found = item.attributes.find((attr) => attr.value.toString().toLowerCase().includes(value));
 
-      return liste.map((el) => {
-        el.selected = false;
-        return el;
-      });
+        if (found) {
+          item.selected = false;
+          acc.push(item);
+        }
+        return acc;
+      }, []);
     },
 
     searchOnTable() {
       switch (this.searchBy) {
         case 0:
-          this.searched = this.sortByName(
-            this.filterByName(this.tableContent, this.searchValue)
-          );
+          const filtered = this.filterByName(this.tableContent, this.searchValue);
+          this.searched = this.sortByName(filtered);
           break;
 
         case 1:
-          this.searched = this.sortByName(
-            this.filterByValue(this.tableContent, this.searchValue)
-          );
-
+          const filteredByValue = this.filterByValue(this.tableContent, this.searchValue);
+          this.searched = this.sortByName(filteredByValue);
           break;
       }
     },
@@ -396,48 +302,25 @@ export default {
 
     setValueToColumn(res) {
       let value = res.value;
-      let category = res.column.split('/')[0];
-      let label = res.column.split('/')[1];
+      let [category, label] = res.column.split('/');
 
-      if (res.pageOnly) {
-        let references = this.$refs['editableComponent'];
+      const list = res.pageOnly ? this.$refs['editableComponent'] : this.itemsMap.keys();
 
-        references.forEach((el) => {
-          if (res.useMaquetteValue) {
-            this.findValueInMaquette(
-              {
-                id: el.item.id,
-                category: category,
-                attribute: label,
-              },
-              false
-            );
-          } else {
-            el.setValueToColumn(category, label, value);
-          }
-        });
-      } else {
-        for (const id of this.itemsMap.keys()) {
-          if (res.useMaquetteValue) {
-            this.findValueInMaquette(
-              {
-                id: id,
-                category: category,
-                attribute: label,
-              },
-              false
-            );
-          } else {
-            this.setValue(id, category, label, value);
-          }
+      for (const i of list) {
+        if (res.useMaquetteValue) {
+          const id = res.pageOnly ? i.item.id : i;
+          const attr = { id: id, category: category, attribute: label };
+          this.findValueInMaquette(attr, false);
+        } else {
+          el.setValueToColumn(category, label, value);
         }
       }
     },
 
     LinkItem() {
-      // console.log(this.itemsSelected, this.searched);
       if (this.itemsSelected.length === 0)
         return alert('you must select at less one item');
+
       spinalPanelManagerService.openPanel('linkToGroupDialog', {
         type: this.typeSelected,
         itemSelected: this.itemsSelected,
@@ -445,34 +328,19 @@ export default {
     },
 
     generateGroup() {
-      // console.log(this.itemsSelected, this.searched);
 
-      //  const itemsFiltered = this._filterElementSelected(this.searched);
       if (this.itemsSelected.length === 0) {
         window.alert('select at less one item');
         return;
       }
-      //  if (itemsFiltered.length === 0) {
-      //     window.alert("select at less one item");
-      //     return;
-      //  }
+
       spinalPanelManagerService.openPanel('generateGroupPanel', {
         type: this.typeSelected,
-        // items: itemsFiltered,
         items: this.itemsSelected,
       });
     },
 
     OpenParamsDialog() {
-      // spinalPanelManagerService.openPanel("paramDialogComponent", {
-      //   tableContent: this.tableContent,
-      //   header: this.header,
-      //   typeSelected: this.typeSelected,
-      //   callback: () => {
-      //     this.$emit("refresh");
-      //   }
-      // });
-
       spinalPanelManagerService.openPanel('configurationPanel', {
         callback: () => {
           this.$emit('refresh');
@@ -486,11 +354,9 @@ export default {
         const name2 = b.name.toUpperCase();
 
         let comparison = 0;
-        if (name1 > name2) {
-          comparison = 1;
-        } else if (name1 < name2) {
-          comparison = -1;
-        }
+        if (name1 > name2) comparison = 1;
+        else if (name1 < name2) comparison = -1;
+
         return comparison;
       });
     },
@@ -515,37 +381,32 @@ export default {
     async findValueInMaquette(res, alert = true) {
       const node = SpinalGraphService.getInfo(res.id);
 
-      const value = await attributeService.getBimObjectAttribute(
-        node.get(),
-        res.attribute
-      );
+      const value = await attributeService.getBimObjectAttribute(node.get(), res.attribute);
 
       if (value === '-') {
         if (alert) window.alert('no value found !');
         return;
-      } else {
-        this.setValue(res.id, res.category, res.attribute, value);
       }
+
+      this.setValue(res.id, res.category, res.attribute, value);
     },
 
     openAttributesPanel(item) {
       let info = SpinalGraphService.getInfo(item.id);
 
+      if (!info.bimFileId) {
+        return alert('This object has no bimFileId');
+      }
+
       const viewer = window.spinal.ForgeViewer.viewer;
       let propertyPanel = viewer.getPropertyPanel();
 
-      if (typeof propertyPanel === 'undefined') {
-        propertyPanel =
-          new Autodesk.Viewing.Extensions.ViewerPropertyPanel.prototype.constructor(
-            viewer
-          );
+      if (!propertyPanel) {
+        propertyPanel = new Autodesk.Viewing.Extensions.ViewerPropertyPanel.prototype.constructor(viewer);
         viewer.setPropertyPanel(propertyPanel);
       }
 
-      const model = window.spinal.BimObjectService.getModelByBimfile(
-        info.bimFileId.get()
-      );
-
+      const model = window.spinal.BimObjectService.getModelByBimfile(info.bimFileId.get());
       propertyPanel.currentModel = model;
 
       propertyPanel.setVisible(true);
@@ -564,76 +425,74 @@ export default {
     async _changeValue() {
       const promises = [];
 
+      const obj = this._convertTableContentToObj();
+
       for (const nodeId of this.itemsMap.keys()) {
-        const found = this.tableContent.find((el) => el.id === nodeId);
+        const found = obj[nodeId];
+        if (!found || !found.attributes) continue;
 
-        if (found && found.attributes) {
-          for (const attr of found.attributes) {
-            let value =
-              this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
-                'value'
-              ];
-            let displayValue =
-              this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
-                'displayValue'
-              ];
+        for (const attr of found.attributes) {
+          const key = `${attr.category}_${attr.label}`;
+          const mapItem = this.itemsMap.get(nodeId);
 
-            if (value !== displayValue) {
-              promises.push(
-                attributeService.updateAttributeValue(
-                  nodeId,
-                  attr.category,
-                  attr.label,
-                  displayValue
-                )
-              );
-            }
+          let value = mapItem[key]['value'];
+          let displayValue = mapItem[key]['displayValue'];
+
+          if (value !== displayValue) {
+            promises.push(
+              attributeService.updateAttributeValue(
+                nodeId,
+                attr.category,
+                attr.label,
+                displayValue
+              )
+            );
           }
         }
       }
+
 
       return Promise.all(promises);
     },
 
     async _cancelValue() {
+      const obj = this._convertTableContentToObj();
       for (const nodeId of this.itemsMap.keys()) {
-        const found = this.tableContent.find((el) => el.id === nodeId);
+        const found = obj[nodeId];
+        if (!found || !found.attributes) continue;
 
-        if (found && found.attributes) {
-          for (const attr of found.attributes) {
-            this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
-              'displayValue'
-            ] =
-              this.itemsMap.get(nodeId)[`${attr.category}_${attr.label}`][
-                'value'
-              ];
-          }
+        for (const attr of found.attributes) {
+          const key = `${attr.category}_${attr.label}`;
+          const mapItem = this.itemsMap.get(nodeId);
+
+          mapItem[key]['displayValue'] = mapItem[key]['value'];
         }
+
       }
 
-      return;
+    },
+
+    _convertTableContentToObj() {
+      return this.tableContent.reduce((list, el) => {
+        list[el.id] = el;
+        return list;
+      }, {});
     },
 
     _addPageNumber() {
-      const actionDiv = $(
-        '._tableContent .theme--dark.v-datatable .v-datatable__actions .v-datatable__actions__range-controls'
-      )[0];
-
-      const div = $(
-        `<div class="v-datatable__actions__page-number">Page : ${this.pagination.page} / ${this.pages}</div>`
-      );
+      const actionDiv = $('._tableContent .theme--dark.v-datatable .v-datatable__actions .v-datatable__actions__range-controls')[0];
+      const div = $(`<div class="v-datatable__actions__page-number">Page : ${this.pagination.page} / ${this.pages}</div>`);
 
       actionDiv.before(div[0]);
     },
 
     _filterElementSelected(liste) {
-      if (this.searchValue.trim().length > 0) {
-        return liste.filter((item) => {
-          const found = this.itemsSelected.find((el) => el.id === item.id);
-          return found;
-        });
-      }
-      return liste;
+      if (this.searchValue.trim().length === 0) return liste;
+
+      return liste.filter((item) => {
+        const found = this.itemsSelected.find((el) => el.id === item.id);
+        return found;
+      });
     },
 
     checkItem(item) {
@@ -653,11 +512,13 @@ export default {
     searched() {
       this.itemsSelected = this.searched.filter((el) => el.selected);
     },
+
     async tableContent() {
       this.constructMap();
-      this.searched = this.sortByName(
-        this.filterByName(this.tableContent, this.searchValue)
-      );
+
+      const filtered = this.filterByName(this.tableContent, this.searchValue)
+      this.searched = this.sortByName(filtered);
+
       this.pagination.totalItems = this.searched.length;
     },
 
@@ -672,14 +533,8 @@ export default {
       });
 
       this.headerDisplayed = [
-        {
-          text: 'Name',
-          value: 'name',
-        },
-        {
-          text: 'Type',
-          value: 'type',
-        },
+        { text: 'Name', value: 'name' },
+        { text: 'Type', value: 'type' },
         ...formated,
       ];
     },
@@ -780,11 +635,7 @@ export default {
   overflow-y: auto;
 }
 
-._tableContent
-  ._tableContainer
-  .elevation-1
-  .v-table__overflow
-  .theme--dark.v-table {
+._tableContent ._tableContainer .elevation-1 .v-table__overflow .theme--dark.v-table {
   background-color: transparent;
 }
 
@@ -794,38 +645,26 @@ export default {
   padding: 0px;
 }
 
-._tableContent
-  ._tableContainer
-  .elevation-1
-  .v-table__overflow::-webkit-scrollbar {
+._tableContent ._tableContainer .elevation-1 .v-table__overflow::-webkit-scrollbar {
   background-color: #fff;
   width: 10px;
 }
 
 /* background of the scrollbar except button or resizer */
-._tableContent
-  ._tableContainer
-  .elevation-1
-  .v-table__overflow::-webkit-scrollbar-track {
+._tableContent ._tableContainer .elevation-1 .v-table__overflow::-webkit-scrollbar-track {
   /* background-color: #fff; */
   background-color: #424242;
 }
 
 /* scrollbar itself */
-._tableContent
-  ._tableContainer
-  .elevation-1
-  .v-table__overflow::-webkit-scrollbar-thumb {
+._tableContent ._tableContainer .elevation-1 .v-table__overflow::-webkit-scrollbar-thumb {
   background-color: #babac0;
   border-radius: 16px;
   /* border: 5px solid #fff; */
 }
 
 /* set button(top and bottom of the scrollbar) */
-._tableContent
-  ._tableContainer
-  .elevation-1
-  .v-table__overflow::-webkit-scrollbar-button {
+._tableContent ._tableContainer .elevation-1 .v-table__overflow::-webkit-scrollbar-button {
   display: none;
 }
 
@@ -860,18 +699,12 @@ export default {
   /* background-color: crimson; */
 }
 
-._tableContent
-  .theme--dark.v-datatable
-  .v-datatable__actions
-  .v-datatable__actions__select {
+._tableContent .theme--dark.v-datatable .v-datatable__actions .v-datatable__actions__select {
   width: 30%;
   justify-content: center;
 }
 
-._tableContent
-  .theme--dark.v-datatable
-  .v-datatable__actions
-  .v-datatable__actions__page-number {
+._tableContent .theme--dark.v-datatable .v-datatable__actions .v-datatable__actions__page-number {
   /* width: 40px;
   height: 100%;
   text-align: center;
@@ -890,8 +723,7 @@ export default {
   border-radius: 50%; */
 }
 
-._tableContent
-  .v-menu__content.theme--dark.v-menu__content--auto.menuable__content__active {
+._tableContent .v-menu__content.theme--dark.v-menu__content--auto.menuable__content__active {
   position: fixed;
 }
 

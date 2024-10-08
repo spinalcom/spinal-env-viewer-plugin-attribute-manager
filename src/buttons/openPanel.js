@@ -1,12 +1,12 @@
-import {
-  SpinalContextApp
-} from "spinal-env-viewer-context-menu-service";
+import { SpinalContextApp } from "spinal-env-viewer-context-menu-service";
 
-import {
-  spinalPanelManagerService
-} from "spinal-env-viewer-panel-manager-service";
+import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
+
+const SIDEBAR = "GraphManagerSideBar";
+import { spinalContextMenuService } from "spinal-env-viewer-context-menu-service";
 
 export default class OpenAttributeManagerPanel extends SpinalContextApp {
+
   constructor() {
     super("open attribute manager panel", "open attribute manager panel", {
       icon: "power_input",
@@ -30,3 +30,9 @@ export default class OpenAttributeManagerPanel extends SpinalContextApp {
   }
 
 }
+
+
+const OPEN_PANEL_BTN = new OpenAttributeManagerPanel();
+spinalContextMenuService.registerApp(SIDEBAR, OPEN_PANEL_BTN, [3]);
+
+export { OPEN_PANEL_BTN };

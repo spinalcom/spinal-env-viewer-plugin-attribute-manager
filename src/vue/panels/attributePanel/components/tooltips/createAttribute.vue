@@ -23,20 +23,10 @@ with this file. If not, see
 -->
 
 <template>
-  <v-popover trigger="manual"
-             :open="show"
-             :auto-hide="false"
-             offset="16">
-    <!-- <md-button class="md-primary attr_btn"
-               title="add attribute"
-               @click="open">
-      <md-icon>add</md-icon>
-      ADD ATTRIBUTE
-    </md-button> -->
+  <v-popover trigger="manual" :open="show" :auto-hide="false" offset="16">
 
-    <md-button @click="open"
-               class="md-elevation-4 md-dense"
-               style="background-color : #448aff">
+
+    <md-button @click="open" class="md-elevation-4 md-dense" style="background-color : #448aff">
       <md-icon>add</md-icon>
       &nbsp;
       Add attribute
@@ -59,11 +49,9 @@ with this file. If not, see
         </div>
 
         <div class="_popoverBtn">
-          <a class="btn"
-             @click="open">Close</a>
+          <a class="btn" @click="open">Close</a>
 
-          <a class="btn"
-             @click="Validate">OK</a>
+          <a class="btn" @click="Validate">OK</a>
         </div>
       </div>
 
@@ -97,20 +85,12 @@ export default {
     },
     Validate() {
       if (this.itemFiltered.length > 0) {
-        let promises = this.itemFiltered.map(el => {
-          return attributeService.createAttribute(
-            el.id,
-            this.categoryName,
-            this.attributeName
-          );
-        });
-
-        return Promise.all(promises).then(() => {
-          this.$emit("validate");
-        });
-      } else {
-        alert("select at least one item !");
+        let promises = this.itemFiltered.map(el => attributeService.createAttribute(el.id, this.categoryName, this.attributeName));
+        return Promise.all(promises).then(() => this.$emit("validate"));
       }
+
+      alert("select at least one item !");
+
     }
   }
 };

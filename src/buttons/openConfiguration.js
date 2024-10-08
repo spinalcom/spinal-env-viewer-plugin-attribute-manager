@@ -1,35 +1,28 @@
-import {
-  SpinalContextApp
-} from "spinal-env-viewer-context-menu-service";
+import { SpinalContextApp } from "spinal-env-viewer-context-menu-service";
+import { spinalPanelManagerService } from "spinal-env-viewer-panel-manager-service";
 
-import {
-  spinalPanelManagerService
-} from "spinal-env-viewer-panel-manager-service";
+import { spinalConfigurationService } from '../services';
 
-import {
-  spinalConfigurationService
-} from '../services';
+import { spinalContextMenuService } from "spinal-env-viewer-context-menu-service";
 
-// import {
-//   SpinalGraphService
-// } from "spinal-env-viewer-graph-service";
+const SIDEBAR = "GraphManagerSideBar";
 
 export default class OpenConfigurationPanel extends SpinalContextApp {
+
   constructor() {
     super("open configuration manager panel",
       "open configuration manager panel", {
-        icon: "settings_applications",
-        icon_type: "in",
-        backgroundColor: "#FF0000",
-        fontColor: "#FFFFFF"
-      })
+      icon: "settings_applications",
+      icon_type: "in",
+      backgroundColor: "#FF0000",
+      fontColor: "#FFFFFF"
+    })
   }
 
   isShown(option) {
     const nodeType = option.context.type.get();
 
-    const configContextType =
-      `${spinalConfigurationService.CONFIGURATION_PROFIL_TYPE}GroupContext`;
+    const configContextType = `${spinalConfigurationService.CONFIGURATION_PROFIL_TYPE}GroupContext`;
 
     if (nodeType === configContextType) {
       return Promise.resolve(true);
@@ -57,19 +50,8 @@ export default class OpenConfigurationPanel extends SpinalContextApp {
 }
 
 
-// const getValues = async (info) => {
+const OPEN_CONFIGURATION_PANEL = new OpenConfigurationPanel();
+spinalContextMenuService.registerApp(SIDEBAR, OPEN_CONFIGURATION_PANEL, [3]);
 
 
-//   if (spinalConfigurationService.isCategory(info.type)) {
-
-//     obj.categoryId = info.id;
-
-//   } else if (spinalConfigurationService.isGroup(info.type)) {
-
-//   } else if (spinalConfigurationService.CONFIGURATION_PROFIL_TYPE === info
-//     .type) {
-
-
-
-//   }
-// }
+export { OPEN_CONFIGURATION_PANEL };

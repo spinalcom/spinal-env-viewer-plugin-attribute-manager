@@ -25,19 +25,15 @@ with this file. If not, see
 
 <template>
   <div class="fabs">
-    <md-speed-dial v-if="!editMode"
-                   md-direction="top"
-                   md-event="click">
+    <md-speed-dial v-if="!editMode" md-direction="top" md-event="click">
       <md-speed-dial-target class="md-fab md-mini md-primary">
         <md-icon class="md-morph-initial">menu</md-icon>
         <md-icon class="md-morph-final">menu_open</md-icon>
       </md-speed-dial-target>
 
       <md-speed-dial-content class="mdSpeedDialBtn">
-        <md-button v-for="(btn, index) in buttons"
-                   :key="index"
-                   class="md-primary md-dense"
-                   @click="sendEvent(btn.event)">
+        <md-button v-for="(btn, index) in buttons" :key="index" class="md-primary md-dense"
+          @click="sendEvent(btn.event)">
           <md-icon>{{ btn.icon }}</md-icon>
           &nbsp;
           {{ btn.text }}
@@ -46,22 +42,15 @@ with this file. If not, see
     </md-speed-dial>
 
     <!-- IF EDIT MODE -->
-    <div v-if="editMode"
-         class="editModeBtn">
-      <md-button title="Cancel modification"
-                 @click="validateOrCancel(false)"
-                 class="md-fab md-mini md-plain">
+    <div v-if="editMode" class="editModeBtn">
+      <md-button title="Cancel modification" @click="validateOrCancel(false)" class="md-fab md-mini md-plain">
         <md-icon>clear</md-icon>
       </md-button>
 
-      <change-col-value :columns="headerDisplayed"
-                        :itemsSelected="itemsSelected"
-                        @setValueToColumn="setValueToColumn">
+      <change-col-value :columns="headerDisplayed" :itemsSelected="itemsSelected" @setValueToColumn="setValueToColumn">
       </change-col-value>
 
-      <md-button title="Validate modification"
-                 @click="validateOrCancel(true)"
-                 class="md-fab md-mini md-primary">
+      <md-button title="Validate modification" @click="validateOrCancel(true)" class="md-fab md-mini md-primary">
         <md-icon>done</md-icon>
       </md-button>
     </div>
@@ -131,7 +120,7 @@ export default {
   z-index: 999;
 }
 
-.fabs > * {
+.fabs>* {
   justify-content: center;
   align-items: flex-end;
 }

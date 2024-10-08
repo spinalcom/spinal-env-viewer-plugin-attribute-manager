@@ -22,9 +22,7 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import {
-  SpinalGraphService
-} from "spinal-env-viewer-graph-service";
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 
 import spinalGeographicService from "spinal-env-viewer-context-geographic-service";
 
@@ -131,6 +129,7 @@ export default {
       });
     }
   },
+
   _organizeBimObject(bimObjects) {
 
     let data = [];

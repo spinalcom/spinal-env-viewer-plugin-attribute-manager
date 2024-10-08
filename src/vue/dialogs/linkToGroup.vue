@@ -23,57 +23,31 @@ with this file. If not, see
 -->
 
 <template>
-   <md-dialog
-      class="mdDialogContainer"
-      :md-active.sync="showDialog"
-      @md-closed="closeDialog(false)"
-   >
+   <md-dialog class="mdDialogContainer" :md-active.sync="showDialog" @md-closed="closeDialog(false)">
       <md-dialog-title class="dialogTitle">Link To Group</md-dialog-title>
       <md-dialog-content class="content">
 
          <div class="section">
-            <link-template
-               :title="'Contexts'"
-               :data="data"
-               :itemSelected="contextSelected"
-               @create="createContext"
-               @select="selectContext"
-            ></link-template>
+            <link-template :title="'Contexts'" :data="data" :itemSelected="contextSelected" @create="createContext"
+               @select="selectContext"></link-template>
          </div>
 
          <div class="section">
-            <link-template
-               :title="'Categories'"
-               :data="categories"
-               :itemSelected="categorySelected"
-               @create="createCategory"
-               @select="selectCategory"
-               :disableBtn="!contextSelected"
-            ></link-template>
+            <link-template :title="'Categories'" :data="categories" :itemSelected="categorySelected"
+               @create="createCategory" @select="selectCategory" :disableBtn="!contextSelected"></link-template>
 
          </div>
 
          <div class="section">
-            <link-template
-               :title="'Groups'"
-               :data="groups"
-               :itemSelected="groupSelected"
-               @create="createGroup"
-               @select="selectGroup"
-               :disableBtn="!categorySelected"
-            ></link-template>
+            <link-template :title="'Groups'" :data="groups" :itemSelected="groupSelected" @create="createGroup"
+               @select="selectGroup" :disableBtn="!categorySelected"></link-template>
          </div>
       </md-dialog-content>
+
+
       <md-dialog-actions>
-         <md-button
-            class="md-primary"
-            @click="closeDialog(false)"
-         >Close</md-button>
-         <md-button
-            class="md-primary"
-            :disabled="disabled()"
-            @click="closeDialog(true)"
-         >Save</md-button>
+         <md-button class="md-primary" @click="closeDialog(false)">Close</md-button>
+         <md-button class="md-primary" :disabled="disabled()" @click="closeDialog(true)">Save</md-button>
       </md-dialog-actions>
    </md-dialog>
 
@@ -126,28 +100,18 @@ export default {
 
       removed(option) {
          if (option) {
-            this.items.forEach((el) => {
-               attributeService.linkItem(
-                  this.contextSelected,
-                  this.groupSelected,
-                  el.id
-               );
-            });
 
-            if (typeof this.callback !== "undefined") {
-               const context = this.data.find(
-                  (el) => el.id === this.contextSelected
-               );
-               const category = this.categories.find(
-                  (el) => el.id === this.categorySelected
-               );
-               const group = this.groups.find(
-                  (el) => el.id === this.groupSelected
-               );
+            this.items.map((el) => attributeService.linkItem(this.contextSelected, this.groupSelected, el.id));
+
+            if (this.callback) {
+               const context = this.data.find((el) => el.id === this.contextSelected);
+               const category = this.categories.find((el) => el.id === this.categorySelected);
+               const group = this.groups.find((el) => el.id === this.groupSelected);
 
                this.callback(context, category, group);
             }
          }
+
          this.showDialog = false;
       },
 
@@ -164,26 +128,14 @@ export default {
             this.updateGroups();
          });
       },
-      // getCategories() {
-      //   this.categorySelected = undefined;
 
-      //   if (this.contextSelected) {
-      //     let val = this.data.find(el => el.id === this.contextSelected);
-      //     if (val) return val.category;
-      //   }
-      //   return [];
-      // },
       getGroups() {
          this.groupSelected = undefined;
 
          if (this.contextSelected && this.categorySelected) {
-            let context = this.data.find(
-               (el) => el.id === this.contextSelected
-            );
+            let context = this.data.find((el) => el.id === this.contextSelected);
             if (context) {
-               let category = context.category.find(
-                  (el) => el.id == this.categorySelected
-               );
+               let category = context.category.find((el) => el.id == this.categorySelected);
 
                if (category) return category.groups;
             }
@@ -192,15 +144,11 @@ export default {
       },
 
       disabled() {
-         return !(
-            this.contextSelected &&
-            this.categorySelected &&
-            this.groupSelected
-         );
+         return !(this.contextSelected && this.categorySelected && this.groupSelected);
       },
 
       createContext() {
-         spinalPanelManagerService.openPanel("createGroupContextDialog", {
+         this.openPanel("createGroupContextDialog", {
             title: "Create a Grouping Context",
             typePreselected: this.type,
             callback: (id) => (this.contextSelected = id),
@@ -208,7 +156,7 @@ export default {
       },
 
       createCategory() {
-         spinalPanelManagerService.openPanel("createCategoryDialog", {
+         this.openPanel("createCategoryDialog", {
             title: "add Category",
             contextId: this.contextSelected,
             selectedNode: SpinalGraphService.getInfo(this.contextSelected),
@@ -217,7 +165,7 @@ export default {
       },
 
       createGroup() {
-         spinalPanelManagerService.openPanel("createGroupDialog", {
+         this.openPanel("createGroupDialog", {
             title: "add Group",
             contextId: this.contextSelected,
             selectedNode: SpinalGraphService.getInfo(this.categorySelected),
@@ -225,34 +173,25 @@ export default {
          });
       },
 
+      openPanel(panelName, option) {
+         spinalPanelManagerService.openPanel(panelName, option);
+      },
+
       //////////////////////////////////////////////////////////////////
       // Modify
       //////////////////////////////////////////////////////////////////
 
       updateCategory() {
-         // this.categorySelected = undefined;
          this.categories = [];
-         if (this.contextSelected) {
-            let val = this.data.find((el) => el.id === this.contextSelected);
-            if (val) this.categories = val.category;
-         }
+         const context = this.getContextSelected();
+         if (context) this.categories = context.category;
       },
 
       updateGroups() {
-         // this.groupSelected = undefined;
          this.groups = [];
-         if (this.contextSelected && this.categorySelected) {
-            let context = this.data.find(
-               (el) => el.id === this.contextSelected
-            );
-            if (context) {
-               let category = context.category.find(
-                  (el) => el.id == this.categorySelected
-               );
 
-               if (category) this.groups = category.groups;
-            }
-         }
+         let category = this.getCategorySelected();
+         if (category) this.groups = category.groups;
       },
 
       selectContext(id) {
@@ -266,6 +205,20 @@ export default {
       selectGroup(id) {
          this.groupSelected = id;
       },
+
+      getContextSelected() {
+         if (!this.contextSelected) return;
+         return this.data.find((el) => el.id === this.contextSelected);
+      },
+
+      getCategorySelected() {
+         if (!this.categorySelected) return;
+
+         const context = this.getContextSelected();
+         if (!context) return;
+
+         return context.category.find((el) => el.id === this.categorySelected);
+      }
    },
    watch: {
       contextSelected() {

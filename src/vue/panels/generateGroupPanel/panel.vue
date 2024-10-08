@@ -25,55 +25,26 @@ with this file. If not, see
 <template>
    <div class="_container">
 
-      <md-steppers
-         md-vertical
-         class="steppers"
-         :md-dynamic-height="true"
-         @md-changed="changeStep"
-      >
+      <md-steppers md-vertical class="steppers" :md-dynamic-height="true" @md-changed="changeStep">
 
-         <md-step
-            id="first"
-            md-label="Selection Step"
-            md-description="select"
-         >
+         <md-step id="first" md-label="Selection Step" md-description="select">
             <md-content class="step-container md-scrollbar">
-               <selection-step
-                  :data="data"
-                  :type="type"
-                  @changeType="changeType"
-               ></selection-step>
+               <selection-step :data="data" :type="type" @changeType="changeType"></selection-step>
             </md-content>
 
          </md-step>
 
-         <md-step
-            id="second"
-            md-label="Configuration Step"
-            md-description="configure"
-            :md-error="errorInConfig"
-         >
+         <md-step id="second" md-label="Configuration Step" md-description="configure" :md-error="errorInConfig">
             <md-content class="step-container md-scrollbar">
-               <configuration-step
-                  :data="data"
-                  :type="type"
-               ></configuration-step>
+               <configuration-step :data="data" :type="type"></configuration-step>
             </md-content>
 
          </md-step>
 
-         <md-step
-            id="third"
-            md-label="Creation Step"
-            md-description="create"
-         >
+         <md-step id="third" md-label="Creation Step" md-description="create">
 
             <md-content class="step-container md-scrollbar">
-               <launch-generation-step
-                  :data="data"
-                  :type="type"
-                  :error="firstStepError"
-               >
+               <launch-generation-step :data="data" :type="type" :error="firstStepError">
                </launch-generation-step>
             </md-content>
 
@@ -133,7 +104,7 @@ export default {
          this.data.items = params.items;
       },
 
-      closed() {},
+      closed() { },
 
       errorInFirstStep() {
          this.errorInConfig = "This is an error!";
@@ -142,66 +113,44 @@ export default {
       changeStep(step) {
          if (step === "second") {
             this.errorInConfig = null;
-         } else if (step === "third") {
+            return;
+         }
+
+         if (step === "third") {
             const contextIsOk = this.contextIsVerified();
-            const categoryisOk = this.categoryOrGroupIsVerified(
-               this.data.category
-            );
+            const categoryisOk = this.categoryOrGroupIsVerified(this.data.category);
             const groupIsOk = this.categoryOrGroupIsVerified(this.data.group);
 
             if (!contextIsOk || !categoryisOk || !groupIsOk) {
                this.firstStepError = true;
                this.errorInConfig = "This is an error!";
-            } else {
-               this.firstStepError = false;
+               return;
             }
+
+            this.firstStepError = false;
          }
       },
 
       changeType(type) {
          this.type = type;
-         // if (this.data.context.create) {
-         //   this.data.context.id = "";
-         //   this.data.context.name = "";
-         // }
       },
 
       contextIsVerified() {
          if (this.data.context.create) {
             return this.data.context.name.trim().length > 0;
-         } else {
-            return (
-               this.data.context.name.trim().length > 0 &&
-               this.data.context.id.trim().length > 0
-            );
          }
+
+         return (this.data.context.name.trim().length > 0 && this.data.context.id.trim().length > 0);
       },
 
       categoryOrGroupIsVerified(info) {
-         // createBy: this.CREATE_DATA.attribute,
-         //     contains: false,
-         //     name: "",
-         //     regex: "",
-         //     separator: "",
-         //     index: -1
+         if (info.createBy === this.CREATE_DATA.attribute) return info.regex.toString().trim().length > 0;
 
-         if (info.createBy === this.CREATE_DATA.attribute) {
-            return info.regex.toString().trim().length > 0;
-         } else if (info.createBy === this.CREATE_DATA.name) {
-            return parseInt(info.index) >= 1;
-            // return info.separator.length > 0 && parseInt(info.index) >= 1;
-         } else if (info.createBy === this.CREATE_DATA.fixed) {
-            return info.fixedValue.trim().length > 0;
-         }
+         if (info.createBy === this.CREATE_DATA.name) return parseInt(info.index) >= 1;
+
+         if (info.createBy === this.CREATE_DATA.fixed) return info.fixedValue.trim().length > 0;
       },
 
-      // setDone(res) {
-      //   this[res.id] = true;
-
-      //   if (res.index) {
-      //     this.active = res.index;
-      //   }
-      // }
    },
 };
 </script>
