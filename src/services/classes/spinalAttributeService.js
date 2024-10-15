@@ -94,7 +94,7 @@ export default class SpinalAttributeService {
     return res;
   }
 
-  getBimObjectAttribute(bimObjectInfo, attributeName) {
+  async getBimObjectAttribute(bimObjectInfo, attributeName) {
     try {
       let value = attributeName.toLowerCase();
 
@@ -106,7 +106,7 @@ export default class SpinalAttributeService {
 
       const dbId = bimObjectInfo.dbid || bimObjectInfo.dbId;
 
-      let properties = this.getBimObjectProperties(model, [dbId]);
+      let properties = await this.getBimObjectProperties(model, [dbId]);
 
       let found = properties.find(({ attributeName, displayName }) => [attributeName.toLowerCase(), displayName.toLowerCase()].includes(value.toLowerCase()));
 
