@@ -124,9 +124,10 @@ export default class SpinalAttributeService {
     let realNode = SpinalGraphService.getRealNode(nodeId);
     let category = await this.getOrCreateCategory(realNode, categoryName);
 
-    let attr = { label: attributeName, value: attributeValue || "-" };
+    const value = attributeValue?.toString().length > 0 ? attributeValue : "-";
+    let attr = { label: attributeName, value };
 
-    if (realNode.getType().get() === BIM_OBJECT_TYPE && !attributeValue) {
+    if (realNode.getType().get() === BIM_OBJECT_TYPE && value === "-") {
       attr.value = await this.getBimObjectAttribute(realNode.info.get(), attributeName);
     }
 
@@ -148,13 +149,12 @@ export default class SpinalAttributeService {
       else await this.updateAttributeValue(nodeId, category, attr.label, attr.value);
     }
 
-
   }
 
   async updateAttributeValue(nodeId, categoryName, attributeName, attributeValue) {
     let attr = await this.getOrCreateAttribute(nodeId, categoryName, attributeName, attributeValue);
 
-    if (attr && attr.value.toString().length > 0) attr.value.set(attributeValue);
+    if (attr && typeof attr.value != "undefined") attr.value.set(attributeValue);
   }
 
   getBimObjects(nodeId) {

@@ -96,11 +96,11 @@ class ImportExcelUtils {
         for (const key of Object.keys(item)) {
             if (keyToIgnore.includes(key.toLowerCase())) continue;
             const [category, label] = key.split("/");
-
+            const value = item[key].toString().trim().length > 0 ? item[key] : "-";
             attributes.push({
                 category: category.trim(),
                 label: label.trim(),
-                value: item[key] || "-",
+                value,
             })
         }
 
