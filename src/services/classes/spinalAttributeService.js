@@ -142,7 +142,6 @@ export default class SpinalAttributeService {
     const attributesList = await serviceDocumentation.getAttributesByCategory(realNode, category);
 
     const obj = this._convertLstToObj(attributesList);
-    console.log("obj", obj);
 
     for (const attr of attributes) {
       if (obj[attr.label]) obj[attr.label].value.set(attr.value);
@@ -155,7 +154,7 @@ export default class SpinalAttributeService {
   async updateAttributeValue(nodeId, categoryName, attributeName, attributeValue) {
     let attr = await this.getOrCreateAttribute(nodeId, categoryName, attributeName, attributeValue);
 
-    if (attr && attr.value) attr.value.set(attributeValue);
+    if (attr && attr.value.toString().length > 0) attr.value.set(attributeValue);
   }
 
   getBimObjects(nodeId) {
