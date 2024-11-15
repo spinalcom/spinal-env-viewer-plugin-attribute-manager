@@ -129,6 +129,7 @@ export default {
 
       return itemDisplayed.map(item => ({
         id: item.id,
+        dynamicId: item.dynamicId,
         name: item.name,
         type: item.type,
         attributes: attributes.map((el) => {
@@ -174,6 +175,7 @@ export default {
     getExportHeadersData() {
       let headers = [
         { key: "id", header: "SpinalGraph ID", width: 65 },
+        { key: "dynamicId", header: "Dynamic ID", width: 20 },
         { key: "revit_id", header: "Revit ID", width: 15 },
         { key: "name", header: "Name", width: 50 }
       ];
@@ -218,6 +220,7 @@ export default {
       return tableSorted.map((content) => {
         let info = {
           id: content.id,
+          dynamicId: content.dynamicId,
           name: content.name,
           revit_id: content.type === BIM_OBJECT_TYPE ? this._getRevitID(content.name) : "-",
         };

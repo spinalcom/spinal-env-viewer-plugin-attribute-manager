@@ -1,6 +1,6 @@
 {
 	"name": "spinal-env-viewer-plugin-attribute-manager",
-	"version": "1.4.4",
+	"version": "1.5.4",
 	"description": "",
 	"main": "index.js",
 	"scripts": {

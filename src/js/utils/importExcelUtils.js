@@ -29,6 +29,7 @@ class ImportExcelUtils {
         return data.reduce((res, item) => {
             const obj = {
                 id: item["SpinalGraph ID"],
+                dynamicId: item["Dynamic ID"],
                 name: item["Name"],
                 attributes: this._formatAttributes(item),
             }
@@ -90,7 +91,7 @@ class ImportExcelUtils {
     }
 
     _formatAttributes(item) {
-        const keyToIgnore = ["name", "spinalgraph id", "revit id"];
+        const keyToIgnore = ["name", "spinalgraph id", "revit id", "dynamic id"];
         const attributes = [];
 
         for (const key of Object.keys(item)) {

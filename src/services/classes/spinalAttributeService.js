@@ -84,12 +84,12 @@ export default class SpinalAttributeService {
       if (!res.data[type]) res.data[type] = [];
 
       let info = node.info.get();
+      info.dynamicId = node._server_id;
 
       info.attributes = await this.getAllAttributes(info.id, res.attributes);
 
       res.data[type].push(info);
     });
-
 
     return res;
   }
