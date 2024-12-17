@@ -312,7 +312,7 @@ export default {
           const attr = { id: id, category: category, attribute: label };
           this.findValueInMaquette(attr, false);
         } else {
-          el.setValueToColumn(category, label, value);
+          i.setValueToColumn(category, label, value);
         }
       }
     },
