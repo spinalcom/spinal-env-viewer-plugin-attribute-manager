@@ -123,6 +123,7 @@ const { spinalPanelManagerService } = require('spinal-env-viewer-panel-manager-s
 
 const debounce = require('lodash.debounce');
 import $ from 'jquery';
+import { map } from 'jquery';
 
 export default {
   name: 'TableComponent',
@@ -423,36 +424,65 @@ export default {
     },
 
     async _changeValue() {
-      const promises = [];
 
       const obj = this._convertTableContentToObj();
+      const nodeIds = Array.from(this.itemsMap.keys());
 
-      for (const nodeId of this.itemsMap.keys()) {
+      const promises = nodeIds.map(async (nodeId) => {
         const found = obj[nodeId];
-        if (!found || !found.attributes) continue;
 
-        for (const attr of found.attributes) {
-          const key = `${attr.category}_${attr.label}`;
-          const mapItem = this.itemsMap.get(nodeId);
+        if (!found || !found.attributes) return;
 
-          let value = mapItem[key]['value'];
-          let displayValue = mapItem[key]['displayValue'];
+        const categoriesObj = convertToObjAndClassifyByCategory.call(this, found.attributes);
+        const p2 = [];
 
-          if (value !== displayValue) {
-            promises.push(
-              attributeService.updateAttributeValue(
-                nodeId,
-                attr.category,
-                attr.label,
-                displayValue
-              )
-            );
-          }
+        for (const category in categoriesObj) {
+          const attributes = categoriesObj[category];
+          p2.push(attributeService.updateSeveralAttributes(nodeId, category, attributes));
         }
-      }
 
+        return Promise.all(p2);
+      });
 
       return Promise.all(promises);
+
+
+      // for (const attr of found.attributes) {
+      //   const key = `${attr.category}_${attr.label}`;
+      //   const mapItem = this.itemsMap.get(nodeId);
+
+      //   let value = mapItem[key]['value'];
+      //   let displayValue = mapItem[key]['displayValue'];
+
+      //   if (value !== displayValue) {
+      //     promises.push(
+      //       attributeService.updateAttributeValue(
+      //         nodeId,
+      //         attr.category,
+      //         attr.label,
+      //         displayValue
+      //       )
+      //     );
+      //   }
+      // }
+
+      // return Promise.all(promises);
+
+      function convertToObjAndClassifyByCategory(attributes) {
+        attributes.reduce((o, el) => {
+          const key = `${el.category}_${el.label}`;
+          const mapIttem = this.itemsMap.get(nodeId);
+          const value = mapIttem[key]['value'];
+          const displayValue = mapIttem[key]['displayValue'];
+
+          if (value !== displayValue) {
+            o[el.category] = { label: el.label, value: displayValue };
+          }
+
+          return o;
+
+        }, {});
+      }
     },
 
     async _cancelValue() {

@@ -77,21 +77,26 @@ export default class SpinalAttributeService {
 
     await realNode.findInContext(context, async (node) => {
       SpinalGraphService._addNode(node);
-      const type = node.getType().get();
-
-      if (!res.types.includes(type)) res.types.push(type);
-
-      if (!res.data[type]) res.data[type] = [];
-
-      let info = node.info.get();
-      info.dynamicId = node._server_id;
-
-      info.attributes = await this.getAllAttributes(info.id, res.attributes);
-
-      res.data[type].push(info);
+      await this._formatNodeAndItToList(node, res);
     });
 
     return res;
+  }
+
+  async _formatNodeAndItToList(node, res) {
+    const info = node.info.get();
+
+    const type = info.type;
+
+    if (!res.types.includes(type)) res.types.push(type);
+
+    if (!res.data[type]) res.data[type] = [];
+
+    info.dynamicId = node._server_id;
+    info.attributes = await this.getAllAttributes(info.id, res.attributes);
+
+    res.data[type].push(info);
+    return info;
   }
 
   async getBimObjectAttribute(bimObjectInfo, attributeName) {
