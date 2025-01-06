@@ -301,21 +301,47 @@ export default {
       this.$emit('refresh');
     },
 
-    setValueToColumn(res) {
-      let value = res.value;
-      let [category, label] = res.column.split('/');
-
-      const list = res.pageOnly ? this.$refs['editableComponent'] : this.itemsMap.keys();
-
-      for (const i of list) {
-        if (res.useMaquetteValue) {
-          const id = res.pageOnly ? i.item.id : i;
-          const attr = { id: id, category: category, attribute: label };
-          this.findValueInMaquette(attr, false);
-        } else {
-          i.setValueToColumn(category, label, value);
-        }
+    _getIds(pageShowed) {
+      if (pageShowed) {
+        const l = this.$refs['editableComponent'] || [];
+        return l.map((el) => el.item.id);
       }
+
+      return Array.from(this.itemsMap.keys());
+    },
+
+    setValueToColumn(res) {
+      let [category, attribute] = res.column.split('/');
+
+      const ids = this._getIds(res.pageOnly);
+
+      const promises = ids.map((id) => {
+        try {
+          if (res.useMaquetteValue) {
+            const attr = { id, category, attribute };
+            return this.findValueInMaquette(attr, false);
+          }
+
+          const success = this.setValue(id, category, attribute, res.value);
+          Promise.resolve(success);
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+
+      });
+
+      return Promise.all(promises);
+
+      // for (const ids of list) {
+      //   if (res.useMaquetteValue) {
+      //     const id = res.pageOnly ? i.item.id : i;
+      //     const attr = { id: id, category: category, attribute: label };
+      //     this.findValueInMaquette(attr, false);
+      //   } else {
+      //     i.setValueToColumn(category, label, value);
+      //   }
+      // }
     },
 
     LinkItem() {
@@ -386,10 +412,10 @@ export default {
 
       if (value === '-') {
         if (alert) window.alert('no value found !');
-        return;
+        return false;
       }
 
-      this.setValue(res.id, res.category, res.attribute, value);
+      return this.setValue(res.id, res.category, res.attribute, value);
     },
 
     openAttributesPanel(item) {
@@ -419,70 +445,55 @@ export default {
     },
 
     setValue(id, category, attribute, value = '-') {
-      const obj = this.itemsMap.get(id);
-      obj[`${category}_${attribute}`]['displayValue'] = value;
+      try {
+        const obj = this.itemsMap.get(id);
+        obj[`${category}_${attribute}`]['displayValue'] = value;
+        return true;
+      } catch (error) {
+        return false;
+      }
+
     },
 
-    async _changeValue() {
+    async _updateValue(obj, nodeId) {
+      const found = obj[nodeId];
 
-      const obj = this._convertTableContentToObj();
-      const nodeIds = Array.from(this.itemsMap.keys());
+      if (!found || !found.attributes) return;
 
-      const promises = nodeIds.map(async (nodeId) => {
-        const found = obj[nodeId];
+      const categoriesObj = convertToObjAndClassifyByCategory.call(this, found.attributes, nodeId);
 
-        if (!found || !found.attributes) return;
-
-        const categoriesObj = convertToObjAndClassifyByCategory.call(this, found.attributes);
-        const p2 = [];
-
-        for (const category in categoriesObj) {
-          const attributes = categoriesObj[category];
-          p2.push(attributeService.updateSeveralAttributes(nodeId, category, attributes));
-        }
-
-        return Promise.all(p2);
+      const promises = Object.keys(categoriesObj).map((category) => {
+        const attributes = categoriesObj[category];
+        return attributeService.updateSeveralAttributes(nodeId, category, attributes);
       });
 
       return Promise.all(promises);
 
-
-      // for (const attr of found.attributes) {
-      //   const key = `${attr.category}_${attr.label}`;
-      //   const mapItem = this.itemsMap.get(nodeId);
-
-      //   let value = mapItem[key]['value'];
-      //   let displayValue = mapItem[key]['displayValue'];
-
-      //   if (value !== displayValue) {
-      //     promises.push(
-      //       attributeService.updateAttributeValue(
-      //         nodeId,
-      //         attr.category,
-      //         attr.label,
-      //         displayValue
-      //       )
-      //     );
-      //   }
-      // }
-
-      // return Promise.all(promises);
-
-      function convertToObjAndClassifyByCategory(attributes) {
-        attributes.reduce((o, el) => {
+      function convertToObjAndClassifyByCategory(attributes, id) {
+        return attributes.reduce((o, el) => {
           const key = `${el.category}_${el.label}`;
-          const mapIttem = this.itemsMap.get(nodeId);
-          const value = mapIttem[key]['value'];
-          const displayValue = mapIttem[key]['displayValue'];
+          const mapItem = this.itemsMap.get(id);
+          const value = mapItem[key]['value'];
+          const displayValue = mapItem[key]['displayValue'];
 
           if (value !== displayValue) {
-            o[el.category] = { label: el.label, value: displayValue };
+            if (!o[el.category]) o[el.category] = [];
+            o[el.category].push({ label: el.label, value: displayValue });
           }
 
           return o;
 
         }, {});
       }
+    },
+
+    async _changeValue() {
+      const obj = this._convertTableContentToObj();
+      const nodeIds = Array.from(this.itemsMap.keys());
+
+      const promises = nodeIds.map(async (nodeId) => this._updateValue(obj, nodeId));
+
+      return Promise.all(promises);
     },
 
     async _cancelValue() {
@@ -499,7 +510,6 @@ export default {
         }
 
       }
-
     },
 
     _convertTableContentToObj() {
