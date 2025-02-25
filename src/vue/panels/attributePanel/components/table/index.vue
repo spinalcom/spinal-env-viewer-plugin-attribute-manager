@@ -123,7 +123,6 @@ const { spinalPanelManagerService } = require('spinal-env-viewer-panel-manager-s
 
 const debounce = require('lodash.debounce');
 import $ from 'jquery';
-import { map } from 'jquery';
 
 export default {
   name: 'TableComponent',
