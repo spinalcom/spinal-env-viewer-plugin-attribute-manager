@@ -24,22 +24,35 @@ with this file. If not, see
 
 <template>
   <v-popover :auto-hide="false" offset="16">
-
-    <md-button title="edit column value" class="md-fab md-mini md-plain" style="background-color : #f39508">
+    <md-button
+      title="edit column value"
+      class="md-fab md-mini md-plain"
+      style="background-color: #f39508"
+    >
       <md-icon>view_column</md-icon>
     </md-button>
 
     <template slot="popover">
       <div class="popoverContainer">
         <div class="_popoverContent">
-
           <md-field class="tooltip-content">
-            <md-select v-model="columnSelected" placeholder="Select Column" name="columns" id="columns">
+            <md-select
+              v-model="columnSelected"
+              placeholder="Select Column"
+              name="columns"
+              id="columns"
+            >
+              <md-option
+                v-if="!columnsFiltered || columnsFiltered.length === 0"
+                disabled
+                >No column</md-option
+              >
 
-              <md-option v-if="!columnsFiltered || columnsFiltered.length === 0" disabled>No column</md-option>
-
-              <md-option v-for="(head, index) in columnsFiltered" :key="index"
-                :value="`${head.category}/${head.label}`">
+              <md-option
+                v-for="(head, index) in columnsFiltered"
+                :key="index"
+                :value="`${head.category}/${head.label}`"
+              >
                 {{ `${head.category} / ${head.label}` }}
               </md-option>
             </md-select>
@@ -50,23 +63,32 @@ with this file. If not, see
                          class="md-primary">get BIM Value</md-checkbox>
           </div> -->
 
-          <md-checkbox v-model="useMaquetteValue" class="md-primary">Import from BIM value</md-checkbox>
+          <md-checkbox v-model="useMaquetteValue" class="md-primary"
+            >Import from BIM value</md-checkbox
+          >
 
           <md-field class="tooltip-content">
             <label>Value</label>
-            <md-input v-model="value"
-              :disabled="useMaquetteValue || (!columnSelected || columnSelected.trim().length === 0)">
+            <md-input
+              v-model="value"
+              :disabled="
+                useMaquetteValue ||
+                !columnSelected ||
+                columnSelected.trim().length === 0
+              "
+            >
             </md-input>
           </md-field>
 
           <div class="tooltip-content pageSelect">
+            <md-radio v-model="pageOnly" class="md-primary" :value="true"
+              >This page only</md-radio
+            >
 
-            <md-radio v-model="pageOnly" class="md-primary" :value="true">This page only</md-radio>
-
-            <md-radio v-model="pageOnly" class="md-primary" :value="false">All page</md-radio>
-
+            <md-radio v-model="pageOnly" class="md-primary" :value="false"
+              >All page</md-radio
+            >
           </div>
-
         </div>
 
         <div class="_popoverBtn">
@@ -75,58 +97,58 @@ with this file. If not, see
           <a class="btn" v-close-popover @click="Validate">OK</a>
         </div>
       </div>
-
     </template>
-
   </v-popover>
-
 </template>
 
 <script>
 // import attributeService from "../../../../services";
 
 export default {
-  name: "createAttributeTooltip",
+  name: 'createAttributeTooltip',
   props: {
     columns: {},
-    itemsSelected: {}
+    itemsSelected: {},
   },
   data() {
     return {
-      columnSelected: "",
+      columnSelected: '',
       columnsFiltered: [],
       useMaquetteValue: false,
       pageOnly: true,
-      value: ""
+      value: '',
     };
   },
   mounted() {
-    this.columnsFiltered = this.columns.filter(el => {
-      const hasNoCategory = typeof el.category !== "undefined";
-      const hasNoLabel = typeof el.label !== "undefined";
+    this.columnsFiltered = this.columns.filter((el) => {
+      const hasNoCategory = typeof el.category !== 'undefined';
+      const hasNoLabel = typeof el.label !== 'undefined';
 
       return hasNoCategory && hasNoLabel;
     });
   },
   methods: {
     Validate() {
-      if (this.itemsSelected && (this.value.trim().length > 0 || this.useMaquetteValue)) {
-        this.$emit("setValueToColumn", {
+      if (
+        this.itemsSelected &&
+        (this.value.trim().length > 0 || this.useMaquetteValue)
+      ) {
+        this.$emit('setValueToColumn', {
           value: this.value.trim(),
           column: this.columnSelected,
           pageOnly: this.pageOnly,
-          useMaquetteValue: this.useMaquetteValue
+          useMaquetteValue: this.useMaquetteValue,
         });
       } else {
-        alert("select at least one item, select value !");
+        alert('select at least one item, select value !');
       }
-    }
+    },
   },
   watch: {
     useMaquetteValue() {
-      if (this.useMaquetteValue) this.value = "";
-    }
-  }
+      if (this.useMaquetteValue) this.value = '';
+    },
+  },
 };
 </script>
 
@@ -162,6 +184,9 @@ export default {
   // ...
 
   &.popover {
+    &.vue-popover-theme {
+      z-index: 99998 !important;
+    }
     // $color: #f9f9f9;
     $color: rgb(44, 43, 43);
 
