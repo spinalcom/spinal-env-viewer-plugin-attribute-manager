@@ -25,12 +25,48 @@ with this file. If not, see
 <template>
    <md-content class="_container md-scrollbar">
 
+      <div class="exportHead">
+
+         <v-btn outline color="#448aff" @click.stop="importFile">Import</v-btn>
+
+         <v-btn outline color="#448aff" @click.stop="exportFile">Export</v-btn>
+
+      </div>
+
+      <div class="header">
+
+         <div class="select select-categories">
+            <select-item :placeholder="'Select category'" :data="item.categories" @select="selectCategory"
+               :value="item.categorySelected"></select-item>
+         </div>
+
+         <div class="select select-groups">
+            <select-item :placeholder="'Select group'" :data="item.groups" @select="selectGroup"
+               :value="item.groupSelected"></select-item>
+         </div>
+
+         <div class="select select-configurations">
+            <select-item :placeholder="'select configuration'" :data="item.configurations" @select="selectConfiguration"
+               :value="item.configurationSelected"></select-item>
+         </div>
+
+      </div>
+
+      <div class="body">
+
+         <div class="no-conf" v-if="!item.configurationSelected">
+            Select a configuration
+         </div>
+
+         <configuration-component v-else :configurationSelected="item.configurationSelected"
+            :currentConfiguration="currentConfiguration" @getCurrentConf="currentConf">
+         </configuration-component>
+
+      </div>
+
+      <!-- FAB -->
       <div class="fabs">
-         <md-speed-dial
-            md-direction="top"
-            md-event="click"
-            md-effect="scale"
-         >
+         <md-speed-dial md-direction="top" md-event="click" md-effect="scale">
             <md-speed-dial-target class="md-fab md-bottom-right md-mini md-primary">
                <md-icon class="md-morph-initial">menu</md-icon>
                <md-icon class="md-morph-final">menu_open</md-icon>
@@ -38,112 +74,20 @@ with this file. If not, see
 
             <md-speed-dial-content class="configMdSpeedDialBtn">
 
-               <create-item
-                  :title="'Create Configuration Profil'"
-                  :fieldText="'Configuration Profil Name'"
-                  @create="createConfiguration"
-                  :disabled="!item.groupSelected"
-                  v-if="item.groupSelected"
-                  :icon="'add'"
-               ></create-item>
+               <create-item :title="'Create Configuration Profil'" :fieldText="'Configuration Profil Name'"
+                  @create="createConfiguration" :disabled="!item.groupSelected" v-if="item.groupSelected"
+                  :icon="'add'"></create-item>
 
-               <create-item
-                  :title="'Create Group'"
-                  :fieldText="'Group Name'"
-                  @create="createGroup"
-                  :disabled="!item.categorySelected"
-                  v-if="item.categorySelected"
-                  :icon="'add'"
-               ></create-item>
+               <create-item :title="'Create Group'" :fieldText="'Group Name'" @create="createGroup"
+                  :disabled="!item.categorySelected" v-if="item.categorySelected" :icon="'add'"></create-item>
 
-               <create-item
-                  :title="'Create Category'"
-                  :fieldText="'Category Name'"
-                  @create="createCategory"
-                  :icon="'add'"
-               ></create-item>
-
-               <!-- <md-button class="md-primary md-dense"
-                     @click.stop="importFile">
-            <md-tooltip>Import</md-tooltip>
-            Import
-          </md-button>
-
-          <md-button class="md-primary md-dense"
-                     @click.stop="exportFile">
-            <md-tooltip>Export</md-tooltip>
-            Export
-          </md-button> -->
+               <create-item :title="'Create Category'" :fieldText="'Category Name'" @create="createCategory"
+                  :icon="'add'"></create-item>
 
             </md-speed-dial-content>
          </md-speed-dial>
       </div>
 
-      <div class="exportHead">
-
-         <v-btn
-            outline
-            color="#448aff"
-            @click.stop="importFile"
-         >Import</v-btn>
-
-         <v-btn
-            outline
-            color="#448aff"
-            @click.stop="exportFile"
-         >Export</v-btn>
-
-      </div>
-
-      <div class="header">
-
-         <div class="select select-categories">
-            <select-item
-               :placeholder="'Select category'"
-               :data="item.categories"
-               @select="selectCategory"
-               :value="item.categorySelected"
-            ></select-item>
-         </div>
-
-         <div class="select select-groups">
-            <select-item
-               :placeholder="'Select group'"
-               :data="item.groups"
-               @select="selectGroup"
-               :value="item.groupSelected"
-            ></select-item>
-         </div>
-
-         <div class="select select-configurations">
-            <select-item
-               :placeholder="'select configuration'"
-               :data="item.configurations"
-               @select="selectConfiguration"
-               :value="item.configurationSelected"
-            ></select-item>
-         </div>
-
-      </div>
-
-      <div class="body">
-
-         <div
-            class="no-conf"
-            v-if="!item.configurationSelected"
-         >
-            Select a configuration
-         </div>
-
-         <configuration-component
-            v-else
-            :configurationSelected="item.configurationSelected"
-            :currentConfiguration="currentConfiguration"
-            @getCurrentConf="currentConf"
-         >
-         </configuration-component>
-
-      </div>
    </md-content>
 </template>
 
@@ -497,7 +441,7 @@ export default {
   height: 300px; */
 }
 
-._container .fabs > * {
+._container .fabs>* {
    display: flex;
    justify-content: center;
    align-items: flex-end;
@@ -526,20 +470,14 @@ export default {
 /* 
 when fabs not active 
 */
-._container
-   .fabs
-   .md-speed-dial.md-theme-default.md-direction-top.md-effect-scale
-   .md-speed-dial-content.configMdSpeedDialBtn {
+._container .fabs .md-speed-dial.md-theme-default.md-direction-top.md-effect-scale .md-speed-dial-content.configMdSpeedDialBtn {
    display: none;
 }
 
 /* 
 when fabs active 
 */
-._container
-   .fabs
-   .md-speed-dial.md-theme-default.md-active.md-direction-top.md-effect-scale
-   .md-speed-dial-content.configMdSpeedDialBtn {
+._container .fabs .md-speed-dial.md-theme-default.md-active.md-direction-top.md-effect-scale .md-speed-dial-content.configMdSpeedDialBtn {
    display: flex;
 }
 
