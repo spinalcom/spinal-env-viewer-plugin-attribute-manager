@@ -45,6 +45,16 @@ with this file. If not, see
             </md-select>
           </md-field>
 
+          <md-field v-if="searchBy === 1" class="columnField">
+            <md-select v-model="searchColumn" name="searchColumn" id="searchColumn">
+              <md-option value="all">All columns</md-option>
+              <md-option v-for="head in header" :key="`${head.category}_${head.label}`"
+                :value="`${head.category}_${head.label}`">
+                {{ head.category }} / {{ head.label }}
+              </md-option>
+            </md-select>
+          </md-field>
+
           <md-checkbox v-model="useRegex" class="md-primary">Regex</md-checkbox>
         </div>
 
@@ -66,7 +76,7 @@ with this file. If not, see
               <md-menu class="selectionMenu" md-size="small">
                 <md-button md-menu-trigger>
                   <md-icon>menu</md-icon>
-                  &nbsp; Select
+                  &nbsp; Select<span v-if="itemsSelected.length > 0">&nbsp;({{ itemsSelected.length }})</span>
                 </md-button>
 
                 <md-menu-content>
@@ -88,14 +98,22 @@ with this file. If not, see
           <td>
             <v-checkbox v-model="props.item.selected" @change="checkItem(props.item)" primary hide-details></v-checkbox>
           </td>
-          <td class="nameCell" @click="selectItemInViewer(props.item)">
-            <md-tooltip md-direction="top">{{ props.item.name }}</md-tooltip>
-            {{ props.item.name }}
+          <td class="nameCell">
+            <div class="nameCellContent">
+              <span class="nameText" @click="selectItemInViewer(props.item)">
+                <md-tooltip md-direction="top">{{ props.item.name }}</md-tooltip>
+                {{ props.item.name }}
+              </span>
+              <md-button class="copyBtn md-icon-button md-dense" @click.stop="copy(props.item.name)">
+                <md-tooltip>Copy name</md-tooltip>
+                <md-icon>content_copy</md-icon>
+              </md-button>
+            </div>
           </td>
-          <td>{{ props.item.type }}</td>
+          <td class="copyable" @click="copy(props.item.type)">{{ props.item.type }}</td>
           <td class="text-xs-center" v-for="(attribute, index) in header" :key="index">
             <table-content-component :editable="editMode" :item="props.item" :attribute="attribute" :itemsMap="itemsMap"
-              @setValue="refresh" @findValueInMaquette="findValueInMaquette" ref="editableComponent">
+              @setValue="refresh" @findValueInMaquette="findValueInMaquette" @copy="copy" ref="editableComponent">
             </table-content-component>
           </td>
           <td>
@@ -108,6 +126,10 @@ with this file. If not, see
       </v-data-table>
 
     </div>
+
+    <md-snackbar md-position="center" :md-duration="1500" :md-active.sync="snackbar.show" md-persistent>
+      {{ snackbar.message }}
+    </md-snackbar>
   </div>
 </template>
 
@@ -120,6 +142,7 @@ import StandardButtons from './standard-buttons.vue';
 import FabsComponent from './fabs.vue';
 
 import EventBus from '../../../../../js/events/events';
+import { copyToClipboard } from '../../../../../js/utils/clipboard';
 import { SpinalGraphService } from 'spinal-env-viewer-graph-service';
 
 const { spinalPanelManagerService } = require('spinal-env-viewer-panel-manager-service');
@@ -144,6 +167,8 @@ export default {
     this.checkboxSelects = [
       { text: 'select All', value: true, action: this.selectAll },
       { text: 'select only the current page', value: true, action: this.selectOnLyTheCurrentPage },
+      { text: 'unselect All', value: false, action: this.unSelectAll },
+      { text: 'unselect the current page', value: false, action: this.unSelectCurrentPage },
     ];
 
     return {
@@ -152,6 +177,7 @@ export default {
       searched: [],
       searchValue: '',
       searchBy: 0,
+      searchColumn: 'all',
       useRegex: false,
       regexError: '',
 
@@ -165,19 +191,19 @@ export default {
       rowsPerPageText: [20, 30, 40],
 
       itemsMap: new Map(),
+      snackbar: { show: false, message: '' },
     };
   },
 
   created() {
-    this.searchAndFilterTable = debounce(this.searchOnTable, 500);
+    this.searchAndFilterTable = debounce(() => {
+      this.searchOnTable();
+      this._goToFirstPage();
+    }, 500);
   },
 
   mounted() {
-    this.searched = this.sortByName(
-      this.tableContent.map((el) => {
-        el.selected = false;
-        return el;
-      }));
+    this.searchOnTable();
 
     setTimeout(() => {
       this._addPageNumber();
@@ -185,11 +211,12 @@ export default {
   },
 
   methods: {
-    _addSelectedPropertyToListItem(liste) {
-      return liste.map((el) => {
-        el.selected = false;
-        return el;
-      });
+    // make "selected" reactive on new items, without resetting the selection
+    _initSelected(liste) {
+      for (const el of liste) {
+        if (typeof el.selected === 'undefined') this.$set(el, 'selected', false);
+      }
+      return liste;
     },
 
     async validateOrCancel(valid) {
@@ -222,41 +249,29 @@ export default {
     },
 
     filterByName(liste, name) {
-      if (name.trim().length === 0) return this._addSelectedPropertyToListItem(liste);
+      if (name.trim().length === 0) return liste;
 
       const match = this._getMatcher(name);
-
-      return liste.reduce((acc, item) => {
-        if (match(item.name)) {
-          item.selected = false;
-          acc.push(item);
-        }
-        return acc;
-      }, []);
-
+      return liste.filter((item) => match(item.name));
     },
 
     filterByValue(liste, value) {
-      if (value.trim().length === 0) return this._addSelectedPropertyToListItem(liste);
+      if (value.trim().length === 0) return liste;
 
       const match = this._getMatcher(value);
+      const column = this.searchColumn;
 
-      return liste.reduce((acc, item) => {
-        const found = item.attributes.find((attr) => match(String(attr.value)));
-
-        if (found) {
-          item.selected = false;
-          acc.push(item);
-        }
-        return acc;
-      }, []);
+      return liste.filter((item) => item.attributes.some((attr) => {
+        if (column !== 'all' && `${attr.category}_${attr.label}` !== column) return false;
+        return match(String(attr.value));
+      }));
     },
 
     searchOnTable() {
       const filter = this.searchBy === 1 ? this.filterByValue : this.filterByName;
 
       try {
-        const filtered = filter(this.tableContent, this.searchValue);
+        const filtered = filter(this._initSelected(this.tableContent), this.searchValue);
         this.regexError = '';
         this.searched = this.sortByName(filtered);
       } catch (error) {
@@ -273,11 +288,10 @@ export default {
       });
     },
 
+    // also unselect the rows hidden by the current search
     unSelectAll() {
-      this.searched = this.searched.map((el) => {
-        el.selected = false;
-        return el;
-      });
+      for (const el of this.tableContent) el.selected = false;
+      this.searched = [...this.searched];
     },
 
     selectOnLyTheCurrentPage() {
@@ -394,7 +408,7 @@ export default {
     },
 
     sortByName(items) {
-      return items.sort((a, b) => {
+      return [...items].sort((a, b) => {
         const name1 = a.name.toUpperCase();
         const name2 = b.name.toUpperCase();
 
@@ -404,6 +418,19 @@ export default {
 
         return comparison;
       });
+    },
+
+    async copy(text) {
+      if (window.getSelection().toString().length > 0) return;
+
+      try {
+        await copyToClipboard(text);
+        this.snackbar.message = `Copied "${text}"`;
+      } catch (error) {
+        console.error(error);
+        this.snackbar.message = 'Unable to copy to clipboard';
+      }
+      this.snackbar.show = true;
     },
 
     selectItemInViewer(item) {
@@ -544,6 +571,15 @@ export default {
       actionDiv.before(div[0]);
     },
 
+    _updatePageNumber() {
+      const div = $('.v-datatable__actions__page-number')[0];
+      if (div) div.innerHTML = `Page : ${this.pagination.page} / ${this.pages}`;
+    },
+
+    _goToFirstPage() {
+      if (this.pagination.page !== 1) this.pagination = Object.assign({}, this.pagination, { page: 1 });
+    },
+
     _filterElementSelected(liste) {
       if (this.searchValue.trim().length === 0) return liste;
 
@@ -563,7 +599,7 @@ export default {
     },
 
     searchDataBind() {
-      return `${this.searchValue}|${this.searchBy}|${this.useRegex}`;
+      return `${this.searchValue}|${this.searchBy}|${this.searchColumn}|${this.useRegex}`;
     },
   },
   watch: {
@@ -594,11 +630,17 @@ export default {
         { text: 'Type', value: 'type' },
         ...formated,
       ];
+
+      // the column used by the value search is no longer displayed
+      if (!formated.some((el) => el.value === this.searchColumn)) this.searchColumn = 'all';
     },
 
     pagination() {
-      const div = $('.v-datatable__actions__page-number')[0];
-      if (div) div.innerHTML = `Page : ${this.pagination.page} / ${this.pages}`;
+      this._updatePageNumber();
+    },
+
+    pages() {
+      this._updatePageNumber();
     },
 
     searchDataBind() {
@@ -661,10 +703,37 @@ export default {
 
 ._tableContent ._tableContainer .nameCell {
   padding: 0px;
+  max-width: 200px;
+}
+
+._tableContent ._tableContainer .nameCellContent {
+  display: flex;
+  align-items: center;
+}
+
+._tableContent ._tableContainer .nameText {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
-  max-width: 200px;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+._tableContent ._tableContainer .copyBtn {
+  visibility: hidden;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  margin: 0px;
+}
+
+._tableContent ._tableContainer .nameCell:hover .copyBtn {
+  visibility: visible;
+}
+
+._tableContent ._tableContainer .copyable {
+  cursor: copy;
 }
 
 ._tableContent ._tableContainer .paginationDiv {
@@ -680,10 +749,17 @@ export default {
   font-size: 15px;
 }
 
+/* the closed speed dial keeps its (invisible) layout box, which would
+   otherwise catch the clicks on the table under it */
 .buttonFab {
   position: absolute;
   bottom: 20px;
   right: 20px;
+  pointer-events: none;
+}
+
+._tableContent .mdToolbar .toolbar-end .searchDiv .columnField {
+  margin-left: 16px;
 }
 </style>
 

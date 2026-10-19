@@ -114,6 +114,14 @@ export default {
 .fabs {
   width: 100%;
   height: 100%;
+  pointer-events: none;
+}
+
+/* only the visible buttons take clicks (vue-material already enables the
+   speed dial buttons when it is open) */
+.fabs .md-speed-dial-target,
+.fabs .editModeBtn {
+  pointer-events: auto;
 }
 
 .fabs .mdSpeedDialBtn {

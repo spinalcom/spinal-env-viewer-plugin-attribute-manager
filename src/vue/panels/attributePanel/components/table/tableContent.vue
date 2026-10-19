@@ -25,8 +25,8 @@ with this file. If not, see
 <template>
   <div class="content" v-if="data" @mouseover="mouseIsOver" @mouseleave="mouseOutOver">
 
-    <div class="valueDiv" :class="{ 'contentEditable': editable }" :contenteditable="editable" ref="display"
-      @input="changeValue">
+    <div class="valueDiv" :class="{ 'contentEditable': editable, 'copyable': !editable }" :contenteditable="editable"
+      ref="display" @input="changeValue" @click="copyValue">
       {{ data.displayValue }}
     </div>
 
@@ -110,13 +110,22 @@ export default {
     },
 
     displayBtn() {
+      if (!this.editable || !this.mouseOver) return false;
+
       let nodeInfo = SpinalGraphService.getInfo(this.item.id);
-      const is3DItem = nodeInfo && (nodeInfo.dbId || nodeInfo.externalId);
-      return this.editable && this.mouseOver && is3DItem;
+      return nodeInfo && (nodeInfo.dbId || nodeInfo.externalId);
     },
 
     mouseOutOver() {
       this.mouseOver = false;
+    },
+
+    copyValue() {
+      if (this.editable) return;
+      // let the user select part of the text manually without overwriting it
+      if (window.getSelection().toString().length > 0) return;
+
+      this.$emit("copy", this.data.displayValue);
     },
 
     findValueInMaquette() {
@@ -159,6 +168,10 @@ export default {
 
 .content .valueDiv {
   width: 80%;
+}
+
+.content .copyable {
+  cursor: copy;
 }
 
 .content .contentEditable {
