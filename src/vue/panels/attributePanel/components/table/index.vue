@@ -44,11 +44,14 @@ with this file. If not, see
               <md-option :value="1">Search by value</md-option>
             </md-select>
           </md-field>
+
+          <md-checkbox v-model="useRegex" class="md-primary">Regex</md-checkbox>
         </div>
 
-        <md-field>
-          <input class="md-input" placeholder="Search..." v-model="searchValue" />
+        <md-field :class="{ 'md-invalid': regexError }">
+          <input class="md-input" :placeholder="useRegex ? 'Search (regex)...' : 'Search...'" v-model="searchValue" />
           <md-icon>search</md-icon>
+          <span class="md-error">{{ regexError }}</span>
         </md-field>
       </div>
     </div>
@@ -149,6 +152,8 @@ export default {
       searched: [],
       searchValue: '',
       searchBy: 0,
+      useRegex: false,
+      regexError: '',
 
       itemsSelected: [],
       headerDisplayed: [],
@@ -203,13 +208,26 @@ export default {
       this.$emit('refresh');
     },
 
-    filterByName(liste, name) {
-      const value = name.trim().toLowerCase();
+    // Returns a predicate testing a string against the search, either as a
+    // case-insensitive substring or as a case-insensitive regex.
+    // Throws a SyntaxError if the regex is invalid.
+    _getMatcher(search) {
+      if (this.useRegex) {
+        const regex = new RegExp(search, 'i');
+        return (str) => regex.test(str);
+      }
 
-      if (value.length === 0) return this._addSelectedPropertyToListItem(liste);
+      const value = search.trim().toLowerCase();
+      return (str) => str.toLowerCase().includes(value);
+    },
+
+    filterByName(liste, name) {
+      if (name.trim().length === 0) return this._addSelectedPropertyToListItem(liste);
+
+      const match = this._getMatcher(name);
 
       return liste.reduce((acc, item) => {
-        if (item.name.toLowerCase().includes(value)) {
+        if (match(item.name)) {
           item.selected = false;
           acc.push(item);
         }
@@ -219,11 +237,12 @@ export default {
     },
 
     filterByValue(liste, value) {
-      value = value.trim().toLowerCase();
-      if (value.length === 0) return this._addSelectedPropertyToListItem(liste);
+      if (value.trim().length === 0) return this._addSelectedPropertyToListItem(liste);
+
+      const match = this._getMatcher(value);
 
       return liste.reduce((acc, item) => {
-        const found = item.attributes.find((attr) => attr.value.toString().toLowerCase().includes(value));
+        const found = item.attributes.find((attr) => match(String(attr.value)));
 
         if (found) {
           item.selected = false;
@@ -234,16 +253,16 @@ export default {
     },
 
     searchOnTable() {
-      switch (this.searchBy) {
-        case 0:
-          const filtered = this.filterByName(this.tableContent, this.searchValue);
-          this.searched = this.sortByName(filtered);
-          break;
+      const filter = this.searchBy === 1 ? this.filterByValue : this.filterByName;
 
-        case 1:
-          const filteredByValue = this.filterByValue(this.tableContent, this.searchValue);
-          this.searched = this.sortByName(filteredByValue);
-          break;
+      try {
+        const filtered = filter(this.tableContent, this.searchValue);
+        this.regexError = '';
+        this.searched = this.sortByName(filtered);
+      } catch (error) {
+        // invalid regex: keep the previous results and show the error
+        if (!(error instanceof SyntaxError)) throw error;
+        this.regexError = 'Invalid regex';
       }
     },
 
@@ -544,7 +563,7 @@ export default {
     },
 
     searchDataBind() {
-      return `${this.searchValue}|${this.searchBy}`;
+      return `${this.searchValue}|${this.searchBy}|${this.useRegex}`;
     },
   },
   watch: {
@@ -555,8 +574,7 @@ export default {
     async tableContent() {
       this.constructMap();
 
-      const filtered = this.filterByName(this.tableContent, this.searchValue)
-      this.searched = this.sortByName(filtered);
+      this.searchOnTable();
 
       this.pagination.totalItems = this.searched.length;
     },
@@ -624,6 +642,12 @@ export default {
 
 ._tableContent .mdToolbar .toolbar-end .searchDiv {
   display: flex;
+  align-items: center;
+}
+
+._tableContent .mdToolbar .toolbar-end .searchDiv .md-checkbox {
+  margin: 0 0 0 16px;
+  white-space: nowrap;
 }
 
 ._tableContent .md-content.md-theme-default {
